@@ -1,0 +1,408 @@
+import {
+  SiteInfo,
+  HeroContent,
+  AboutContent,
+  ProjectItem,
+  CreatorContent,
+  JourneyContent,
+  NowContent,
+  SocialLink,
+  SensorNode
+} from '../types';
+import {
+  FEATURED_VIDEO,
+  ADDITIONAL_VIDEOS,
+  ALL_CREATOR_VIDEOS,
+  CreatorVideoItem
+} from './creatorContent';
+
+export { FEATURED_VIDEO, ADDITIONAL_VIDEOS, ALL_CREATOR_VIDEOS };
+export type { CreatorVideoItem };
+
+// ============================================================================
+// AFRID AHMED — AUTHORITATIVE WEBSITE CONTENT CONFIGURATION
+//
+// EDIT THIS FILE TO UPDATE ALL WEBSITE CONTENT.
+// DO NOT MODIFY REACT COMPONENTS FOR TEXT OR ASSET PATH CHANGES.
+// ============================================================================
+
+/**
+ * 1. SITE & GLOBAL BRAND INFORMATION
+ */
+export const SITE_INFO: SiteInfo = {
+  brandName: 'AFRID',
+  fullName: 'AFRID AHMED',
+  shortRole: 'CS Undergraduate · 2030',
+  fullRole: 'Computer Science Undergraduate · AI/ML Learner · Creator · Builder',
+  tagline: "BUILDING WHAT'S NEXT.",
+  currentYear: '2026',
+  graduationYear: '2030',
+  email: 'afridaskar@gmail.com',
+  location: 'Earth Orbit · Global'
+};
+
+/**
+ * 2. HERO SECTION CONTENT
+ *
+ * All text and links shown in the hero header.
+ *
+ * PHOTO INSTRUCTION:
+ * // Replace public/images/afrid-hero.jpg to change the Hero photo
+ * Keep the file path "/images/afrid-hero.jpg" below.
+ */
+export const HERO_CONTENT: HeroContent = {
+  badge: "AFRID'S DIGITAL UNIVERSE",
+  degreeTrack: 'COMPUTER SCIENCE',
+  graduationLabel: '', // Removed from near AFRID'S DIGITAL UNIVERSE per user instructions
+  tagline: "BUILDING WHAT'S NEXT.",
+  name: 'AFRID AHMED',
+  category: 'Computer Science · AI/ML · Creator',
+  rotatingStatements: [
+    'I BUILD.',
+    'I CREATE.',
+    'I EXPLORE.'
+  ],
+  description: 'Computer Science undergraduate building with AI, software and code while documenting the journey.',
+  primaryLinkText: 'EXPLORE WORK',
+  secondaryLinkText: "LET'S WORK TOGETHER",
+  aboutLinkText: 'ABOUT AFRID',
+  // Replace public/images/afrid-hero.jpg to change the Hero photo
+  photo: '/images/afrid-hero.jpg',
+  scrollPromptText: 'SCROLL TO EXPLORE'
+};
+
+/**
+ * 3. ABOUT SECTION CONTENT
+ *
+ * Editorial personal portrait and authentic biography.
+ *
+ * PHOTO INSTRUCTION:
+ * // Replace public/images/afrid-about.jpg to change the About photo
+ * Keep the file path "/images/afrid-about.jpg" below.
+ */
+export const ABOUT_CONTENT: AboutContent = {
+  badge: 'THE PERSON BEHIND THE CODE',
+  title: 'ABOUT AFRID',
+  statement: 'CURIOUS BY DEFAULT. BUILDING BY CHOICE.',
+  biography: [
+    'I am a Computer Science undergraduate exploring artificial intelligence, machine learning, physical computing, and software development. Rather than treating technology as abstract theory, I prefer learning through hands-on building—from configuring microcontrollers like the ESP32-S3 to writing reactive software interfaces.',
+    'As a technology creator, I produce digital media breaking down complex computing architectures and developer workflows into clear, engaging visual stories. I believe that teaching concepts simply is the best test of truly understanding them.',
+    'My current focus is building disciplined technical competence across algorithms, systems, and automation. Looking ahead toward 2030, I am driven by the prospect of entrepreneurship as a future direction—turning solid engineering principles into meaningful products and independent ventures.'
+  ],
+  quote: 'Every complex system starts with curiosity, a clean terminal, and the discipline to iterate.',
+  graduationTag: 'EXPECTED GRADUATION: 2030',
+  // Replace public/images/afrid-about.jpg to change the About photo
+  photo: '/images/afrid-about.jpg',
+  photoCaption: {
+    name: 'AFRID AHMED',
+    role: 'CS UNDERGRADUATE · CREATOR',
+    classYear: 'CLASS OF 2030',
+    verifiedText: 'Authentic stage · Honest representations'
+  },
+  techStack: [
+    { category: 'Languages', items: ['C++', 'Python', 'TypeScript', 'JavaScript', 'Bash', 'SQL'] },
+    { category: 'Systems & Hardware', items: ['ESP32-S3', 'Linux / Unix', 'I2C / SPI', 'Git', 'Docker basics'] },
+    { category: 'Frameworks & Web', items: ['React', 'Node.js', 'Tailwind CSS', 'Vite', 'Express'] },
+    { category: 'AI & Data Focus', items: ['ML Fundamentals', 'PyTorch Foundations', 'Prompt Engineering', 'Stream Decoders'] }
+  ]
+};
+
+/**
+ * 4. PROJECTS / WORK PORTFOLIO
+ */
+export const PROJECTS: ProjectItem[] = [
+  {
+    id: 'aquasense-x',
+    number: '01',
+    title: 'AquaSense X',
+    subtitle: 'Embedded Environmental Intelligence',
+    tagline: 'Physical Water Quality Telemetry & Software Interpretation Pipeline',
+    description: 'An integrated hardware and software telemetry platform powered by the ESP32-S3 microcontroller. Captures real-time turbidity, Total Dissolved Solids (TDS), temperature, and pH variance, translating physical water attributes into instant software diagnostics.',
+    technologies: ['ESP32-S3', 'C++ / MicroPython', 'I2C / ADC Telemetry', 'TypeScript', 'Tailwind CSS', 'WebSockets', 'Data Visualization'],
+    category: 'Hardware & IoT Engineering',
+    highlights: [
+      'Multi-parameter sensor acquisition: Turbidity, TDS, Temperature, and pH concept',
+      'ESP32-S3 dual-core microcontroller processing raw analogue signals',
+      'Calibrated signal filtering for noise suppression in aquatic environments',
+      'Real-time software telemetry dashboard with dynamic safety thresholds'
+    ],
+    githubUrl: 'https://github.com/afridaskar',
+    liveUrl: '#',
+    isFlagship: true
+  },
+  {
+    id: 'naval-battle-simulator',
+    number: '02',
+    title: 'Naval Battle Simulator',
+    subtitle: 'Algorithmic Combat & Grid Logic',
+    tagline: 'Turn-Based Tactical Simulation with Procedural Grid Coordination',
+    description: 'A mathematical and tactical simulator modeling spatial combat dynamics, randomized maritime grid placement, and automated algorithmic decision logic for competitive strategic analysis.',
+    technologies: ['TypeScript', 'Algorithms', 'State Machines', 'Canvas 2D', 'Modular Architecture'],
+    category: 'Simulation & Systems',
+    highlights: [
+      'Coordinate matrix algorithms for ship placement and collision validation',
+      'Heuristic AI targeting engine utilizing probability density maps',
+      'Deterministic turn-based state machine with full match-replay serialization'
+    ],
+    githubUrl: 'https://github.com/afridaskar',
+    liveUrl: '#'
+  },
+  {
+    id: 'ai-cli-chatbot',
+    number: '03',
+    title: 'AI CLI Chatbot',
+    subtitle: 'Developer Terminal Orchestrator',
+    tagline: 'High-Efficiency Terminal Intelligence for Engineering Workflows',
+    description: 'A lightweight command-line interface bringing conversational intelligence directly into developer shell environments, featuring streaming token buffers, system context injection, and command automation.',
+    technologies: ['Node.js / TypeScript', 'Large Language Models', 'Stream Processing', 'Bash / Shell', 'ANSI Visuals'],
+    category: 'AI & Developer Tooling',
+    highlights: [
+      'Zero-latency stream decoding directly to standard terminal outputs',
+      'Context-aware session history with local encryption and persistence',
+      'Automated terminal command suggestion with safe preview and verification'
+    ],
+    githubUrl: 'https://github.com/afridaskar',
+    liveUrl: '#'
+  },
+  {
+    id: 'weather-automation',
+    number: '04',
+    title: 'Weather & Automation Engine',
+    subtitle: 'Ambient Environmental Monitoring',
+    tagline: 'Autonomous Data Polling, Trend Analysis & Event-Driven Triggers',
+    description: 'An automated environmental monitoring pipeline that periodically aggregates meteorological telemetry, evaluates microclimate variations, and dispatches automated alerts for home automation and outdoor sensors.',
+    technologies: ['Python', 'REST APIs', 'Cron Automation', 'Data Modeling', 'Event Webhooks'],
+    category: 'Automation & Data Pipelines',
+    highlights: [
+      'Fault-tolerant weather ingestion routines with automated backoff',
+      'Historical trend aggregation and atmospheric pressure delta alerts',
+      'Web-hook triggered notifications for extreme meteorological shifts'
+    ],
+    githubUrl: 'https://github.com/afridaskar',
+    liveUrl: '#'
+  }
+];
+
+/**
+ * 5. CREATOR / YOUTUBE CONTENT
+ * 
+ * 1 Featured Flagship Video + 4 Extra Videos in Archive.
+ * Direct YouTube links configured in src/data/creatorContent.ts.
+ */
+export const CREATOR_CONTENT: CreatorContent = {
+  badge: 'DIGITAL MEDIA & HARDWARE STORYTELLING',
+  title: 'CREATOR',
+  subtitle: 'TECHNOLOGY, EXPLAINED SIMPLY.',
+  studioLabel: 'STUDIO: 4K HIGH FIDELITY PRODUCTION',
+  categories: [],
+  videos: ALL_CREATOR_VIDEOS.map(v => ({
+    id: v.id,
+    title: v.title,
+    category: v.category,
+    duration: v.duration,
+    viewsPlaceholder: v.isFeatured ? 'Flagship Production' : 'Archive Release',
+    summary: v.description,
+    description: v.description,
+    topics: [v.category],
+    isFeatured: v.isFeatured,
+    youtubeUrl: v.youtubeUrl,
+    thumbnail: v.thumbnail
+  }))
+};
+
+/**
+ * 6. JOURNEY TIMELINE (2026 -> 2030)
+ */
+export const JOURNEY: JourneyContent = {
+  badge: 'ORBITAL TRAJECTORY · 2026 TO 2030',
+  title: 'JOURNEY',
+  subtitle: 'From academic computer science fundamentals to ambitious autonomous engineering.',
+  horizonAnchor: 'HORIZON ANCHOR: GRADUATION 2030',
+  milestones: [
+    {
+      year: '2026',
+      phase: 'Foundation',
+      status: 'current',
+      title: 'Core Fundamentals & Active Building',
+      description: 'Rigorous immersion in computer science principles: data structures, algorithmic complexity, low-level memory, and physical computing with the ESP32-S3. Establishing tech content creation to communicate engineering ideas cleanly.',
+      pillars: ['Data Structures & Algorithms', 'C++ & Python Proficiency', 'AquaSense X Deployment', 'Tech Content Channel Launch'],
+      focusAreas: ['CS Undergraduate Studies', 'Firmware & Electronics', 'Frontend Engineering', 'Media Storytelling']
+    },
+    {
+      year: '2027',
+      phase: 'Going Deeper',
+      status: 'upcoming',
+      title: 'Artificial Intelligence & Systems Engineering',
+      description: 'Advancing beyond base algorithms into machine learning foundations, linear algebra for ML, neural network architectures, and robust full-stack software development.',
+      pillars: ['Machine Learning Foundations', 'Distributed Systems Basics', 'Autonomous Software Agents', 'Advanced Content Series'],
+      focusAreas: ['PyTorch & Mathematics', 'API Architecture', 'Embedded Edge ML', 'Technical Writing']
+    },
+    {
+      year: '2028',
+      phase: 'Real-World Experience',
+      status: 'upcoming',
+      title: 'Industry Immersion & Production Engineering',
+      description: 'Applying theoretical and personal build experience to production environments, internships, team engineering, and shipping scalable software.',
+      pillars: ['Engineering Internships', 'Large-Scale Codebases', 'Production CI/CD & Cloud', 'Freelance Technical Solutions'],
+      focusAreas: ['Industry Best Practices', 'Team Collaboration', 'Software Reliability', 'Client Engagements']
+    },
+    {
+      year: '2029',
+      phase: 'Building More Seriously',
+      status: 'upcoming',
+      title: 'Complex Systems & Product Experimentation',
+      description: 'Synthesizing hardware, AI/ML, and high-performance software into cohesive product prototypes. Exploring how technical capabilities translate into self-sustaining ventures.',
+      pillars: ['Specialized AI Models', 'Hardware-Software Product Prototypes', 'Open Source Tooling', 'Venture Exploration'],
+      focusAreas: ['Product Architecture', 'User Experience Design', 'System Scalability', 'Prototyping']
+    },
+    {
+      year: '2030',
+      phase: 'Graduation',
+      status: 'aspirational',
+      title: 'Graduation & Launching Into The Future',
+      description: 'Completing the Computer Science degree as a disciplined software engineer, technical creator, and builder prepared to create innovative technological solutions and explore future entrepreneurship.',
+      pillars: ['Degree Completion', 'Capstone Systems Project', 'Future Tech Venture Incubation', 'Continuous Innovation'],
+      focusAreas: ['Full-Time Engineering', 'Technology Entrepreneurship', 'Long-term Research', 'Community Impact']
+    }
+  ]
+};
+
+/**
+ * 7. NOW SECTION (ACTIVE PRIORITIES)
+ */
+export const NOW_CONTENT: NowContent = {
+  badge: 'LIVING STATUS SIGNAL',
+  title: 'NOW',
+  subtitle: 'Active engineering priorities, studies, and building blocks.',
+  activeOrbit: 'ACTIVE ORBIT: 2026',
+  items: [
+    {
+      id: 'cs-degree',
+      category: 'Academic Focus',
+      item: 'Computer Science Undergraduate Studies',
+      detail: 'Sharpening core fundamentals: algorithms, computation theory, computer systems, and discrete mathematics.',
+      status: 'In Progress'
+    },
+    {
+      id: 'ai-ml',
+      category: 'Exploration',
+      item: 'Artificial Intelligence & Machine Learning',
+      detail: 'Studying foundational neural models, model quantization, and deploying intelligent workflows on edge silicon.',
+      status: 'Active Exploration'
+    },
+    {
+      id: 'iot-embedded',
+      category: 'Hardware',
+      item: 'AquaSense X Firmware Iterations',
+      detail: 'Refining sensor sampling algorithms, calibration accuracy, and Wi-Fi/WebSocket data transmission pipelines.',
+      status: 'In Progress'
+    },
+    {
+      id: 'content',
+      category: 'Media & Creation',
+      item: 'Technology Video Production',
+      detail: 'Scripting and recording visual breakdowns of developer tools, hardware teardowns, and engineering concepts.',
+      status: 'Continuous'
+    },
+    {
+      id: 'automation',
+      category: 'Engineering',
+      item: 'Personal Workflow & CLI Automation',
+      detail: 'Crafting developer utilities and terminal accelerators to streamline everyday learning and coding velocity.',
+      status: 'In Progress'
+    }
+  ]
+};
+
+/**
+ * 8. SOCIAL & CONTACT LINKS
+ */
+export const SOCIAL_LINKS: SocialLink[] = [
+  {
+    platform: 'GitHub',
+    label: 'github.com/afridaskar',
+    url: 'https://github.com/afridaskar',
+    iconName: 'Github'
+  },
+  {
+    platform: 'LinkedIn',
+    label: 'linkedin.com/in/afrid-ahmed',
+    url: 'https://linkedin.com',
+    iconName: 'Linkedin'
+  },
+  {
+    platform: 'YouTube',
+    label: '@afridtech',
+    url: 'https://youtube.com',
+    iconName: 'Youtube'
+  },
+  {
+    platform: 'Email',
+    label: 'afridaskar@gmail.com',
+    url: 'mailto:afridaskar@gmail.com',
+    iconName: 'Mail'
+  }
+];
+
+/**
+ * AQUASENSE TELEMETRY NODES (Hardware visualizer telemetry)
+ */
+export const AQUASENSE_SENSORS: SensorNode[] = [
+  {
+    id: 'turbidity',
+    name: 'Turbidity Sensor',
+    parameter: 'Water Clarity',
+    unit: 'NTU',
+    nominalRange: '< 5.0 NTU',
+    description: 'Measures suspended particulates via optical infrared scattering, identifying sediment and organic runoff in real time.',
+    significance: 'Key indicator of aquatic filtration efficiency and sediment contamination.'
+  },
+  {
+    id: 'tds',
+    name: 'TDS Probe',
+    parameter: 'Total Dissolved Solids',
+    unit: 'ppm (mg/L)',
+    nominalRange: '50 - 300 ppm',
+    description: 'Measures electrical conductivity of ionic minerals (salts, calcium, magnesium) dissolved within the water sample.',
+    significance: 'Determines mineral concentration and overall dissolved impurity levels.'
+  },
+  {
+    id: 'temperature',
+    name: 'DS18B20 Probe',
+    parameter: 'Thermal Gradient',
+    unit: '°C',
+    nominalRange: '18.0 - 24.5 °C',
+    description: 'Submersible digital thermal probe providing digital 12-bit precision temperature readings across the test chamber.',
+    significance: 'Critical calibration factor for temperature-dependent pH and conductivity calculations.'
+  },
+  {
+    id: 'ph',
+    name: 'pH Electrode Concept',
+    parameter: 'Acid / Alkaline Balance',
+    unit: 'pH',
+    nominalRange: '6.5 - 8.5 pH',
+    description: 'Electrochemical probe concept measuring hydrogen-ion activity for acid-base equilibrium detection.',
+    significance: 'Fundamental chemical metric for biological safety and chemical neutrality.'
+  }
+];
+
+// Re-exports for backward compatibility
+export const PERSONAL_INFO = {
+  name: SITE_INFO.fullName,
+  role: SITE_INFO.fullRole,
+  tagline: SITE_INFO.tagline,
+  supportingLine: HERO_CONTENT.description,
+  graduationYear: SITE_INFO.graduationYear,
+  currentYear: SITE_INFO.currentYear,
+  email: SITE_INFO.email,
+  location: SITE_INFO.location,
+  aboutHeadline: ABOUT_CONTENT.title,
+  aboutLargeStatement: ABOUT_CONTENT.statement,
+  bioParagraphs: ABOUT_CONTENT.biography,
+  quote: ABOUT_CONTENT.quote
+};
+
+export const PROJECTS_DATA = PROJECTS;
+export const CREATOR_VIDEOS = CREATOR_CONTENT.videos;
+export const JOURNEY_MILESTONES = JOURNEY.milestones;
+export const NOW_FOCUS_ITEMS = NOW_CONTENT.items;
