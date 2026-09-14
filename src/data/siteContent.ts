@@ -115,70 +115,73 @@ export const PROJECTS: ProjectItem[] = [
     number: '01',
     title: 'AquaSense X',
     subtitle: 'Embedded Environmental Intelligence',
-    tagline: 'Physical Water Quality Telemetry & Software Interpretation Pipeline',
+    tagline: 'Physical Water Quality Telemetry & Software Diagnostics',
     description: 'An integrated hardware and software telemetry platform powered by the ESP32-S3 microcontroller. Captures real-time turbidity, Total Dissolved Solids (TDS), temperature, and pH variance, translating physical water attributes into instant software diagnostics.',
-    technologies: ['ESP32-S3', 'C++ / MicroPython', 'I2C / ADC Telemetry', 'TypeScript', 'Tailwind CSS', 'WebSockets', 'Data Visualization'],
+    technologies: ['ESP32-S3', 'C++', 'I2C / ADC Telemetry', 'TypeScript', 'WebSockets'],
     category: 'Hardware & IoT Engineering',
     highlights: [
-      'Multi-parameter sensor acquisition: Turbidity, TDS, Temperature, and pH concept',
-      'ESP32-S3 dual-core microcontroller processing raw analogue signals',
-      'Calibrated signal filtering for noise suppression in aquatic environments',
-      'Real-time software telemetry dashboard with dynamic safety thresholds'
+      'Multi-parameter sensor acquisition: Turbidity, TDS, Temperature, and pH',
+      'ESP32-S3 microcontroller processing raw analogue and digital sensor signals',
+      'Signal calibration and noise suppression for aquatic monitoring',
+      'Real-time software telemetry interface with dynamic safety thresholds'
     ],
-    githubUrl: 'https://github.com/afridaskar',
-    liveUrl: '#',
+    githubUrl: '',
+    liveUrl: '',
     isFlagship: true
   },
   {
     id: 'naval-battle-simulator',
     number: '02',
     title: 'Naval Battle Simulator',
-    subtitle: 'Algorithmic Combat & Grid Logic',
-    tagline: 'Turn-Based Tactical Simulation with Procedural Grid Coordination',
-    description: 'A mathematical and tactical simulator modeling spatial combat dynamics, randomized maritime grid placement, and automated algorithmic decision logic for competitive strategic analysis.',
-    technologies: ['TypeScript', 'Algorithms', 'State Machines', 'Canvas 2D', 'Modular Architecture'],
-    category: 'Simulation & Systems',
+    subtitle: 'Grid Dynamics & Tactical Simulation',
+    tagline: 'C-Based Tactical Simulation with Matrix Grid Coordination',
+    description: 'A tactical naval combat simulator developed in C, modeling spatial grid coordination, randomized and strategic fleet placement, and turn-based battle mechanics.',
+    technologies: ['C', 'Algorithms', 'Data Structures', 'Grid Logic', 'State Management'],
+    category: 'Systems & Simulation',
     highlights: [
       'Coordinate matrix algorithms for ship placement and collision validation',
-      'Heuristic AI targeting engine utilizing probability density maps',
-      'Deterministic turn-based state machine with full match-replay serialization'
+      'Targeting logic and grid-based coordinate calculation',
+      'Deterministic turn-based state management and match resolution'
     ],
-    githubUrl: 'https://github.com/afridaskar',
-    liveUrl: '#'
+    githubUrl: '',
+    liveUrl: '',
+    isFlagship: false
   },
   {
     id: 'ai-cli-chatbot',
     number: '03',
     title: 'AI CLI Chatbot',
-    subtitle: 'Developer Terminal Orchestrator',
-    tagline: 'High-Efficiency Terminal Intelligence for Engineering Workflows',
-    description: 'A lightweight command-line interface bringing conversational intelligence directly into developer shell environments, featuring streaming token buffers, system context injection, and command automation.',
-    technologies: ['Node.js / TypeScript', 'Large Language Models', 'Stream Processing', 'Bash / Shell', 'ANSI Visuals'],
+    subtitle: 'Developer Terminal Interface',
+    tagline: 'Command-Line Interface for AI-Assisted Workflows',
+    description: 'A command-line interface utility bringing conversational AI capabilities directly into terminal environments for developer assistance and automated shell queries.',
+    technologies: ['Python / Shell', 'CLI', 'API Integration', 'Stream Processing'],
     category: 'AI & Developer Tooling',
     highlights: [
-      'Zero-latency stream decoding directly to standard terminal outputs',
-      'Context-aware session history with local encryption and persistence',
-      'Automated terminal command suggestion with safe preview and verification'
+      'Interactive terminal session and prompt handling',
+      'Streamed output rendering directly in shell environments',
+      'Workflow assistance for developer queries and scripting'
     ],
-    githubUrl: 'https://github.com/afridaskar',
-    liveUrl: '#'
+    githubUrl: '',
+    liveUrl: '',
+    isFlagship: false
   },
   {
     id: 'weather-automation',
     number: '04',
-    title: 'Weather & Automation Engine',
-    subtitle: 'Ambient Environmental Monitoring',
-    tagline: 'Autonomous Data Polling, Trend Analysis & Event-Driven Triggers',
-    description: 'An automated environmental monitoring pipeline that periodically aggregates meteorological telemetry, evaluates microclimate variations, and dispatches automated alerts for home automation and outdoor sensors.',
-    technologies: ['Python', 'REST APIs', 'Cron Automation', 'Data Modeling', 'Event Webhooks'],
-    category: 'Automation & Data Pipelines',
+    title: 'Weather / Automation Work',
+    subtitle: 'Data Ingestion & Automated Triggers',
+    tagline: 'Automated Meteorological Polling & Alert Pipeline',
+    description: 'An automated environmental monitoring pipeline that periodically polls meteorological data from weather APIs, tracks environmental trends, and dispatches automated notifications.',
+    technologies: ['Python', 'REST APIs', 'Automation', 'Cron / Scheduling', 'Webhooks'],
+    category: 'Automation & Scripting',
     highlights: [
-      'Fault-tolerant weather ingestion routines with automated backoff',
-      'Historical trend aggregation and atmospheric pressure delta alerts',
-      'Web-hook triggered notifications for extreme meteorological shifts'
+      'Automated weather data polling and parsing routines',
+      'Threshold condition evaluation and alert trigger logic',
+      'Scheduled execution and status notification dispatch'
     ],
-    githubUrl: 'https://github.com/afridaskar',
-    liveUrl: '#'
+    githubUrl: '',
+    liveUrl: '',
+    isFlagship: false
   }
 ];
 
