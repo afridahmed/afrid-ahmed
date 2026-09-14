@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ProjectItem } from '../types';
 import { PROJECTS } from '../data/siteContent';
+import { AiBuilderScene3D } from './AiBuilderScene3D';
 import { AquaSenseVisualizer } from './AquaSenseVisualizer';
 
 interface WorkUniverseProps {
@@ -521,7 +522,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Redesigned Concluding Work CTA: Editorial Closing Statement of the Work Section */}
+      {/* Redesigned Concluding Work CTA: Two-Column Editorial Statement with AI Builder Visual */}
       <div className="max-w-6xl mx-auto mt-12 sm:mt-16 md:mt-20">
         <div 
           className="group relative rounded-2xl border border-white/10 hover:border-[#38BDF8]/40 bg-[#050816]/85 backdrop-blur-xl p-6 sm:p-8 md:p-10 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(56,189,248,0.08)] overflow-hidden"
@@ -530,15 +531,14 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
         >
           
           {/* Ambient subtle light accent */}
-          <div className="absolute top-0 right-0 w-72 h-72 bg-[#38BDF8]/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-[#38BDF8]/8 transition-all duration-500" />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#38BDF8]/6 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-[#38BDF8]/10 transition-all duration-500" />
           
-          <div className="relative z-10 flex flex-col gap-6 md:gap-8">
+          {/* Two-Column Grid Layout */}
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            {/* Top row: Left text, Right System Orb */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-              
-              {/* Left: Strong Typography Hierarchy */}
-              <div className="space-y-2.5 max-w-xl">
+            {/* Left Column: Typography & Left-aligned CTA Button */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="space-y-2.5">
                 <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" />
                   <span>COLLABORATION INQUIRY</span>
@@ -548,88 +548,32 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                   BUILDING SOMETHING?
                 </h3>
 
-                <p className="text-sm sm:text-base text-[#CBD5E1] font-light leading-relaxed">
+                <p className="text-sm sm:text-base text-[#CBD5E1] font-light leading-relaxed max-w-xl">
                   Need an AI workflow, automation, software project, or technical solution?
                 </p>
               </div>
 
-              {/* Upper-Right Abstract AI System Orb */}
-              <div className="hidden sm:flex items-center justify-center shrink-0 self-start pt-1 md:pt-0">
-                <div className="relative w-32 h-32 md:w-36 md:h-36 flex items-center justify-center">
-                  {/* Subtle connection path flowing downward toward the CTA button */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-                    <defs>
-                      <linearGradient id="orbConnectionGrad" x1="50%" y1="100%" x2="50%" y2="0%">
-                        <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.05" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M 18,100 Q 18,135 95,135"
-                      fill="none"
-                      stroke="url(#orbConnectionGrad)"
-                      strokeWidth="1"
-                      strokeDasharray="3 3"
-                      className={`transition-all duration-500 ${isHovered ? 'opacity-100 stroke-[1.5]' : 'opacity-50'}`}
-                    />
-                  </svg>
-
-                  {/* SVG Orb */}
-                  <svg className="w-full h-full overflow-visible" viewBox="0 0 120 120">
-                    <defs>
-                      <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#38BDF8" stopOpacity={isHovered ? "0.9" : "0.65"} />
-                        <stop offset="50%" stopColor="#38BDF8" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
-                      </radialGradient>
-                    </defs>
-
-                    {/* Atmospheric background glow */}
-                    <circle cx="60" cy="60" r="32" fill="url(#coreGlow)" className="transition-all duration-500" />
-
-                    {/* Orbital Path 1 */}
-                    <g className="origin-center" style={{ animation: isHovered ? 'spin 12s linear infinite' : 'spin 24s linear infinite' }}>
-                      <ellipse cx="60" cy="60" rx="42" ry="16" fill="none" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.35" transform="rotate(-25 60 60)" />
-                      <circle cx="18" cy="45" r="2.5" fill="#38BDF8" className="shadow-[0_0_8px_#38BDF8]" />
-                    </g>
-
-                    {/* Orbital Path 2 */}
-                    <g className="origin-center" style={{ animation: isHovered ? 'spin 16s linear infinite reverse' : 'spin 32s linear infinite reverse' }}>
-                      <ellipse cx="60" cy="60" rx="38" ry="18" fill="none" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.25" transform="rotate(35 60 60)" />
-                      <circle cx="92" cy="72" r="2" fill="#60A5FA" />
-                    </g>
-
-                    {/* Orbital Path 3 (Inner ring) */}
-                    <g className="origin-center" style={{ animation: isHovered ? 'spin 9s linear infinite' : 'spin 18s linear infinite' }}>
-                      <circle cx="60" cy="60" r="24" fill="none" stroke="#38BDF8" strokeWidth="0.5" strokeDasharray="4 5" strokeOpacity="0.4" />
-                      <circle cx="36" cy="60" r="1.5" fill="#38BDF8" />
-                    </g>
-
-                    {/* Central Glowing Core */}
-                    <circle cx="60" cy="60" r="5.5" fill="#38BDF8" className="animate-pulse shadow-[0_0_15px_#38BDF8]" />
-                    <circle cx="60" cy="60" r="2.5" fill="#ffffff" />
-                  </svg>
-                </div>
+              <div className="pt-2">
+                <button
+                  id="work-cta-work-together-btn"
+                  onClick={() => {
+                    if (onWorkTogether) {
+                      onWorkTogether();
+                    } else {
+                      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="group/btn min-h-[46px] px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-[#38BDF8] hover:bg-[#60A5FA] text-[#03050B] font-mono text-xs sm:text-sm font-bold tracking-wider uppercase inline-flex items-center gap-2.5 transition-all duration-200 shadow-[0_0_24px_rgba(56,189,248,0.25)] hover:shadow-[0_0_32px_rgba(56,189,248,0.4)] cursor-pointer active:scale-95 whitespace-nowrap"
+                >
+                  <span>LET'S WORK TOGETHER</span>
+                  <span className="text-base transition-transform duration-200 group-hover/btn:translate-x-1.5">→</span>
+                </button>
               </div>
-
             </div>
 
-            {/* Bottom row: Action button */}
-            <div className="flex justify-end pt-1">
-              <button
-                id="work-cta-work-together-btn"
-                onClick={() => {
-                  if (onWorkTogether) {
-                    onWorkTogether();
-                  } else {
-                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-                className="group/btn min-h-[46px] px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-[#38BDF8] hover:bg-[#60A5FA] text-[#03050B] font-mono text-xs sm:text-sm font-bold tracking-wider uppercase inline-flex items-center gap-2.5 transition-all duration-200 shadow-[0_0_24px_rgba(56,189,248,0.25)] hover:shadow-[0_0_32px_rgba(56,189,248,0.4)] cursor-pointer active:scale-95 whitespace-nowrap"
-              >
-                <span>LET'S WORK TOGETHER</span>
-                <span className="text-base transition-transform duration-200 group-hover/btn:translate-x-1.5">→</span>
-              </button>
+            {/* Right Column: Cinematic 3D Animated AI Builder Visual */}
+            <div className="lg:col-span-5 flex items-center justify-center w-full">
+              <AiBuilderScene3D isHovered={isHovered} />
             </div>
 
           </div>
