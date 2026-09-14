@@ -11,11 +11,9 @@ interface NavigationProps {
 }
 
 const NAV_ITEMS = [
-  { id: 'work', label: 'WORK' },
-  { id: 'creator', label: 'CREATOR' },
-  { id: 'journey', label: 'JOURNEY' },
-  { id: 'now', label: 'NOW' },
   { id: 'about', label: 'ABOUT' },
+  { id: 'work', label: 'WORK' },
+  { id: 'journey', label: 'JOURNEY' },
   { id: 'contact', label: 'CONTACT' }
 ];
 
@@ -106,7 +104,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         </nav>
       </header>
 
-      {/* Mobile Fullscreen Menu: Only WORK, CREATOR, JOURNEY, NOW, ABOUT, CONTACT */}
+      {/* Mobile Fullscreen Menu: ABOUT, WORK, JOURNEY, CONTACT */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div

@@ -67,14 +67,6 @@ export interface JourneyContent {
   milestones: JourneyMilestone[];
 }
 
-export interface NowContent {
-  badge: string;
-  title: string;
-  subtitle: string;
-  activeOrbit: string;
-  items: NowFocusItem[];
-}
-
 export interface ProjectItem {
   id: string;
   number: string;
@@ -123,14 +115,6 @@ export interface JourneyMilestone {
   description: string;
   pillars: string[];
   focusAreas: string[];
-}
-
-export interface NowFocusItem {
-  id: string;
-  category: string;
-  item: string;
-  detail: string;
-  status: 'In Progress' | 'Continuous' | 'Active Exploration';
 }
 
 export interface SocialLink {

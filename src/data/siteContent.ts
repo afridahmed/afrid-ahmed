@@ -5,7 +5,6 @@ import {
   ProjectItem,
   CreatorContent,
   JourneyContent,
-  NowContent,
   SocialLink,
   SensorNode
 } from '../types';
@@ -268,54 +267,7 @@ export const JOURNEY: JourneyContent = {
 };
 
 /**
- * 7. NOW SECTION (ACTIVE PRIORITIES)
- */
-export const NOW_CONTENT: NowContent = {
-  badge: 'LIVING STATUS SIGNAL',
-  title: 'NOW',
-  subtitle: 'Active engineering priorities, studies, and building blocks.',
-  activeOrbit: 'ACTIVE ORBIT: 2026',
-  items: [
-    {
-      id: 'cs-degree',
-      category: 'Academic Focus',
-      item: 'Computer Science Undergraduate Studies',
-      detail: 'Sharpening core fundamentals: algorithms, computation theory, computer systems, and discrete mathematics.',
-      status: 'In Progress'
-    },
-    {
-      id: 'ai-ml',
-      category: 'Exploration',
-      item: 'Artificial Intelligence & Machine Learning',
-      detail: 'Studying foundational neural models, model quantization, and deploying intelligent workflows on edge silicon.',
-      status: 'Active Exploration'
-    },
-    {
-      id: 'iot-embedded',
-      category: 'Hardware',
-      item: 'AquaSense X Firmware Iterations',
-      detail: 'Refining sensor sampling algorithms, calibration accuracy, and Wi-Fi/WebSocket data transmission pipelines.',
-      status: 'In Progress'
-    },
-    {
-      id: 'content',
-      category: 'Media & Creation',
-      item: 'Technology Video Production',
-      detail: 'Scripting and recording visual breakdowns of developer tools, hardware teardowns, and engineering concepts.',
-      status: 'Continuous'
-    },
-    {
-      id: 'automation',
-      category: 'Engineering',
-      item: 'Personal Workflow & CLI Automation',
-      detail: 'Crafting developer utilities and terminal accelerators to streamline everyday learning and coding velocity.',
-      status: 'In Progress'
-    }
-  ]
-};
-
-/**
- * 8. SOCIAL & CONTACT LINKS
+ * 7. SOCIAL & CONTACT LINKS
  */
 export const SOCIAL_LINKS: SocialLink[] = [
   {
@@ -405,4 +357,3 @@ export const PERSONAL_INFO = {
 export const PROJECTS_DATA = PROJECTS;
 export const CREATOR_VIDEOS = CREATOR_CONTENT.videos;
 export const JOURNEY_MILESTONES = JOURNEY.milestones;
-export const NOW_FOCUS_ITEMS = NOW_CONTENT.items;

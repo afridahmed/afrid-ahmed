@@ -7,13 +7,15 @@ import { HeroContent } from '../types';
 interface HeroProps {
   content?: HeroContent;
   onExploreWork: () => void;
-  onWatch: () => void;
+  onExploreAbout?: () => void;
+  onWatch?: () => void;
   onConnect: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
   content = HERO_CONTENT,
   onExploreWork,
+  onExploreAbout,
   onConnect
 }) => {
   const [stage, setStage] = useState<number>(0);
@@ -357,7 +359,7 @@ export const Hero: React.FC<HeroProps> = ({
         className="w-full max-w-6xl flex justify-between items-center text-[10px] sm:text-xs font-mono text-[#94A3B8] border-t border-white/5 pt-2 sm:pt-3 relative z-20"
       >
         <button
-          onClick={onExploreWork}
+          onClick={onExploreAbout || onExploreWork}
           className="flex items-center gap-1.5 hover:text-[#38BDF8] transition-colors cursor-pointer"
         >
           <span>{content.scrollPromptText}</span>

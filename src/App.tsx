@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { CosmicCanvas } from './components/CosmicCanvas';
 import { Navigation } from './components/Navigation';
 import { Hero } from './components/Hero';
-import { WorkUniverse } from './components/WorkUniverse';
-import { CreatorSection } from './components/CreatorSection';
-import { JourneyTimeline } from './components/JourneyTimeline';
-import { NowSection } from './components/NowSection';
 import { AboutSection } from './components/AboutSection';
+import { WorkUniverse } from './components/WorkUniverse';
+import { JourneyTimeline } from './components/JourneyTimeline';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { CustomCursor } from './components/CustomCursor';
@@ -14,9 +12,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 
 import { 
   PROJECTS, 
-  CREATOR_CONTENT, 
   JOURNEY, 
-  NOW_CONTENT,
   HERO_CONTENT,
   ABOUT_CONTENT
 } from './data/siteContent';
@@ -35,13 +31,11 @@ export default function App() {
 
   // Canonical data sources from central siteContent.ts
   const projects = PROJECTS;
-  const videos = CREATOR_CONTENT.videos;
   const milestones = JOURNEY.milestones;
-  const nowItems = NOW_CONTENT.items;
 
   // IntersectionObserver to update active navigation tab based on scroll position
   useEffect(() => {
-    const sections = ['hero', 'work', 'creator', 'journey', 'now', 'about', 'contact'];
+    const sections = ['hero', 'about', 'work', 'journey', 'contact'];
     const handleScroll = () => {
       const scrollPosition = window.scrollY + window.innerHeight * 0.35;
       for (const sectionId of sections) {
@@ -87,35 +81,29 @@ export default function App() {
         onToggleReducedMotion={() => setReducedMotion(!reducedMotion)}
       />
 
-      {/* Main Content Sections: Exact Hierarchy */}
+      {/* Main Content Sections: Exact Hierarchy: Hero → About → Work → Journey → Contact */}
       <main className="relative z-10 w-full overflow-x-hidden">
-        {/* HERO: Personal brand first — AFRID AHMED */}
+        {/* 1. HERO: Personal brand first — AFRID AHMED */}
         <Hero
           content={HERO_CONTENT}
           onExploreWork={() => scrollToSection('work')}
-          onWatch={() => scrollToSection('creator')}
+          onExploreAbout={() => scrollToSection('about')}
           onConnect={() => scrollToSection('contact')}
         />
 
-        {/* WORK: Engineered Builds (Desktop single stage + Mobile vertical sequence) */}
+        {/* 2. ABOUT: Where you meet the builder & see personal editorial portrait */}
+        <AboutSection content={ABOUT_CONTENT} />
+
+        {/* 3. WORK: Interactive project showcase & concluding CTA */}
         <WorkUniverse 
           projects={projects} 
           onWorkTogether={() => scrollToSection('contact')}
         />
 
-        {/* CREATOR: Technology, Explained Simply (1 Featured + 4 Archive Videos) */}
-        <CreatorSection videos={videos} />
-
-        {/* JOURNEY: 2026 to 2030 Horizon */}
+        {/* 4. JOURNEY: 2026 to 2030 Horizon */}
         <JourneyTimeline content={JOURNEY} milestones={milestones} />
 
-        {/* NOW: Living Focus Stream */}
-        <NowSection content={NOW_CONTENT} items={nowItems} />
-
-        {/* ABOUT: Where you meet the builder & see personal editorial portrait */}
-        <AboutSection content={ABOUT_CONTENT} />
-
-        {/* CONTACT: LET'S WORK TOGETHER (Dedicated final conclusion) */}
+        {/* 5. CONTACT: LET'S WORK TOGETHER (Dedicated final conclusion) */}
         <ContactSection />
       </main>
 
