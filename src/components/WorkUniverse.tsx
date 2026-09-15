@@ -27,6 +27,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   onWorkTogether
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
   const [terminalOutput, setTerminalOutput] = useState<string[]>([
     'afrid-cli@universe:~$ afrid-ai --init',
@@ -35,14 +36,45 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
     '✓ Ready for developer command orchestration.'
   ]);
 
-  const activeProject = projects[currentIndex] || projects[0];
+  // Safely clamp active index within current projects length bounds
+  const safeIndex = Math.min(Math.max(0, currentIndex), Math.max(0, projects.length - 1));
+  const activeProject = projects[safeIndex] || projects[0];
+  const prevProject = safeIndex > 0 ? projects[safeIndex - 1] : null;
+  const nextProject = safeIndex < projects.length - 1 ? projects[safeIndex + 1] : null;
+
+  const goToProject = (newIndex: number) => {
+    if (newIndex === safeIndex || newIndex < 0 || newIndex >= projects.length) return;
+    setDirection(newIndex > safeIndex ? 1 : -1);
+    setCurrentIndex(newIndex);
+  };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % projects.length);
+    if (safeIndex < projects.length - 1) {
+      goToProject(safeIndex + 1);
+    }
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + projects.length) % projects.length);
+    if (safeIndex > 0) {
+      goToProject(safeIndex - 1);
+    }
+  };
+
+  // Keyboard navigation for tablist / carousel
+  const handleRailKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      handleNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      handlePrev();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goToProject(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goToProject(projects.length - 1);
+    }
   };
 
   const runTerminalCommand = (cmd: string) => {
@@ -67,11 +99,11 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   };
 
   return (
-    <section id="work" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10">
+    <section id="work" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10 overflow-x-hidden">
       
       {/* Section Header */}
-      <div className="max-w-6xl mx-auto mb-8 sm:mb-14">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-white/10 pb-4 sm:pb-6">
+      <div className="max-w-6xl mx-auto mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-4 sm:pb-6">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1.5">
               <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
@@ -82,202 +114,262 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
             </h2>
           </div>
 
-          {/* Desktop Universe Trajectory Selector (hidden on mobile, visible on lg) */}
-          <div className="hidden lg:flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-[#07101F] border border-white/10 rounded-full p-1">
-              {projects.map((proj, idx) => {
-                const isSelected = idx === currentIndex;
-                return (
-                  <button
-                    key={proj.id}
-                    onClick={() => setCurrentIndex(idx)}
-                    className={`px-3 py-1 rounded-full text-xs font-mono transition-all duration-300 cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#38BDF8] text-[#03050B] font-bold shadow-[0_0_12px_rgba(56,189,248,0.4)]'
-                        : 'text-[#94A3B8] hover:text-white'
-                    }`}
-                  >
-                    {proj.number}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Prev / Next controls */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handlePrev}
-                className="p-2 rounded-full border border-white/10 bg-[#07101F] text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1120] transition-all cursor-pointer"
-                aria-label="Previous Project"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleNext}
-                className="p-2 rounded-full border border-white/10 bg-[#07101F] text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1120] transition-all cursor-pointer"
-                aria-label="Next Project"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+          {/* Trajectory Counter */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono text-[#94A3B8] tracking-wider uppercase">
+              ACTIVE TRAJECTORY
+            </span>
+            <div className="px-3 py-1 rounded-full bg-[#07101F] border border-white/10 font-mono text-xs">
+              <span className="text-[#38BDF8] font-bold">{activeProject.number || (safeIndex < 9 ? `0${safeIndex + 1}` : `${safeIndex + 1}`)}</span>
+              <span className="text-white/20 mx-1.5">/</span>
+              <span className="text-[#94A3B8]">{projects.length < 10 ? `0${projects.length}` : projects.length}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. MOBILE WORK EXPERIENCE (< lg): Intentional Vertical Project Sequence     */}
+      {/* Centered Contextual Carousel Navigation: [Previous] [Active] [Next]       */}
       {/* ========================================================================= */}
-      <div className="lg:hidden max-w-xl mx-auto space-y-6">
-        {projects.map((proj, index) => {
-          return (
-            <div
-              key={proj.id}
-              className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-[#050816]/90 backdrop-blur-md space-y-3.5 relative overflow-hidden"
-            >
-              {/* Subtle top corner glow */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#38BDF8]/5 rounded-full blur-2xl pointer-events-none" />
+      <div className="max-w-4xl sm:max-w-5xl mx-auto mb-8 sm:mb-12">
+        <div 
+          className="relative flex items-center justify-between gap-2 sm:gap-4 w-full"
+          role="region"
+          aria-label="Project selection carousel"
+          onKeyDown={handleRailKeyDown}
+        >
+          {/* Previous Project Button */}
+          <button
+            type="button"
+            onClick={handlePrev}
+            disabled={safeIndex === 0}
+            aria-label="Previous project"
+            className="shrink-0 p-2 sm:p-2.5 rounded-full border border-white/10 bg-[#07101F]/90 backdrop-blur-md text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1528] active:scale-95 disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-[#07101F]/90 disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] z-10"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+          </button>
 
-              {/* 01 / 04 & Category Badge */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-base font-black text-[#38BDF8]">
-                    {proj.number}
+          {/* Exact Mathematically Centered 3-Column Contextual Stage */}
+          <div 
+            role="tablist"
+            aria-label="Selected project carousel navigation"
+            className="relative flex-1 min-w-0 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center h-14 sm:h-16"
+          >
+            {/* 1. PREVIOUS PROJECT SLOT (Left slot: right-aligned, faded, clickable) */}
+            <div className="relative w-full h-full flex items-center justify-end pr-2 sm:pr-4 md:pr-6 min-w-0 overflow-hidden">
+              <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+                {prevProject ? (
+                  <motion.button
+                    key={prevProject.id || `prev-${safeIndex - 1}`}
+                    role="tab"
+                    aria-selected={false}
+                    aria-controls="active-project-panel"
+                    type="button"
+                    onClick={handlePrev}
+                    custom={direction}
+                    variants={{
+                      enter: (dir: number) => ({
+                        x: dir > 0 ? 24 : -24,
+                        opacity: 0,
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 0.45,
+                        transition: {
+                          x: { type: 'spring', stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.25 },
+                        },
+                      },
+                      exit: (dir: number) => ({
+                        x: dir > 0 ? -24 : 24,
+                        opacity: 0,
+                        transition: {
+                          x: { type: 'spring', stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.2 },
+                        },
+                      }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="group flex items-center gap-1.5 sm:gap-2 max-w-full text-right cursor-pointer hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-1 focus-visible:ring-[#38BDF8] rounded-lg py-1 px-1 sm:px-2 select-none"
+                    title={`Previous: ${prevProject.title}`}
+                  >
+                    <span className="text-[10px] sm:text-xs font-mono text-[#94A3B8]/60 group-hover:text-[#38BDF8] hidden md:inline shrink-0">
+                      {prevProject.number || (safeIndex < 10 ? `0${safeIndex}` : safeIndex)}
+                    </span>
+                    <span className="truncate text-xs sm:text-sm md:text-base font-display font-medium text-[#94A3B8] group-hover:text-white transition-colors">
+                      {prevProject.title}
+                    </span>
+                  </motion.button>
+                ) : (
+                  <div key="empty-left" className="h-4" aria-hidden="true" />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* 2. ACTIVE PROJECT SLOT (Exact Center: Highlighted, High-Contrast Focal Point) */}
+            <div className="relative h-full flex items-center justify-center shrink-0 px-1 sm:px-2">
+              <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+                <motion.div
+                  key={activeProject.id || `active-${safeIndex}`}
+                  role="tab"
+                  id={`project-tab-${activeProject.id || safeIndex}`}
+                  aria-selected={true}
+                  aria-controls="active-project-panel"
+                  tabIndex={0}
+                  custom={direction}
+                  variants={{
+                    enter: (dir: number) => ({
+                      x: dir > 0 ? 32 : dir < 0 ? -32 : 0,
+                      opacity: 0,
+                      scale: 0.95,
+                    }),
+                    center: {
+                      x: 0,
+                      opacity: 1,
+                      scale: 1,
+                      transition: {
+                        x: { type: 'spring', stiffness: 350, damping: 30 },
+                        opacity: { duration: 0.25 },
+                        scale: { duration: 0.25 },
+                      },
+                    },
+                    exit: (dir: number) => ({
+                      x: dir > 0 ? -32 : dir < 0 ? 32 : 0,
+                      opacity: 0,
+                      scale: 0.95,
+                      transition: {
+                        x: { type: 'spring', stiffness: 350, damping: 30 },
+                        opacity: { duration: 0.2 },
+                        scale: { duration: 0.2 },
+                      },
+                    }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="relative px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-2xl bg-[#0B1528]/95 border border-[#38BDF8]/40 shadow-[0_0_28px_rgba(56,189,248,0.2)] flex items-center gap-2 sm:gap-3 text-white select-none z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+                >
+                  {/* Active number indicator */}
+                  <span className="font-mono text-xs text-[#38BDF8] font-bold shrink-0">
+                    {activeProject.number || (safeIndex < 9 ? `0${safeIndex + 1}` : `${safeIndex + 1}`)}
                   </span>
-                  <span className="font-mono text-xs text-[#94A3B8]">
-                    / 0{projects.length}
+
+                  {/* Glowing active pulse dot */}
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8] shrink-0" />
+
+                  {/* Active Project Title */}
+                  <span className="whitespace-nowrap text-xs sm:text-base md:text-lg font-display font-extrabold tracking-tight text-white">
+                    {activeProject.title}
                   </span>
-                  {proj.isFlagship && (
-                    <span className="px-2 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[9px] font-mono text-[#38BDF8] font-semibold">
+
+                  {/* Flagship badge if flagged */}
+                  {activeProject.isFlagship && (
+                    <span className="hidden xs:inline-block px-1.5 py-0.5 rounded-full text-[9px] font-mono tracking-wider font-semibold bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/40 shrink-0">
                       FLAGSHIP
                     </span>
                   )}
-                </div>
-                <span className="text-[10px] font-mono text-[#94A3B8] tracking-wider truncate max-w-[140px]">
-                  {proj.category}
-                </span>
-              </div>
 
-              {/* Project Visual Snippet (Compact, intentional) */}
-              <div className="rounded-xl border border-white/5 bg-[#03050B] p-3 overflow-hidden">
-                {proj.id === 'aquasense-x' && (
-                  <div className="flex items-center justify-between gap-2 text-xs font-mono">
-                    <div className="flex items-center gap-1.5 text-[#38BDF8]">
-                      <Activity className="w-3.5 h-3.5 animate-pulse" />
-                      <span>TELEMETRY</span>
-                    </div>
-                    <div className="flex gap-2 text-[11px]">
-                      <span className="text-[#CBD5E1]">Turbidity: <b className="text-emerald-400">0.8 NTU</b></span>
-                      <span className="text-[#CBD5E1]">TDS: <b className="text-[#38BDF8]">142 ppm</b></span>
-                    </div>
-                  </div>
-                )}
-                {proj.id === 'naval-battle-simulator' && (
-                  <div className="flex items-center justify-between text-[11px] font-mono text-[#CBD5E1]">
-                    <span className="text-[#38BDF8]">HEURISTIC ENGINE</span>
-                    <span>Deterministic Probability Map</span>
-                  </div>
-                )}
-                {proj.id === 'ai-cli-chatbot' && (
-                  <div className="font-mono text-[11px] text-[#38BDF8] flex items-center gap-2">
-                    <Terminal className="w-3 h-3 text-[#38BDF8]" />
-                    <span>afrid-cli@universe:~$ streaming tokens [84 tok/s]</span>
-                  </div>
-                )}
-                {proj.id === 'weather-automation' && (
-                  <div className="flex items-center justify-between text-[11px] font-mono text-[#CBD5E1]">
-                    <span className="text-[#38BDF8] flex items-center gap-1">
-                      <CloudRain className="w-3 h-3" />
-                      <span>CRON INGEST</span>
-                    </span>
-                    <span className="text-emerald-400">Every 15 min</span>
-                  </div>
-                )}
-                {!['aquasense-x', 'naval-battle-simulator', 'ai-cli-chatbot', 'weather-automation'].includes(proj.id) && (
-                  <div className="flex items-center justify-between text-[11px] font-mono text-[#CBD5E1]">
-                    <span className="text-[#38BDF8] flex items-center gap-1">
-                      <Layers className="w-3 h-3" />
-                      <span>{proj.category.toUpperCase()}</span>
-                    </span>
-                    <span className="text-[#94A3B8]">{proj.technologies[0] || 'ENGINEERING'}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Title & Subtitle */}
-              <div>
-                <h3 className="text-xl font-display font-extrabold text-white tracking-tight">
-                  {proj.title}
-                </h3>
-                <p className="text-xs font-mono text-[#38BDF8] mt-0.5">
-                  {proj.subtitle}
-                </p>
-              </div>
-
-              {/* Short Description */}
-              <p className="text-xs text-[#CBD5E1] leading-relaxed font-light">
-                {proj.description}
-              </p>
-
-              {/* Technologies */}
-              <div className="flex flex-wrap gap-1.5 pt-0.5">
-                {proj.technologies.slice(0, 4).map((tech) => (
-                  <span
-                    key={tech}
-                    className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#07101F] text-[#CBD5E1] border border-white/5"
-                  >
-                    {tech}
-                  </span>
-                ))}
-                {proj.technologies.length > 4 && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-[#94A3B8]">
-                    +{proj.technologies.length - 4}
-                  </span>
-                )}
-              </div>
-
-              {/* Explore Link (Touch-friendly 44px min height) */}
-              <div className="pt-2 border-t border-white/5 flex items-center justify-between">
-                <a
-                  href={proj.githubUrl || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="min-h-[44px] px-3 py-2 rounded-xl bg-[#07101F] hover:bg-[#0B1120] border border-white/10 text-xs font-mono text-white flex items-center gap-2"
-                >
-                  <Github className="w-3.5 h-3.5 text-[#38BDF8]" />
-                  <span>EXPLORE CODE</span>
-                  <ArrowUpRight className="w-3 h-3 text-[#94A3B8]" />
-                </a>
-
-                <span className="text-[10px] font-mono text-[#94A3B8]">
-                  {proj.category.split(' ')[0]}
-                </span>
-              </div>
+                  {/* Subtle bottom active glow line */}
+                  <div className="absolute -bottom-px left-3 right-3 h-[1.5px] bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent pointer-events-none" />
+                </motion.div>
+              </AnimatePresence>
             </div>
-          );
-        })}
+
+            {/* 3. NEXT PROJECT SLOT (Right slot: left-aligned, faded, clickable) */}
+            <div className="relative w-full h-full flex items-center justify-start pl-2 sm:pl-4 md:pl-6 min-w-0 overflow-hidden">
+              <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+                {nextProject ? (
+                  <motion.button
+                    key={nextProject.id || `next-${safeIndex + 1}`}
+                    role="tab"
+                    aria-selected={false}
+                    aria-controls="active-project-panel"
+                    type="button"
+                    onClick={handleNext}
+                    custom={direction}
+                    variants={{
+                      enter: (dir: number) => ({
+                        x: dir > 0 ? 24 : -24,
+                        opacity: 0,
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 0.45,
+                        transition: {
+                          x: { type: 'spring', stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.25 },
+                        },
+                      },
+                      exit: (dir: number) => ({
+                        x: dir > 0 ? -24 : 24,
+                        opacity: 0,
+                        transition: {
+                          x: { type: 'spring', stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.2 },
+                        },
+                      }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="group flex items-center gap-1.5 sm:gap-2 max-w-full text-left cursor-pointer hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-1 focus-visible:ring-[#38BDF8] rounded-lg py-1 px-1 sm:px-2 select-none"
+                    title={`Next: ${nextProject.title}`}
+                  >
+                    <span className="truncate text-xs sm:text-sm md:text-base font-display font-medium text-[#94A3B8] group-hover:text-white transition-colors">
+                      {nextProject.title}
+                    </span>
+                    <span className="text-[10px] sm:text-xs font-mono text-[#94A3B8]/60 group-hover:text-[#38BDF8] hidden md:inline shrink-0">
+                      {nextProject.number || (safeIndex + 2 < 10 ? `0${safeIndex + 2}` : safeIndex + 2)}
+                    </span>
+                  </motion.button>
+                ) : (
+                  <div key="empty-right" className="h-4" aria-hidden="true" />
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Next Project Button */}
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={safeIndex === projects.length - 1}
+            aria-label="Next project"
+            className="shrink-0 p-2 sm:p-2.5 rounded-full border border-white/10 bg-[#07101F]/90 backdrop-blur-md text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1528] active:scale-95 disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-[#07101F]/90 disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] z-10"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+          </button>
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. DESKTOP WORK EXPERIENCE (lg+): One Project At A Time System             */}
+      {/* Active Project Presentation: Details, Stack, Highlights & Demos           */}
       {/* ========================================================================= */}
-      <div className="hidden lg:block max-w-6xl mx-auto">
+      <div 
+        id="active-project-panel" 
+        role="tabpanel" 
+        aria-labelledby={`project-tab-${activeProject.id || currentIndex}`}
+        className="w-full max-w-6xl mx-auto"
+      >
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeProject.id}
-            initial={{ opacity: 0, scale: 0.97, filter: 'blur(8px)', y: 20 }}
+            key={activeProject.id || currentIndex}
+            initial={{ opacity: 0, scale: 0.98, filter: 'blur(6px)', y: 14 }}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', y: 0 }}
-            exit={{ opacity: 0, scale: 1.03, filter: 'blur(8px)', y: -20 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-8"
+            exit={{ opacity: 0, scale: 1.02, filter: 'blur(6px)', y: -14 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-6 sm:space-y-8"
           >
             {/* Top Project Identification Header */}
-            <div className="grid grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
               
               {/* Number and titles (7 cols) */}
-              <div className="col-span-7 space-y-3">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-2xl font-black text-[#38BDF8]">
-                    {activeProject.number} <span className="text-[#38BDF8]/40 font-normal">/ 0{projects.length}</span>
+              <div className="lg:col-span-7 space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="font-mono text-xl sm:text-2xl font-black text-[#38BDF8]">
+                    {activeProject.number || (currentIndex < 9 ? `0${currentIndex + 1}` : `${currentIndex + 1}`)} <span className="text-[#38BDF8]/40 font-normal">/ {projects.length < 10 ? `0${projects.length}` : projects.length}</span>
                   </span>
                   {activeProject.isFlagship && (
                     <span className="px-2.5 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-xs font-mono text-[#38BDF8] font-semibold">
@@ -289,20 +381,20 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                   </span>
                 </div>
 
-                <h3 className="text-4xl xl:text-5xl font-display font-black text-white tracking-tight">
+                <h3 className="text-3xl sm:text-4xl xl:text-5xl font-display font-black text-white tracking-tight">
                   {activeProject.title}
                 </h3>
-                <p className="text-lg font-mono text-[#38BDF8] font-medium">
+                <p className="text-base sm:text-lg font-mono text-[#38BDF8] font-medium">
                   {activeProject.subtitle}
                 </p>
 
-                <p className="text-base text-[#CBD5E1] leading-relaxed max-w-2xl font-light">
+                <p className="text-sm sm:text-base text-[#CBD5E1] leading-relaxed max-w-2xl font-light">
                   {activeProject.description}
                 </p>
               </div>
 
               {/* Technologies & Action Links (5 cols) */}
-              <div className="col-span-5 flex flex-col justify-between space-y-6 bg-[#050816]/60 p-6 rounded-2xl border border-white/5 backdrop-blur-md">
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-5 sm:space-y-6 bg-[#050816]/60 p-5 sm:p-6 rounded-2xl border border-white/5 backdrop-blur-md">
                 <div className="space-y-3">
                   <div className="text-xs font-mono tracking-wider text-[#94A3B8] uppercase">
                     ARCHITECTURAL STACK
@@ -396,8 +488,8 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                     <span className="font-mono text-xs text-emerald-400">STATE: DETERMINISTIC</span>
                   </div>
 
-                  <div className="grid grid-cols-12 gap-6 items-center">
-                    <div className="col-span-7 bg-[#03050B] p-4 rounded-xl border border-white/10">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <div className="lg:col-span-7 bg-[#03050B] p-4 rounded-xl border border-white/10">
                       <div className="grid grid-cols-8 gap-1.5 aspect-square max-w-[320px] mx-auto">
                         {Array.from({ length: 64 }).map((_, i) => {
                           const isShip = [10, 11, 12, 28, 36, 44, 50, 51].includes(i);
@@ -428,7 +520,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                       </div>
                     </div>
 
-                    <div className="col-span-5 space-y-3 font-mono text-xs">
+                    <div className="lg:col-span-5 space-y-3 font-mono text-xs">
                       <div className="p-3.5 rounded-xl bg-[#07101F] border border-white/10">
                         <span className="text-[#94A3B8] block text-[10px]">COORDINATE ALGORITHM</span>
                         <span className="text-white font-semibold">Parity-Based Chequerboard Scan</span>
@@ -506,7 +598,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                     <span className="font-mono text-xs text-emerald-400">STATUS: SCHEDULED ACTIVE</span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 font-mono text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 font-mono text-xs">
                     <div className="p-4 rounded-xl bg-[#03050B] border border-white/5 space-y-1">
                       <span className="text-[#94A3B8] text-[10px]">INGESTION CYCLE</span>
                       <div className="text-lg font-bold text-white">Every 15 min</div>
@@ -537,11 +629,11 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                       </span>
                     </div>
                     <span className="font-mono text-xs text-[#38BDF8]">
-                      PROJ #{activeProject.number}
+                      PROJ #{activeProject.number || (currentIndex < 9 ? `0${currentIndex + 1}` : `${currentIndex + 1}`)}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 font-mono text-xs">
                     <div className="p-4 rounded-xl bg-[#03050B] border border-white/5 space-y-1">
                       <span className="text-[#94A3B8] text-[10px]">CORE DOMAIN</span>
                       <div className="text-base font-bold text-white">{activeProject.category}</div>
