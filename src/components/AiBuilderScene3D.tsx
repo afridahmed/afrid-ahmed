@@ -4,7 +4,7 @@ interface AiBuilderScene3DProps {
   isHovered: boolean;
 }
 
-export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = ({ isHovered }) => {
+export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ isHovered }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -320,4 +320,6 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = ({ isHovered })
       <canvas ref={canvasRef} className="w-full h-full block cursor-crosshair" />
     </div>
   );
-};
+});
+
+AiBuilderScene3D.displayName = 'AiBuilderScene3D';

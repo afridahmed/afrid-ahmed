@@ -17,7 +17,7 @@ import { AQUASENSE_SENSORS } from '../data/portfolioData';
 
 type PipelineStep = 'water' | 'sensors' | 'esp32' | 'data' | 'software' | 'interpretation';
 
-export const AquaSenseVisualizer: React.FC = () => {
+export const AquaSenseVisualizer: React.FC = React.memo(() => {
   const [activeStep, setActiveStep] = useState<PipelineStep>('sensors');
   const [selectedSensorId, setSelectedSensorId] = useState<string>('turbidity');
 
@@ -394,4 +394,6 @@ export const AquaSenseVisualizer: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+AquaSenseVisualizer.displayName = 'AquaSenseVisualizer';

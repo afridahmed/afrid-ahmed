@@ -79,6 +79,7 @@ export interface ProjectItem {
   highlights: string[];
   githubUrl?: string;
   liveUrl?: string;
+  imageUrl?: string;
   isFlagship?: boolean;
 }
 
