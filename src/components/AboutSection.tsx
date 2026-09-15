@@ -57,10 +57,13 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
               {/* Portrait Image */}
               <div className="relative w-full h-full">
                 <img
-                  src={content.photo}
+                  src={content.photo || '/images/afrid-about.jpg'}
                   alt={content.photoCaption.name}
                   className="w-full h-full object-cover object-center filter contrast-[1.02] brightness-95 transition-transform duration-700 group-hover:scale-102"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/images/afrid-about.jpg';
+                  }}
                 />
 
                 {/* Dark edge blending vignette */}
@@ -141,7 +144,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
             {/* Concise Personal Copy */}
             <div className="space-y-3.5 text-sm sm:text-base text-[#CBD5E1] leading-relaxed font-light">
-              {content.biography.map((paragraph, idx) => (
+              {(Array.isArray(content.biography) && content.biography.length > 0 
+                ? content.biography 
+                : ABOUT_CONTENT.biography
+              ).map((paragraph, idx) => (
                 <p key={idx}>{paragraph}</p>
               ))}
             </div>
@@ -163,18 +169,18 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {content.techStack.map((group) => (
+                {(content.techStack || []).map((group, groupIdx) => (
                   <div
-                    key={group.category}
+                    key={group.category || groupIdx}
                     className="p-3.5 rounded-xl bg-[#050816] border border-white/5 space-y-1.5"
                   >
                     <div className="text-xs font-mono font-semibold text-[#38BDF8]">
-                      {group.category}
+                      {group.category || 'Proficiencies'}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {group.items.map((item) => (
+                      {(group.items || []).map((item, itemIdx) => (
                         <span
-                          key={item}
+                          key={typeof item === 'string' ? item : itemIdx}
                           className="px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono bg-[#07101F] text-[#CBD5E1] border border-white/5"
                         >
                           {item}

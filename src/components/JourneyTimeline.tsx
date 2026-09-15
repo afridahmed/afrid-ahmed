@@ -19,7 +19,21 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
     ? (milestones as any).milestones
     : content?.milestones || [];
 
-  const [selectedYear, setSelectedYear] = useState<string>('2026');
+  const initialYear = () => {
+    const current = milestoneList.find(m => m.status === 'current');
+    if (current) return current.year;
+    return milestoneList[0]?.year || '2026';
+  };
+
+  const [selectedYear, setSelectedYear] = useState<string>(initialYear);
+
+  // Sync selectedYear if milestoneList changes and selectedYear is not in list
+  React.useEffect(() => {
+    if (milestoneList.length > 0 && !milestoneList.some(m => m.year === selectedYear)) {
+      const current = milestoneList.find(m => m.status === 'current');
+      setSelectedYear(current ? current.year : milestoneList[0].year);
+    }
+  }, [milestoneList, selectedYear]);
 
   const activeMilestone = milestoneList.find(m => m.year === selectedYear) || milestoneList[0];
 
@@ -151,7 +165,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                     <span>KEY TARGET MILESTONES</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {activeMilestone.pillars.map((pillar, i) => (
+                    {(activeMilestone.pillars || []).map((pillar, i) => (
                       <div
                         key={i}
                         className="p-2.5 rounded-lg bg-[#07101F] border border-white/5 flex items-start gap-2 text-xs text-[#CBD5E1]"
@@ -171,7 +185,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                     ACTIVE EXPLORATION DOMAINS
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {activeMilestone.focusAreas.map((area) => (
+                    {(activeMilestone.focusAreas || ['Systems Engineering', 'Software Architecture']).map((area) => (
                       <span
                         key={area}
                         className="px-2.5 py-1 rounded-md text-[11px] font-mono bg-[#07101F] text-[#CBD5E1] border border-white/5"

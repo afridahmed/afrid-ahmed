@@ -192,6 +192,15 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                     <span className="text-emerald-400">Every 15 min</span>
                   </div>
                 )}
+                {!['aquasense-x', 'naval-battle-simulator', 'ai-cli-chatbot', 'weather-automation'].includes(proj.id) && (
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#CBD5E1]">
+                    <span className="text-[#38BDF8] flex items-center gap-1">
+                      <Layers className="w-3 h-3" />
+                      <span>{proj.category.toUpperCase()}</span>
+                    </span>
+                    <span className="text-[#94A3B8]">{proj.technologies[0] || 'ENGINEERING'}</span>
+                  </div>
+                )}
               </div>
 
               {/* Title & Subtitle */}
@@ -512,6 +521,41 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                       <span className="text-[#94A3B8] text-[10px]">DOWNSTREAM SINK</span>
                       <div className="text-lg font-bold text-white">Webhook Push</div>
                       <span className="text-[#CBD5E1] text-[10px]">Encrypted Payload</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Projects Visualizer / Architecture Panel */}
+              {!['aquasense-x', 'naval-battle-simulator', 'ai-cli-chatbot', 'weather-automation'].includes(activeProject.id) && (
+                <div className="w-full rounded-2xl border border-white/10 bg-[#050816]/90 p-6 md:p-8 backdrop-blur-xl space-y-5">
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-[#38BDF8]" />
+                      <span className="font-mono text-xs tracking-widest text-[#38BDF8] uppercase">
+                        {activeProject.category} · ARCHITECTURAL SYSTEM
+                      </span>
+                    </div>
+                    <span className="font-mono text-xs text-[#38BDF8]">
+                      PROJ #{activeProject.number}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                    <div className="p-4 rounded-xl bg-[#03050B] border border-white/5 space-y-1">
+                      <span className="text-[#94A3B8] text-[10px]">CORE DOMAIN</span>
+                      <div className="text-base font-bold text-white">{activeProject.category}</div>
+                      <span className="text-[#38BDF8] text-[10px]">Production Tier</span>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[#03050B] border border-white/5 space-y-1">
+                      <span className="text-[#94A3B8] text-[10px]">PRIMARY STACK</span>
+                      <div className="text-base font-bold text-white">{activeProject.technologies.slice(0, 2).join(' · ') || 'System Design'}</div>
+                      <span className="text-emerald-400 text-[10px]">Verified Modules</span>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[#03050B] border border-white/5 space-y-1">
+                      <span className="text-[#94A3B8] text-[10px]">KEY DELIVERABLE</span>
+                      <div className="text-base font-bold text-white truncate">{activeProject.highlights[0] || activeProject.tagline || 'Engineered Solution'}</div>
+                      <span className="text-[#CBD5E1] text-[10px]">Active Architecture</span>
                     </div>
                   </div>
                 </div>

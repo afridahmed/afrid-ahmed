@@ -1,14 +1,29 @@
 import React from 'react';
 import { Mail, Linkedin, Github, Youtube, ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react';
-import { SITE_INFO } from '../data/siteContent';
+import { SITE_INFO, SOCIAL_LINKS } from '../data/siteContent';
+import { SiteInfo, SocialLink } from '../types';
 
-export const ContactSection: React.FC = () => {
+interface ContactSectionProps {
+  siteInfo?: SiteInfo;
+  socialLinks?: SocialLink[];
+}
+
+export const ContactSection: React.FC<ContactSectionProps> = ({
+  siteInfo = SITE_INFO,
+  socialLinks = SOCIAL_LINKS
+}) => {
+  // Map social links and primary email into contact channels
+  const emailLink = socialLinks.find(l => l.platform.toLowerCase() === 'email');
+  const linkedinLink = socialLinks.find(l => l.platform.toLowerCase() === 'linkedin');
+  const githubLink = socialLinks.find(l => l.platform.toLowerCase() === 'github');
+  const youtubeLink = socialLinks.find(l => l.platform.toLowerCase() === 'youtube');
+
   const contactChannels = [
     {
       id: 'email',
       label: 'EMAIL',
-      value: SITE_INFO.email,
-      href: `mailto:${SITE_INFO.email}`,
+      value: siteInfo.email,
+      href: emailLink?.url || `mailto:${siteInfo.email}`,
       icon: Mail,
       iconColor: 'text-[#38BDF8]',
       external: false
@@ -16,8 +31,8 @@ export const ContactSection: React.FC = () => {
     {
       id: 'linkedin',
       label: 'LINKEDIN',
-      value: 'linkedin.com',
-      href: 'https://linkedin.com',
+      value: linkedinLink?.label || 'linkedin.com',
+      href: linkedinLink?.url || 'https://linkedin.com',
       icon: Linkedin,
       iconColor: 'text-[#38BDF8]',
       external: true
@@ -25,8 +40,8 @@ export const ContactSection: React.FC = () => {
     {
       id: 'github',
       label: 'GITHUB',
-      value: '@afridaskar',
-      href: 'https://github.com/afridaskar',
+      value: githubLink?.label || '@afridaskar',
+      href: githubLink?.url || 'https://github.com/afridaskar',
       icon: Github,
       iconColor: 'text-[#38BDF8]',
       external: true
@@ -34,8 +49,8 @@ export const ContactSection: React.FC = () => {
     {
       id: 'youtube',
       label: 'YOUTUBE',
-      value: '@afridtech',
-      href: 'https://youtube.com',
+      value: youtubeLink?.label || '@afridtech',
+      href: youtubeLink?.url || 'https://youtube.com',
       icon: Youtube,
       iconColor: 'text-red-400',
       external: true

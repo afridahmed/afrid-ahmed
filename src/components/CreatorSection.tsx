@@ -6,42 +6,120 @@ import {
   Sparkles, 
   ArrowUpRight 
 } from 'lucide-react';
-import { CreatorVideo } from '../types';
+import { DbCreatorVideo, getDerivedYouTubeThumbnail } from '../services/creatorVideoService';
 import { CREATOR_CONTENT } from '../data/siteContent';
 import { FEATURED_VIDEO, ADDITIONAL_VIDEOS } from '../data/creatorContent';
 
-interface CreatorSectionProps {
-  videos?: CreatorVideo[];
+export interface CreatorSectionProps {
+  videos?: DbCreatorVideo[];
+  featuredVideo?: DbCreatorVideo | null;
+  archiveVideos?: DbCreatorVideo[];
 }
 
 export const CreatorSection: React.FC<CreatorSectionProps> = ({ 
-  videos = CREATOR_CONTENT.videos 
+  videos,
+  featuredVideo: propFeatured,
+  archiveVideos: propArchive
 }) => {
-  // 1 Featured Flagship Video
-  const featured = videos.find(v => v.isFeatured) || {
-    id: FEATURED_VIDEO.id,
-    title: FEATURED_VIDEO.title,
-    category: FEATURED_VIDEO.category,
-    duration: FEATURED_VIDEO.duration,
-    summary: FEATURED_VIDEO.description,
-    description: FEATURED_VIDEO.description,
-    youtubeUrl: FEATURED_VIDEO.youtubeUrl,
-    isFeatured: true
+  // Determine featured video:
+  // 1. propFeatured if provided
+  // 2. video with is_featured === true from videos array
+  // 3. first video in videos array
+  // 4. static fallback FEATURED_VIDEO
+  let featured: {
+    id: string;
+    title: string;
+    category: string;
+    duration: string;
+    summary: string;
+    youtubeUrl: string;
+    thumbnailUrl: string;
+    videoId: string;
   };
 
-  // Exactly 4 Additional Archive Videos
-  const archiveVideos = (videos.filter(v => v.id !== featured.id).slice(0, 4).length === 4
-    ? videos.filter(v => v.id !== featured.id).slice(0, 4)
-    : ADDITIONAL_VIDEOS
-  ).map((v, i) => ({
-    id: v.id,
-    title: v.title,
-    category: v.category,
-    duration: v.duration,
-    summary: (v as any).description || (v as any).summary || '',
-    youtubeUrl: v.youtubeUrl || 'https://youtube.com',
-    viewsPlaceholder: (v as any).viewsPlaceholder || `Release 0${i + 1}`
-  }));
+  if (propFeatured) {
+    featured = {
+      id: propFeatured.id,
+      title: propFeatured.title,
+      category: propFeatured.category,
+      duration: propFeatured.duration,
+      summary: (propFeatured as any).summary || (propFeatured as any).description || propFeatured.title,
+      youtubeUrl: propFeatured.youtube_url || 'https://youtube.com',
+      thumbnailUrl: propFeatured.thumbnail_url || (propFeatured.video_id ? getDerivedYouTubeThumbnail(propFeatured.video_id) : ''),
+      videoId: propFeatured.video_id || '',
+    };
+  } else if (videos && videos.length > 0) {
+    const found = videos.find(v => v.is_featured) || videos[0];
+    featured = {
+      id: found.id,
+      title: found.title,
+      category: found.category,
+      duration: found.duration,
+      summary: (found as any).summary || (found as any).description || found.title,
+      youtubeUrl: found.youtube_url || 'https://youtube.com',
+      thumbnailUrl: found.thumbnail_url || (found.video_id ? getDerivedYouTubeThumbnail(found.video_id) : ''),
+      videoId: found.video_id || '',
+    };
+  } else {
+    featured = {
+      id: FEATURED_VIDEO.id,
+      title: FEATURED_VIDEO.title,
+      category: FEATURED_VIDEO.category,
+      duration: FEATURED_VIDEO.duration,
+      summary: FEATURED_VIDEO.description,
+      youtubeUrl: FEATURED_VIDEO.youtubeUrl,
+      thumbnailUrl: FEATURED_VIDEO.thumbnail || '',
+      videoId: '',
+    };
+  }
+
+  // Determine archive videos (first 4 published archive videos):
+  let archive: Array<{
+    id: string;
+    title: string;
+    category: string;
+    duration: string;
+    youtubeUrl: string;
+    thumbnailUrl: string;
+    videoId: string;
+    label: string;
+  }>;
+
+  if (propArchive && propArchive.length > 0) {
+    archive = propArchive.slice(0, 4).map((v, i) => ({
+      id: v.id,
+      title: v.title,
+      category: v.category,
+      duration: v.duration,
+      youtubeUrl: v.youtube_url || 'https://youtube.com',
+      thumbnailUrl: v.thumbnail_url || (v.video_id ? getDerivedYouTubeThumbnail(v.video_id) : ''),
+      videoId: v.video_id || '',
+      label: `Release 0${i + 1}`
+    }));
+  } else if (videos && videos.length > 0) {
+    const remaining = videos.filter(v => v.id !== featured.id).slice(0, 4);
+    archive = (remaining.length > 0 ? remaining : videos.slice(1, 5)).map((v, i) => ({
+      id: v.id,
+      title: v.title,
+      category: v.category,
+      duration: v.duration,
+      youtubeUrl: v.youtube_url || 'https://youtube.com',
+      thumbnailUrl: v.thumbnail_url || (v.video_id ? getDerivedYouTubeThumbnail(v.video_id) : ''),
+      videoId: v.video_id || '',
+      label: `Release 0${i + 1}`
+    }));
+  } else {
+    archive = ADDITIONAL_VIDEOS.slice(0, 4).map((v, i) => ({
+      id: v.id,
+      title: v.title,
+      category: v.category,
+      duration: v.duration,
+      youtubeUrl: v.youtubeUrl || 'https://youtube.com',
+      thumbnailUrl: v.thumbnail || '',
+      videoId: '',
+      label: `Release 0${i + 1}`
+    }));
+  }
 
   return (
     <section id="creator" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10">
@@ -123,7 +201,7 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
                 {featured.title}
               </h3>
               <p className="text-xs text-[#CBD5E1] font-light line-clamp-2">
-                {featured.summary || featured.description}
+                {featured.summary}
               </p>
 
               <a
@@ -142,12 +220,12 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
           {/* 4 Extra Archive Videos: Horizontal Swipe Strip */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between text-xs font-mono text-[#94A3B8]">
-              <span>ADDITIONAL PRODUCTIONS (4)</span>
+              <span>ADDITIONAL PRODUCTIONS ({archive.length})</span>
               <span className="text-[10px] text-[#38BDF8]">SWIPE →</span>
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory -mx-4 px-4 scrollbar-none">
-              {archiveVideos.map((video) => (
+              {archive.map((video) => (
                 <a
                   key={video.id}
                   href={video.youtubeUrl}
@@ -157,10 +235,20 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
                 >
                   {/* Compact Thumb */}
                   <div className="relative aspect-video rounded-lg bg-[#03050B] flex items-center justify-center border border-white/5 overflow-hidden">
-                    <div className="w-8 h-8 rounded-full bg-[#38BDF8]/20 border border-[#38BDF8]/40 text-[#38BDF8] flex items-center justify-center group-hover:bg-[#38BDF8] group-hover:text-[#03050B] transition-colors">
+                    {video.thumbnailUrl && (
+                      <img
+                        src={video.thumbnailUrl}
+                        alt={video.title}
+                        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div className="relative z-10 w-8 h-8 rounded-full bg-[#38BDF8]/20 border border-[#38BDF8]/40 text-[#38BDF8] flex items-center justify-center group-hover:bg-[#38BDF8] group-hover:text-[#03050B] transition-colors">
                       <Play className="w-3.5 h-3.5 fill-current translate-x-0.5" />
                     </div>
-                    <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-[#03050B]/90 font-mono text-[9px] text-white">
+                    <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-[#03050B]/90 font-mono text-[9px] text-white z-10">
                       {video.duration}
                     </span>
                   </div>
@@ -175,7 +263,7 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
                   </div>
 
                   <div className="pt-1.5 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-[#94A3B8]">
-                    <span>WATCH VIDEO</span>
+                    <span>{video.label}</span>
                     <ArrowUpRight className="w-3 h-3 text-[#38BDF8]" />
                   </div>
                 </a>
@@ -254,7 +342,7 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
                   </h3>
 
                   <p className="text-sm text-[#CBD5E1] leading-relaxed">
-                    {featured.summary || featured.description}
+                    {featured.summary}
                   </p>
 
                   <div className="flex flex-wrap gap-1.5 pt-2">
@@ -293,15 +381,15 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono tracking-widest text-[#94A3B8] uppercase">
-                ARCHIVE & FUTURE PRODUCTIONS (4)
+                ARCHIVE & FUTURE PRODUCTIONS ({archive.length})
               </span>
               <span className="text-xs font-mono text-[#38BDF8]">
                 DIRECT YOUTUBE LINKS
               </span>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
-              {archiveVideos.map((video) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {archive.map((video) => (
                 <a
                   key={video.id}
                   href={video.youtubeUrl}
@@ -310,10 +398,20 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
                   className="group relative rounded-xl border border-white/10 bg-[#050816]/70 hover:border-[#38BDF8]/40 hover:bg-[#07101F] transition-all duration-300 p-4 flex flex-col justify-between cursor-pointer space-y-3 backdrop-blur-sm block"
                 >
                   <div className="relative aspect-video rounded-lg bg-[#03050B] border border-white/5 overflow-hidden flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-white/10 group-hover:bg-[#38BDF8] group-hover:text-[#03050B] text-white flex items-center justify-center transition-all duration-300">
+                    {video.thumbnailUrl && (
+                      <img
+                        src={video.thumbnailUrl}
+                        alt={video.title}
+                        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div className="relative z-10 w-10 h-10 rounded-full bg-white/10 group-hover:bg-[#38BDF8] group-hover:text-[#03050B] text-white flex items-center justify-center transition-all duration-300">
                       <Play className="w-4 h-4 translate-x-0.5 fill-current" />
                     </div>
-                    <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-[#03050B]/90 font-mono text-[10px] text-white">
+                    <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-[#03050B]/90 font-mono text-[10px] text-white z-10">
                       {video.duration}
                     </span>
                   </div>
@@ -328,7 +426,7 @@ export const CreatorSection: React.FC<CreatorSectionProps> = ({
                   </div>
 
                   <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-[#94A3B8]">
-                    <span>{video.viewsPlaceholder}</span>
+                    <span>{video.label}</span>
                     <span className="text-[#38BDF8] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                       WATCH <ArrowUpRight className="w-3 h-3" />
                     </span>

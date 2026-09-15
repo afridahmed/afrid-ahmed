@@ -1,8 +1,17 @@
 import React from 'react';
 import { ArrowUp, Github, Linkedin, Youtube, Mail } from 'lucide-react';
 import { SOCIAL_LINKS, SITE_INFO } from '../data/siteContent';
+import { SiteInfo, SocialLink } from '../types';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  siteInfo?: SiteInfo;
+  socialLinks?: SocialLink[];
+}
+
+export const Footer: React.FC<FooterProps> = ({
+  siteInfo = SITE_INFO,
+  socialLinks = SOCIAL_LINKS
+}) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -21,7 +30,7 @@ export const Footer: React.FC = () => {
         {/* Brand Wordmark & Role */}
         <div className="space-y-1">
           <div className="font-display font-black text-2xl sm:text-3xl tracking-[0.22em] text-white">
-            {SITE_INFO.brandName}
+            {siteInfo.brandName || SITE_INFO.brandName}
           </div>
           <p className="font-mono text-xs sm:text-sm tracking-wider text-[#38BDF8]">
             Engineer · Creator · Future Builder
@@ -30,7 +39,7 @@ export const Footer: React.FC = () => {
 
         {/* Social Links */}
         <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-5 font-mono text-xs text-[#CBD5E1]">
-          {SOCIAL_LINKS.map((link) => (
+          {socialLinks.map((link) => (
             <a
               key={link.platform}
               href={link.url}
@@ -38,10 +47,10 @@ export const Footer: React.FC = () => {
               rel="noopener noreferrer"
               className="min-h-[44px] px-3 py-2 hover:text-[#38BDF8] transition-colors flex items-center gap-1.5"
             >
-              {link.platform === 'GitHub' && <Github className="w-3.5 h-3.5" />}
-              {link.platform === 'LinkedIn' && <Linkedin className="w-3.5 h-3.5" />}
-              {link.platform === 'YouTube' && <Youtube className="w-3.5 h-3.5" />}
-              {link.platform === 'Email' && <Mail className="w-3.5 h-3.5" />}
+              {link.platform.toLowerCase() === 'github' && <Github className="w-3.5 h-3.5" />}
+              {link.platform.toLowerCase() === 'linkedin' && <Linkedin className="w-3.5 h-3.5" />}
+              {link.platform.toLowerCase() === 'youtube' && <Youtube className="w-3.5 h-3.5" />}
+              {link.platform.toLowerCase() === 'email' && <Mail className="w-3.5 h-3.5" />}
               <span>{link.platform}</span>
             </a>
           ))}

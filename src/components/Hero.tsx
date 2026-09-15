@@ -112,10 +112,13 @@ export const Hero: React.FC<HeroProps> = ({
 
           <div className="relative w-20 h-20 min-[360px]:w-24 min-[360px]:h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border border-[#38BDF8]/30 shadow-[0_0_24px_rgba(56,189,248,0.25)] flex items-center justify-center">
             <img
-              src={content.photo}
+              src={content.photo || '/images/afrid-hero.jpg'}
               alt={content.name}
               className="w-full h-full object-cover object-center filter contrast-105 brightness-95"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/images/afrid-hero.jpg';
+              }}
             />
             {/* Dark optical vignette for cosmic integration */}
             <div 
