@@ -351,7 +351,7 @@ const ProjectHeaderContent: React.FC<ProjectHeaderContentProps> = React.memo(({
           ARCHITECTURAL STACK
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {project.technologies.map((tech) => (
+          {(project.technologies || []).map((tech) => (
             <span
               key={tech}
               className="px-2.5 py-1 rounded text-xs font-mono bg-[#07101F] text-[#CBD5E1] border border-white/5"
@@ -368,7 +368,7 @@ const ProjectHeaderContent: React.FC<ProjectHeaderContentProps> = React.memo(({
           ENGINEERING HIGHLIGHTS
         </div>
         <ul className="space-y-1.5 text-xs text-[#CBD5E1] font-mono">
-          {project.highlights.map((h, i) => (
+          {(project.highlights || []).map((h, i) => (
             <li key={i} className="flex items-start gap-2">
               <span className="text-[#38BDF8] mt-0.5">›</span>
               <span>{h}</span>
@@ -422,7 +422,20 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   projects = PROJECTS,
   onWorkTogether
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // 1. SINGLE SOURCE OF TRUTH: filter published projects strictly before state & carousel calculations
+  const visibleProjects = useMemo(() => {
+    return (projects || [])
+      .filter((p: any) => p.is_published !== false && p.isPublished !== false)
+      .sort((a: any, b: any) => {
+        const orderA = a.displayOrder ?? a.display_order ?? 0;
+        const orderB = b.displayOrder ?? b.display_order ?? 0;
+        return orderA - orderB;
+      });
+  }, [projects]);
+
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(() => {
+    return visibleProjects[0]?.id || null;
+  });
   const [direction, setDirection] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -443,36 +456,72 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
     return () => mediaQuery.removeEventListener('change', listener);
   }, []);
 
-  // Safely clamp active index within current projects length bounds
-  const safeIndex = useMemo(() => {
-    return Math.min(Math.max(0, currentIndex), Math.max(0, projects.length - 1));
-  }, [currentIndex, projects.length]);
+  // Compute active index safely based on activeProjectId in visibleProjects
+  const activeIndex = useMemo(() => {
+    if (visibleProjects.length === 0) return -1;
+    const found = visibleProjects.findIndex((p) => p.id === activeProjectId);
+    if (found !== -1) return found;
+    return 0;
+  }, [visibleProjects, activeProjectId]);
 
   const activeProject = useMemo(() => {
-    return projects[safeIndex] || projects[0];
-  }, [projects, safeIndex]);
+    if (activeIndex === -1 || visibleProjects.length === 0) return null;
+    return visibleProjects[activeIndex] || null;
+  }, [visibleProjects, activeIndex]);
+
+  // Track previous active index to select nearest valid successor if active project is unpublished
+  const prevIndexRef = useRef<number>(activeIndex);
+
+  // Synchronize active project when visibleProjects changes (e.g. project unpublished or reordered)
+  useEffect(() => {
+    const prevIdx = prevIndexRef.current;
+
+    if (visibleProjects.length === 0) {
+      if (activeProjectId !== null) {
+        setActiveProjectId(null);
+      }
+      prevIndexRef.current = -1;
+      return;
+    }
+
+    // Check if the currently active project is still published
+    const stillVisible = visibleProjects.some((p) => p.id === activeProjectId);
+
+    if (!stillVisible) {
+      // The active project was hidden or deleted!
+      // Select the nearest valid successor (or predecessor)
+      const targetIdx = Math.min(Math.max(0, prevIdx >= 0 ? prevIdx : 0), visibleProjects.length - 1);
+      const replacement = visibleProjects[targetIdx];
+      if (replacement) {
+        setDirection(0);
+        setActiveProjectId(replacement.id);
+        prevIndexRef.current = targetIdx;
+      }
+    } else {
+      // Current project is still visible; update prevIndexRef to its new position in the array
+      const currentIdx = visibleProjects.findIndex((p) => p.id === activeProjectId);
+      if (currentIdx !== -1) {
+        prevIndexRef.current = currentIdx;
+      }
+    }
+  }, [visibleProjects, activeProjectId]);
 
   // Persistent Navigation Rail Track & Centering Architecture
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [trackTranslateX, setTrackTranslateX] = useState<number>(0);
   const [hasMounted, setHasMounted] = useState<boolean>(false);
 
   const updateTrackPosition = useCallback(() => {
-    if (!viewportRef.current || !trackRef.current) return;
+    if (!viewportRef.current || !trackRef.current || !activeProject) return;
     const viewport = viewportRef.current;
-    const track = trackRef.current;
-    const activeItem = itemRefs.current[safeIndex];
+    const activeItem = itemRefs.current.get(activeProject.id);
     if (!activeItem) return;
 
-    const trackRect = track.getBoundingClientRect();
-    const itemRect = activeItem.getBoundingClientRect();
-
-    // Since both item and track share the same translation, itemRect.left - trackRect.left
-    // yields the true untransformed horizontal offset inside the track layout
-    const itemLeft = itemRect.left - trackRect.left;
-    const itemWidth = itemRect.width;
+    // Use transform-independent layout properties (offsetLeft, offsetWidth)
+    const itemLeft = activeItem.offsetLeft;
+    const itemWidth = activeItem.offsetWidth;
     const itemCenter = itemLeft + itemWidth / 2;
 
     const viewportWidth = viewport.clientWidth;
@@ -480,12 +529,14 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
 
     const targetX = viewportCenter - itemCenter;
     setTrackTranslateX(targetX);
-  }, [safeIndex]);
+  }, [activeProject]);
 
-  // Synchronously compute the centered translation whenever safeIndex or projects change
+  // Synchronously compute the centered translation whenever activeIndex, activeProject, or visibleProjects change
   useLayoutEffect(() => {
     updateTrackPosition();
-  }, [safeIndex, projects, updateTrackPosition]);
+    const rafId = requestAnimationFrame(updateTrackPosition);
+    return () => cancelAnimationFrame(rafId);
+  }, [activeIndex, activeProject, visibleProjects, updateTrackPosition]);
 
   // Enable animated spring transitions only after the initial layout is positioned
   useEffect(() => {
@@ -511,37 +562,42 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
 
   // Preload adjacent project images if any exist
   useEffect(() => {
-    const nextIdx = safeIndex < projects.length - 1 ? safeIndex + 1 : 0;
-    const prevIdx = safeIndex > 0 ? safeIndex - 1 : projects.length - 1;
-    [projects[nextIdx]?.imageUrl, projects[prevIdx]?.imageUrl].forEach((url) => {
+    if (visibleProjects.length <= 1 || activeIndex === -1) return;
+    const nextIdx = activeIndex < visibleProjects.length - 1 ? activeIndex + 1 : 0;
+    const prevIdx = activeIndex > 0 ? activeIndex - 1 : visibleProjects.length - 1;
+    [visibleProjects[nextIdx]?.imageUrl, visibleProjects[prevIdx]?.imageUrl].forEach((url) => {
       if (url && typeof Image !== 'undefined') {
         const img = new Image();
         img.src = url;
       }
     });
-  }, [safeIndex, projects]);
+  }, [activeIndex, visibleProjects]);
 
   // Unified single-batch navigation handler
   const goToProject = useCallback((newIndex: number) => {
-    if (newIndex === safeIndex || newIndex < 0 || newIndex >= projects.length) return;
-    setDirection(newIndex > safeIndex ? 1 : -1);
-    setCurrentIndex(newIndex);
-  }, [safeIndex, projects.length]);
+    if (newIndex < 0 || newIndex >= visibleProjects.length) return;
+    const target = visibleProjects[newIndex];
+    if (!target || target.id === activeProjectId) return;
+    setDirection(newIndex > activeIndex ? 1 : -1);
+    setActiveProjectId(target.id);
+    prevIndexRef.current = newIndex;
+  }, [activeIndex, activeProjectId, visibleProjects]);
 
   const handleNext = useCallback(() => {
-    if (safeIndex < projects.length - 1) {
-      goToProject(safeIndex + 1);
+    if (activeIndex >= 0 && activeIndex < visibleProjects.length - 1) {
+      goToProject(activeIndex + 1);
     }
-  }, [safeIndex, projects.length, goToProject]);
+  }, [activeIndex, visibleProjects.length, goToProject]);
 
   const handlePrev = useCallback(() => {
-    if (safeIndex > 0) {
-      goToProject(safeIndex - 1);
+    if (activeIndex > 0) {
+      goToProject(activeIndex - 1);
     }
-  }, [safeIndex, goToProject]);
+  }, [activeIndex, goToProject]);
 
   // Keyboard navigation for tablist / carousel
   const handleRailKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (visibleProjects.length <= 1) return;
     if (e.key === 'ArrowRight') {
       e.preventDefault();
       handleNext();
@@ -553,9 +609,9 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
       goToProject(0);
     } else if (e.key === 'End') {
       e.preventDefault();
-      goToProject(projects.length - 1);
+      goToProject(visibleProjects.length - 1);
     }
-  }, [handleNext, handlePrev, goToProject, projects.length]);
+  }, [handleNext, handlePrev, goToProject, visibleProjects.length]);
 
   const runTerminalCommand = useCallback((cmd: string) => {
     if (cmd === 'status') {
@@ -579,10 +635,11 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   }, []);
 
   const isCoreProject = useMemo(() => {
+    if (!activeProject) return false;
     return ['aquasense-x', 'naval-battle-simulator', 'ai-cli-chatbot', 'weather-automation'].includes(activeProject.id);
-  }, [activeProject.id]);
+  }, [activeProject]);
 
-  const activeVisualizerId = isCoreProject ? activeProject.id : 'dynamic-project';
+  const activeVisualizerId = activeProject ? (isCoreProject ? activeProject.id : 'dynamic-project') : '';
 
   return (
     <section id="work" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10 overflow-x-hidden">
@@ -607,10 +664,10 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
             </span>
             <div className="px-3 py-1 rounded-full bg-[#07101F] border border-white/10 font-mono text-xs">
               <span className="text-[#38BDF8] font-bold">
-                {activeProject.number || (safeIndex < 9 ? `0${safeIndex + 1}` : `${safeIndex + 1}`)}
+                {activeProject ? (activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)) : '--'}
               </span>
               <span className="text-white/20 mx-1.5">/</span>
-              <span className="text-[#94A3B8]">{projects.length < 10 ? `0${projects.length}` : projects.length}</span>
+              <span className="text-[#94A3B8]">{visibleProjects.length < 10 ? `0${visibleProjects.length}` : visibleProjects.length}</span>
             </div>
           </div>
         </div>
@@ -630,7 +687,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
           <button
             type="button"
             onClick={handlePrev}
-            disabled={safeIndex === 0}
+            disabled={activeIndex <= 0}
             aria-label="Previous project"
             className="shrink-0 p-2 sm:p-2.5 rounded-full border border-white/10 bg-[#07101F]/90 backdrop-blur-md text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1528] active:scale-95 disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-[#07101F]/90 disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] z-20"
           >
@@ -666,15 +723,19 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                     }
               }
             >
-              {projects.map((project, idx) => {
-                const isActive = idx === safeIndex;
-                const isNeighbor = Math.abs(idx - safeIndex) === 1;
+              {visibleProjects.map((project, idx) => {
+                const isActive = project.id === activeProjectId;
+                const isNeighbor = Math.abs(idx - activeIndex) === 1;
 
                 return (
                   <motion.button
                     key={project.id || idx}
                     ref={(el) => {
-                      itemRefs.current[idx] = el;
+                      if (el) {
+                        itemRefs.current.set(project.id, el);
+                      } else {
+                        itemRefs.current.delete(project.id);
+                      }
                     }}
                     role="tab"
                     id={`project-tab-${project.id || idx}`}
@@ -765,7 +826,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
           <button
             type="button"
             onClick={handleNext}
-            disabled={safeIndex === projects.length - 1}
+            disabled={activeIndex >= visibleProjects.length - 1}
             aria-label="Next project"
             className="shrink-0 p-2 sm:p-2.5 rounded-full border border-white/10 bg-[#07101F]/90 backdrop-blur-md text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1528] active:scale-95 disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-[#07101F]/90 disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] z-20"
           >
@@ -780,120 +841,132 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
       <div 
         id="active-project-panel" 
         role="tabpanel" 
-        aria-labelledby={`project-tab-${activeProject.id || safeIndex}`}
+        aria-labelledby={activeProject ? `project-tab-${activeProject.id}` : undefined}
         className="w-full max-w-6xl mx-auto min-h-[620px] sm:min-h-[580px]"
       >
-        <div className="space-y-6 sm:space-y-8">
-          
-          {/* Top Project Identification Header (Directional PopLayout crossfade) */}
-          <div className="relative min-h-[260px] sm:min-h-[220px]">
-            <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-              <motion.div
-                key={activeProject.id || safeIndex}
-                custom={direction}
-                variants={{
-                  enter: (dir: number) => ({
-                    x: reducedMotion ? 0 : dir > 0 ? 24 : -24,
-                    opacity: 0,
-                  }),
-                  center: {
-                    x: 0,
-                    opacity: 1,
-                    transition: reducedMotion
-                      ? { duration: 0.12 }
-                      : {
-                          x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
-                          opacity: { duration: 0.22, ease: 'easeOut' },
-                        },
-                  },
-                  exit: (dir: number) => ({
-                    x: reducedMotion ? 0 : dir > 0 ? -24 : 24,
-                    opacity: 0,
-                    transition: reducedMotion
-                      ? { duration: 0.1 }
-                      : {
-                          x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
-                          opacity: { duration: 0.18, ease: 'easeIn' },
-                        },
-                  }),
-                }}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                style={{ willChange: 'transform, opacity' }}
-                className="w-full"
-              >
-                <ProjectHeaderContent
-                  project={activeProject}
-                  totalProjects={projects.length}
-                  index={safeIndex}
-                />
-              </motion.div>
-            </AnimatePresence>
+        {!activeProject ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center border border-white/10 rounded-2xl bg-[#07101F]/60 backdrop-blur-md">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] animate-pulse mb-3" />
+            <p className="text-white font-display font-semibold text-lg mb-1">
+              No Published Projects
+            </p>
+            <p className="text-sm font-mono text-[#94A3B8] max-w-md">
+              Projects are currently being updated in the command center. Check back shortly.
+            </p>
           </div>
-
-          {/* Interactive Functional Showcase Zone for Desktop (Permanently mounted shells) */}
-          <div className="w-full pt-4 min-h-[380px] sm:min-h-[420px] relative">
+        ) : (
+          <div className="space-y-6 sm:space-y-8">
             
-            {/* Project 01: AquaSense X */}
-            <VisualizerSlot
-              id="aquasense-x"
-              activeId={activeVisualizerId}
-              direction={direction}
-              reducedMotion={reducedMotion}
-            >
-              <AquaSenseShowcase />
-            </VisualizerSlot>
+            {/* Top Project Identification Header (Directional PopLayout crossfade) */}
+            <div className="relative min-h-[260px] sm:min-h-[220px]">
+              <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+                <motion.div
+                  key={activeProject.id}
+                  custom={direction}
+                  variants={{
+                    enter: (dir: number) => ({
+                      x: reducedMotion ? 0 : dir > 0 ? 24 : -24,
+                      opacity: 0,
+                    }),
+                    center: {
+                      x: 0,
+                      opacity: 1,
+                      transition: reducedMotion
+                        ? { duration: 0.12 }
+                        : {
+                            x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
+                            opacity: { duration: 0.22, ease: 'easeOut' },
+                          },
+                    },
+                    exit: (dir: number) => ({
+                      x: reducedMotion ? 0 : dir > 0 ? -24 : 24,
+                      opacity: 0,
+                      transition: reducedMotion
+                        ? { duration: 0.1 }
+                        : {
+                            x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
+                            opacity: { duration: 0.18, ease: 'easeIn' },
+                          },
+                    }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  style={{ willChange: 'transform, opacity' }}
+                  className="w-full"
+                >
+                  <ProjectHeaderContent
+                    project={activeProject}
+                    totalProjects={visibleProjects.length}
+                    index={activeIndex}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-            {/* Project 02: Naval Battle Simulator */}
-            <VisualizerSlot
-              id="naval-battle-simulator"
-              activeId={activeVisualizerId}
-              direction={direction}
-              reducedMotion={reducedMotion}
-            >
-              <NavalBattleShowcase />
-            </VisualizerSlot>
+            {/* Interactive Functional Showcase Zone for Desktop (Permanently mounted shells) */}
+            <div className="w-full pt-4 min-h-[380px] sm:min-h-[420px] relative">
+              
+              {/* Project 01: AquaSense X */}
+              <VisualizerSlot
+                id="aquasense-x"
+                activeId={activeVisualizerId}
+                direction={direction}
+                reducedMotion={reducedMotion}
+              >
+                <AquaSenseShowcase />
+              </VisualizerSlot>
 
-            {/* Project 03: AI CLI Chatbot */}
-            <VisualizerSlot
-              id="ai-cli-chatbot"
-              activeId={activeVisualizerId}
-              direction={direction}
-              reducedMotion={reducedMotion}
-            >
-              <AiCliChatbotShowcase
-                terminalOutput={terminalOutput}
-                onRunCommand={runTerminalCommand}
-              />
-            </VisualizerSlot>
+              {/* Project 02: Naval Battle Simulator */}
+              <VisualizerSlot
+                id="naval-battle-simulator"
+                activeId={activeVisualizerId}
+                direction={direction}
+                reducedMotion={reducedMotion}
+              >
+                <NavalBattleShowcase />
+              </VisualizerSlot>
 
-            {/* Project 04: Weather Automation */}
-            <VisualizerSlot
-              id="weather-automation"
-              activeId={activeVisualizerId}
-              direction={direction}
-              reducedMotion={reducedMotion}
-            >
-              <WeatherAutomationShowcase />
-            </VisualizerSlot>
+              {/* Project 03: AI CLI Chatbot */}
+              <VisualizerSlot
+                id="ai-cli-chatbot"
+                activeId={activeVisualizerId}
+                direction={direction}
+                reducedMotion={reducedMotion}
+              >
+                <AiCliChatbotShowcase
+                  terminalOutput={terminalOutput}
+                  onRunCommand={runTerminalCommand}
+                />
+              </VisualizerSlot>
 
-            {/* Dynamic Project Slot (CMS/Custom projects) */}
-            <VisualizerSlot
-              id="dynamic-project"
-              activeId={activeVisualizerId}
-              direction={direction}
-              reducedMotion={reducedMotion}
-            >
-              <DynamicProjectShowcase
-                project={activeProject}
-                index={safeIndex}
-              />
-            </VisualizerSlot>
+              {/* Project 04: Weather Automation */}
+              <VisualizerSlot
+                id="weather-automation"
+                activeId={activeVisualizerId}
+                direction={direction}
+                reducedMotion={reducedMotion}
+              >
+                <WeatherAutomationShowcase />
+              </VisualizerSlot>
+
+              {/* Dynamic Project Slot (CMS/Custom projects) */}
+              <VisualizerSlot
+                id="dynamic-project"
+                activeId={activeVisualizerId}
+                direction={direction}
+                reducedMotion={reducedMotion}
+              >
+                <DynamicProjectShowcase
+                  project={activeProject}
+                  index={activeIndex}
+                />
+              </VisualizerSlot>
+
+            </div>
 
           </div>
-
-        </div>
+        )}
       </div>
 
       {/* Concluding Work Collaboration Section: Compact Premium Statement with 3D Visualizer */}

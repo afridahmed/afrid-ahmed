@@ -81,6 +81,8 @@ export interface ProjectItem {
   liveUrl?: string;
   imageUrl?: string;
   isFlagship?: boolean;
+  isPublished?: boolean;
+  displayOrder?: number;
 }
 
 export interface SensorNode {

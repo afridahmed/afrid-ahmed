@@ -20,6 +20,7 @@ import {
   SOCIAL_LINKS
 } from './data/siteContent';
 import { HeroContent, AboutContent, SiteInfo, SocialLink, ProjectItem, JourneyMilestone } from './types';
+import { supabase } from './lib/supabase';
 import { 
   fetchPublicHeroContent, 
   fetchPublicAboutContent, 
@@ -77,7 +78,7 @@ export default function App() {
           if (hero) setHeroData(hero);
           if (about) setAboutData(about);
           if (settings) setSiteSettings(settings);
-          if (publishedProjects && publishedProjects.length > 0) {
+          if (publishedProjects !== undefined) {
             setProjectsData(publishedProjects);
           }
           if (creatorVideos) {
@@ -97,10 +98,49 @@ export default function App() {
 
     loadPublishedContent();
 
+    // Re-fetch whenever window gains focus (e.g. after updating Admin in another tab)
+    const handleWindowFocus = () => {
+      loadPublishedContent();
+    };
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Listen to real-time changes to the projects table in Supabase
+    const projectsChannel = supabase
+      .channel('public-projects-live-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'projects' },
+        async () => {
+          try {
+            const updated = await fetchPublicProjects();
+            if (isMounted && updated !== undefined) {
+              setProjectsData(updated);
+            }
+          } catch (err) {
+            console.warn('Live projects sync note:', err);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       isMounted = false;
+      window.removeEventListener('focus', handleWindowFocus);
+      supabase.removeChannel(projectsChannel);
     };
   }, []);
+
+  // When returning from /admin route to public home, refresh projects immediately
+  useEffect(() => {
+    const isCurrentlyAdmin = currentPath.startsWith('/admin') || currentPath.startsWith('#/admin') || currentPath.startsWith('#admin');
+    if (!isCurrentlyAdmin) {
+      fetchPublicProjects().then((projs) => {
+        if (projs !== undefined) {
+          setProjectsData(projs);
+        }
+      });
+    }
+  }, [currentPath]);
 
   // Detect user preference for reduced motion
   const [reducedMotion, setReducedMotion] = useState(() => {

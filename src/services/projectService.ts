@@ -68,6 +68,8 @@ export function mapDbToProjectItem(db: DbProject): ProjectItem {
     githubUrl: db.github_url || '',
     liveUrl: db.live_url || '',
     isFlagship: !!db.is_flagship,
+    isPublished: db.is_published ?? true,
+    displayOrder: db.display_order ?? 0,
   };
 }
 
@@ -76,11 +78,30 @@ export function mapDbToProjectItem(db: DbProject): ProjectItem {
 // =============================================================================
 
 /**
- * Fetches published projects sorted by display_order.
- * Returns static fallback PROJECTS if error or if zero published projects exist.
+ * Fetches published projects sorted by display_order from Supabase source of truth.
+ * Returns only projects where is_published === true.
+ * Returns empty array [] if all projects in the database are unpublished.
+ * Falls back to canonical static PROJECTS only if table has 0 records total or query errors.
  */
 export async function fetchPublicProjects(): Promise<ProjectItem[]> {
   try {
+    // 1. Check if the database projects table is completely empty (unseeded)
+    const { data: anyRow, error: checkError } = await supabase
+      .from('projects')
+      .select('id')
+      .limit(1);
+
+    if (checkError) {
+      console.warn('Public projects fetch note (using fallback):', checkError.message);
+      return PROJECTS;
+    }
+
+    if (!anyRow || anyRow.length === 0) {
+      // Table is empty in database; provide initial canonical projects fallback
+      return PROJECTS;
+    }
+
+    // 2. Query only published projects sorted by display_order
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -88,12 +109,13 @@ export async function fetchPublicProjects(): Promise<ProjectItem[]> {
       .order('display_order', { ascending: true });
 
     if (error) {
-      console.warn('Public projects fetch note (using fallback):', error.message);
-      return PROJECTS;
+      console.warn('Public projects query note:', error.message);
+      return [];
     }
 
     if (!data || data.length === 0) {
-      return PROJECTS;
+      // Table exists but all projects are unpublished
+      return [];
     }
 
     return (data as DbProject[]).map(mapDbToProjectItem);
