@@ -21,7 +21,8 @@ import {
   ArrowUpRight,
   RefreshCw,
   Copy,
-  Hash
+  Hash,
+  Image as ImageIcon
 } from 'lucide-react';
 import { 
   DbProject, 
@@ -36,6 +37,7 @@ import {
   reorderAdminProjects,
   importCanonicalProjects
 } from '../../services/projectService';
+import { ProjectMediaManager } from './ProjectMediaManager';
 
 // Helper to auto-generate a sensible URL-safe slug from title
 function generateSlug(title: string): string {
@@ -82,6 +84,9 @@ export const ProjectsEditor: React.FC = () => {
   // Delete confirmation modal state
   const [deleteCandidate, setDeleteCandidate] = useState<DbProject | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  // Project Media Stage Manager state
+  const [mediaManagerProject, setMediaManagerProject] = useState<DbProject | null>(null);
 
   // Load projects on mount
   useEffect(() => {
@@ -670,6 +675,16 @@ export const ProjectsEditor: React.FC = () => {
                       {proj.is_published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     </button>
 
+                    {/* Media Stage Manager Button */}
+                    <button
+                      onClick={() => setMediaManagerProject(proj)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono text-white transition-all cursor-pointer"
+                      title="Manage Project Media Stage"
+                    >
+                      <ImageIcon className="w-3.5 h-3.5 text-[#38BDF8]" />
+                      <span>MEDIA</span>
+                    </button>
+
                     {/* Edit Button */}
                     <button
                       onClick={() => handleOpenEdit(proj)}
@@ -1172,6 +1187,18 @@ export const ProjectsEditor: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. PROJECT MEDIA STAGE MANAGER MODAL                                      */}
+      {/* ========================================================================= */}
+      {mediaManagerProject && (
+        <ProjectMediaManager
+          project={mediaManagerProject}
+          isOpen={!!mediaManagerProject}
+          onClose={() => setMediaManagerProject(null)}
+          onMediaUpdated={loadProjects}
+        />
       )}
 
     </div>

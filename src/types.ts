@@ -67,6 +67,22 @@ export interface JourneyContent {
   milestones: JourneyMilestone[];
 }
 
+export type ProjectMediaType = 'image' | 'video';
+
+export interface ProjectMedia {
+  id: string;
+  projectId: string;
+  mediaType: ProjectMediaType;
+  mediaUrl: string;
+  caption?: string;
+  displayOrder: number;
+  isFeatured: boolean;
+  isPublished: boolean;
+  altText?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ProjectItem {
   id: string;
   number: string;
@@ -83,6 +99,7 @@ export interface ProjectItem {
   isFlagship?: boolean;
   isPublished?: boolean;
   displayOrder?: number;
+  media?: ProjectMedia[];
 }
 
 export interface SensorNode {
