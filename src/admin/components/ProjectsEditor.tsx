@@ -34,7 +34,7 @@ import {
   togglePublishAdminProject, 
   setFlagshipAdminProject, 
   reorderAdminProjects,
-  seedDefaultProjectsIfEmpty
+  importCanonicalProjects
 } from '../../services/projectService';
 
 // Helper to auto-generate a sensible URL-safe slug from title
@@ -51,6 +51,7 @@ export const ProjectsEditor: React.FC = () => {
   const [projects, setProjects] = useState<DbProject[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isImporting, setIsImporting] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Modal / Form state
@@ -91,10 +92,7 @@ export const ProjectsEditor: React.FC = () => {
     setIsLoading(true);
     setStatusMessage(null);
     try {
-      // 1. If empty, attempt seed
-      await seedDefaultProjectsIfEmpty();
-
-      // 2. Fetch projects
+      // Fetch projects from Supabase source of truth
       const { data, error } = await getAdminProjects();
       if (error) {
         setStatusMessage({ type: 'error', text: `Failed to load projects: ${error}` });
@@ -105,6 +103,41 @@ export const ProjectsEditor: React.FC = () => {
       setStatusMessage({ type: 'error', text: err.message || 'Error loading projects' });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Safe deliberate import of canonical static projects
+  const handleImportExistingProjects = async () => {
+    setIsImporting(true);
+    setStatusMessage(null);
+    try {
+      const result = await importCanonicalProjects();
+      if (!result.success) {
+        setStatusMessage({
+          type: 'error',
+          text: result.error || 'Failed to import projects. Please check console for details.',
+        });
+      } else {
+        if (result.count === 0) {
+          setStatusMessage({
+            type: 'success',
+            text: result.details?.[0] || 'All canonical projects already exist in Supabase (0 duplicates added).',
+          });
+        } else {
+          setStatusMessage({
+            type: 'success',
+            text: `Successfully imported ${result.count} canonical project(s) into Supabase!${result.skippedCount ? ` (${result.skippedCount} already existed and were preserved)` : ''}`,
+          });
+        }
+        await loadProjects();
+      }
+    } catch (err: any) {
+      setStatusMessage({
+        type: 'error',
+        text: err.message || 'Unexpected error importing canonical projects.',
+      });
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -256,9 +289,7 @@ export const ProjectsEditor: React.FC = () => {
         setStatusMessage({ type: 'success', text: `Project "${formTitle}" updated successfully!` });
       } else {
         // CREATE
-        const newId = finalSlug;
         const newPayload: DbProjectInsert = {
-          id: newId,
           slug: finalSlug,
           number: formNumber.trim() || '01',
           title: formTitle.trim(),
@@ -399,8 +430,22 @@ export const ProjectsEditor: React.FC = () => {
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
           <button
+            onClick={handleImportExistingProjects}
+            disabled={isImporting || isLoading}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer disabled:opacity-50"
+            title="Import or restore canonical projects safely"
+          >
+            {isImporting ? (
+              <Loader2 className="w-3.5 h-3.5 text-[#38BDF8] animate-spin" />
+            ) : (
+              <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
+            )}
+            <span>{isImporting ? 'IMPORTING...' : 'IMPORT CANONICAL'}</span>
+          </button>
+
+          <button
             onClick={loadProjects}
-            disabled={isLoading}
+            disabled={isLoading || isImporting}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer disabled:opacity-50"
             title="Refresh from Supabase"
           >
@@ -453,17 +498,37 @@ export const ProjectsEditor: React.FC = () => {
       ) : projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl border border-dashed border-white/15 bg-[#0E131F]/30 text-center">
           <FolderKanban className="w-12 h-12 text-[#38BDF8]/40 mb-3" />
-          <h3 className="text-lg font-bold text-white mb-1">No Projects Found in Database</h3>
+          <h3 className="text-xl font-bold text-white mb-1">Projects</h3>
           <p className="text-xs font-mono text-[#94A3B8] max-w-md mb-6">
-            Add a project manually or initialize the table with standard portfolio items.
+            No projects have been added to Supabase yet.
           </p>
-          <button
-            onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#38BDF8] text-[#080B11] text-xs font-mono font-bold"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create First Project</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <button
+              onClick={handleImportExistingProjects}
+              disabled={isImporting}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#38BDF8] hover:bg-[#60A5FA] text-[#080B11] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.25)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isImporting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Importing Projects...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Import Existing Projects</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleOpenAdd}
+              disabled={isImporting}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Project Manually</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">

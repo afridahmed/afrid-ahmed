@@ -26,7 +26,7 @@ export interface DbProject {
   updated_at?: string;
 }
 
-export type DbProjectInsert = Omit<DbProject, 'created_at' | 'updated_at'>;
+export type DbProjectInsert = Omit<DbProject, 'id' | 'created_at' | 'updated_at'> & { id?: string };
 export type DbProjectUpdate = Partial<DbProjectInsert>;
 
 // =============================================================================
@@ -34,14 +34,13 @@ export type DbProjectUpdate = Partial<DbProjectInsert>;
 // =============================================================================
 
 export const DEFAULT_DB_PROJECTS: DbProjectInsert[] = PROJECTS.map((proj, idx) => ({
-  id: proj.id,
   slug: proj.id,
-  number: proj.number,
+  number: proj.number || String(idx + 1).padStart(2, '0'),
   title: proj.title,
-  subtitle: proj.subtitle,
-  tagline: proj.tagline,
-  category: proj.category,
-  description: proj.description,
+  subtitle: proj.subtitle || '',
+  tagline: proj.tagline || '',
+  category: proj.category || 'Engineering',
+  description: proj.description || '',
   technologies: [...proj.technologies],
   highlights: [...proj.highlights],
   github_url: proj.githubUrl || '',
@@ -156,21 +155,38 @@ export async function createAdminProject(payload: DbProjectInsert): Promise<{ da
         .eq('is_flagship', true);
     }
 
-    // 3. Insert record
+    // 3. Prepare payload strictly with valid public.projects columns
+    const insertPayload: Record<string, any> = {
+      slug: payload.slug,
+      number: payload.number,
+      title: payload.title,
+      subtitle: payload.subtitle || '',
+      tagline: payload.tagline || '',
+      category: payload.category || 'Engineering',
+      description: payload.description || '',
+      technologies: Array.isArray(payload.technologies) ? payload.technologies : [],
+      highlights: Array.isArray(payload.highlights) ? payload.highlights : [],
+      github_url: payload.github_url || '',
+      live_url: payload.live_url || '',
+      is_flagship: !!payload.is_flagship,
+      display_order: payload.display_order,
+      is_published: payload.is_published,
+    };
+
+    if (payload.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payload.id)) {
+      insertPayload.id = payload.id;
+    }
+
     const { data, error } = await supabase
       .from('projects')
-      .insert({
-        ...payload,
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+      .insert(insertPayload)
+      .select();
 
     if (error) {
       return { data: null, error: error.message };
     }
 
-    return { data: data as DbProject };
+    return { data: (data?.[0] as DbProject) || null };
   } catch (err: any) {
     return { data: null, error: err.message || 'Failed to create project' };
   }
@@ -208,13 +224,22 @@ export async function updateAdminProject(id: string, payload: DbProjectUpdate): 
         .eq('is_flagship', true);
     }
 
-    // 3. Update record
+    // 3. Update record strictly with valid public.projects columns
+    const allowedKeys: (keyof DbProject)[] = [
+      'slug', 'number', 'title', 'subtitle', 'tagline', 'category',
+      'description', 'technologies', 'highlights', 'github_url',
+      'live_url', 'is_flagship', 'display_order', 'is_published'
+    ];
+    const updateData: Record<string, any> = {};
+    for (const key of allowedKeys) {
+      if (key in payload && (payload as any)[key] !== undefined) {
+        updateData[key] = (payload as any)[key];
+      }
+    }
+
     const { error } = await supabase
       .from('projects')
-      .update({
-        ...payload,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id);
 
     if (error) {
@@ -256,7 +281,6 @@ export async function togglePublishAdminProject(id: string, currentStatus: boole
       .from('projects')
       .update({ 
         is_published: !currentStatus,
-        updated_at: new Date().toISOString()
       })
       .eq('id', id);
 
@@ -287,7 +311,6 @@ export async function setFlagshipAdminProject(id: string): Promise<{ success: bo
       .from('projects')
       .update({ 
         is_flagship: true,
-        updated_at: new Date().toISOString()
       })
       .eq('id', id);
 
@@ -308,21 +331,15 @@ export async function reorderAdminProjects(
   orderedProjects: { id: string; display_order: number }[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Update each project's display_order
-    const updatePromises = orderedProjects.map((proj) =>
-      supabase
+    for (const proj of orderedProjects) {
+      const { error } = await supabase
         .from('projects')
-        .update({ 
-          display_order: proj.display_order,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', proj.id)
-    );
+        .update({ display_order: proj.display_order })
+        .eq('id', proj.id);
 
-    const results = await Promise.all(updatePromises);
-    const hasError = results.find(r => r.error);
-    if (hasError && hasError.error) {
-      return { success: false, error: hasError.error.message };
+      if (error) {
+        return { success: false, error: error.message };
+      }
     }
 
     return { success: true };
@@ -331,32 +348,292 @@ export async function reorderAdminProjects(
   }
 }
 
-/**
- * Seeds default projects into Supabase if table is empty.
- */
-export async function seedDefaultProjectsIfEmpty(): Promise<{ seeded: boolean; error?: string }> {
-  try {
-    const { count, error } = await supabase
-      .from('projects')
-      .select('*', { count: 'exact', head: true });
+export interface ImportProjectsResult {
+  success: boolean;
+  count: number;
+  skippedCount?: number;
+  error?: string;
+  details?: string[];
+  diagnostics?: {
+    userId?: string;
+    isAdmin: boolean;
+    preparedCount: number;
+    attemptedCount: number;
+    successfulCount: number;
+  };
+}
 
-    if (error) {
-      return { seeded: false, error: error.message };
+/**
+ * Imports canonical static projects into public.projects table.
+ * Requires deliberate administrator action.
+ * Idempotent & safe: inserts missing canonical projects, preserves existing rows,
+ * and avoids duplicate rows on repeated execution.
+ */
+export async function importCanonicalProjects(): Promise<ImportProjectsResult> {
+  const insertedRows: { id?: string; slug: string }[] = [];
+  const errors: string[] = [];
+
+  try {
+    // -------------------------------------------------------------------------
+    // STEP 2 & 3: EXPOSE DIAGNOSTICS & VERIFY ADMIN AUTHORIZATION
+    // -------------------------------------------------------------------------
+    console.log('[Projects Import Diagnostic] Initiating canonical projects import...');
+
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error('[Projects Import Diagnostic] Session retrieval error:', sessionError.message);
+      return { success: false, count: 0, error: `Authentication error: ${sessionError.message}` };
     }
 
-    if (count === 0) {
-      const { error: insertError } = await supabase
+    const userId = session?.user?.id;
+    console.log('[Projects Import Diagnostic] Authenticated user ID:', userId || 'None (no session)');
+
+    if (!session?.user) {
+      const authErr = 'Administrator session not found. Please log in to the admin panel.';
+      console.error('[Projects Import Diagnostic]', authErr);
+      return { success: false, count: 0, error: authErr };
+    }
+
+    // Verify existing admin authorization logic (matches AdminAuthContext)
+    let isAdmin = false;
+
+    // Approach A: Query public.admin_users directly
+    const { data: adminRecord, error: adminQueryError } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!adminQueryError && adminRecord && adminRecord.user_id === userId) {
+      isAdmin = true;
+    } else {
+      // Approach B: Query site_settings (protected by RLS private.is_admin())
+      const { data: testData, error: testError } = await supabase
+        .from('site_settings')
+        .select('id')
+        .limit(1);
+
+      isAdmin = !testError && Array.isArray(testData);
+    }
+
+    console.log('[Projects Import Diagnostic] Admin authorization result:', isAdmin);
+    if (!isAdmin) {
+      const authDenied = `Access Denied: Authenticated user (${userId}) is not authorized as an administrator in admin_users or RLS policy.`;
+      console.error('[Projects Import Diagnostic]', authDenied);
+      return {
+        success: false,
+        count: 0,
+        error: authDenied,
+        diagnostics: { userId, isAdmin: false, preparedCount: 0, attemptedCount: 0, successfulCount: 0 },
+      };
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP 4 & 5: MAP CANONICAL SOURCE TO STRICTLY ALLOWED COLUMNS
+    // -------------------------------------------------------------------------
+    // Strictly allowed columns in public.projects:
+    // slug, number, title, subtitle, tagline, category, description,
+    // technologies, highlights, github_url, live_url, is_flagship,
+    // display_order, is_published
+    // (NO id, NO created_at, NO updated_at, NO frontend-only fields)
+    const preparedProjects = PROJECTS.map((proj, idx) => ({
+      slug: String(proj.id).trim(),
+      number: String(proj.number || (idx + 1).toString().padStart(2, '0')).trim(),
+      title: String(proj.title).trim(),
+      subtitle: String(proj.subtitle || '').trim(),
+      tagline: String(proj.tagline || '').trim(),
+      category: String(proj.category || 'Engineering').trim(),
+      description: String(proj.description || '').trim(),
+      technologies: Array.isArray(proj.technologies) ? [...proj.technologies] : [],
+      highlights: Array.isArray(proj.highlights) ? [...proj.highlights] : [],
+      github_url: String(proj.githubUrl || '').trim(),
+      live_url: String(proj.liveUrl || '').trim(),
+      is_flagship: !!proj.isFlagship,
+      display_order: idx + 1,
+      is_published: true,
+    }));
+
+    // Ensure at most one flagship is designated among prepared projects
+    let flagshipAssigned = false;
+    for (const p of preparedProjects) {
+      if (p.is_flagship) {
+        if (!flagshipAssigned) {
+          flagshipAssigned = true;
+        } else {
+          p.is_flagship = false;
+        }
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP 6: CHECK EXISTING DATABASE ROWS TO AVOID DUPLICATES
+    // -------------------------------------------------------------------------
+    const { data: existingRows, error: fetchError } = await supabase
+      .from('projects')
+      .select('id, slug, is_flagship, display_order');
+
+    if (fetchError) {
+      console.error('[Projects Import Diagnostic] Querying existing projects failed:', {
+        code: fetchError.code,
+        message: fetchError.message,
+        details: fetchError.details,
+        hint: fetchError.hint,
+      });
+      return {
+        success: false,
+        count: 0,
+        error: `Database check failed: [${fetchError.code}] ${fetchError.message}`,
+      };
+    }
+
+    const existingSlugs = new Set((existingRows || []).map((r: any) => String(r.slug || '').toLowerCase().trim()));
+    const existingHasFlagship = (existingRows || []).some((r: any) => r.is_flagship);
+
+    // Identify which canonical projects are missing from the database
+    const toInsert = preparedProjects.filter((p) => !existingSlugs.has(p.slug.toLowerCase()));
+    const skippedCount = preparedProjects.length - toInsert.length;
+
+    console.log(
+      `[Projects Import Diagnostic] Canonical total: ${preparedProjects.length}, Already in DB: ${skippedCount}, To insert: ${toInsert.length}`
+    );
+
+    // If all canonical projects already exist in the database, return safe idempotence
+    if (toInsert.length === 0) {
+      const safeMsg = `All ${preparedProjects.length} canonical projects already exist in the database. 0 new projects inserted, ${skippedCount} skipped to prevent duplicates.`;
+      console.log('[Projects Import Diagnostic]', safeMsg);
+      return {
+        success: true,
+        count: 0,
+        skippedCount,
+        details: [safeMsg],
+        diagnostics: {
+          userId,
+          isAdmin,
+          preparedCount: preparedProjects.length,
+          attemptedCount: 0,
+          successfulCount: 0,
+        },
+      };
+    }
+
+    // If an existing record already has flagship set, unset flagship on new insertions
+    if (existingHasFlagship) {
+      for (const p of toInsert) {
+        p.is_flagship = false;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP 7: TEST INSERTION PROJECT-BY-PROJECT
+    // -------------------------------------------------------------------------
+    for (let i = 0; i < toInsert.length; i++) {
+      const projectPayload = toInsert[i];
+      console.log(
+        `[Projects Import Diagnostic] [Project ${i + 1}/${toInsert.length}] Inserting: "${projectPayload.title}" (slug: "${projectPayload.slug}", order: ${projectPayload.display_order}, flagship: ${projectPayload.is_flagship})`
+      );
+
+      const { data, error: insertError } = await supabase
         .from('projects')
-        .insert(DEFAULT_DB_PROJECTS);
+        .insert(projectPayload)
+        .select();
 
       if (insertError) {
-        return { seeded: false, error: insertError.message };
+        console.error(`[Projects Import Diagnostic] Insert FAILED for project "${projectPayload.title}" (${projectPayload.slug}):`, {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+        });
+
+        const errorDesc = `Failed inserting "${projectPayload.title}" (${projectPayload.slug}): [${insertError.code}] ${insertError.message}${insertError.details ? ` - ${insertError.details}` : ''}${insertError.hint ? ` (Hint: ${insertError.hint})` : ''}`;
+        errors.push(errorDesc);
+        // Break early on first error so partial insertions can be rolled back cleanly
+        break;
       }
-      return { seeded: true };
+
+      const insertedRow = data?.[0];
+      const insertedId = insertedRow?.id;
+      console.log(
+        `[Projects Import Diagnostic] Insert SUCCEEDED for "${projectPayload.title}" (${projectPayload.slug}) -> Generated ID: ${insertedId || 'assigned'}`
+      );
+      insertedRows.push({ id: insertedId, slug: projectPayload.slug });
     }
 
-    return { seeded: false };
+    // -------------------------------------------------------------------------
+    // ROLLBACK IF PARTIAL FAILURE OCCURRED
+    // -------------------------------------------------------------------------
+    if (errors.length > 0) {
+      if (insertedRows.length > 0) {
+        console.warn(`[Projects Import Diagnostic] Rolling back ${insertedRows.length} partially inserted project(s)...`);
+        for (const row of insertedRows) {
+          if (row.id) {
+            await supabase.from('projects').delete().eq('id', row.id);
+          } else {
+            await supabase.from('projects').delete().eq('slug', row.slug);
+          }
+        }
+        console.warn('[Projects Import Diagnostic] Rollback complete. Database cleaned.');
+      }
+
+      return {
+        success: false,
+        count: 0,
+        skippedCount,
+        error: errors.join('; '),
+        details: errors,
+        diagnostics: {
+          userId,
+          isAdmin,
+          preparedCount: preparedProjects.length,
+          attemptedCount: toInsert.length,
+          successfulCount: 0,
+        },
+      };
+    }
+
+    console.log(
+      `[Projects Import Diagnostic] SUCCESS: ${insertedRows.length} project(s) inserted, ${skippedCount} existing project(s) preserved.`
+    );
+
+    return {
+      success: true,
+      count: insertedRows.length,
+      skippedCount,
+      details: [`Successfully inserted ${insertedRows.length} canonical project(s) into database (${skippedCount} already existed).`],
+      diagnostics: {
+        userId,
+        isAdmin,
+        preparedCount: preparedProjects.length,
+        attemptedCount: toInsert.length,
+        successfulCount: insertedRows.length,
+      },
+    };
   } catch (err: any) {
-    return { seeded: false, error: err.message };
+    console.error('[Projects Import Diagnostic] Unexpected exception:', err);
+
+    // Rollback any inserted rows in case of unexpected exception
+    if (insertedRows.length > 0) {
+      for (const row of insertedRows) {
+        if (row.id) {
+          await supabase.from('projects').delete().eq('id', row.id);
+        } else {
+          await supabase.from('projects').delete().eq('slug', row.slug);
+        }
+      }
+    }
+
+    return {
+      success: false,
+      count: 0,
+      error: err.message || 'Unexpected exception during projects import',
+    };
   }
+}
+
+/**
+ * Legacy helper: delegates to importCanonicalProjects.
+ */
+export async function seedDefaultProjectsIfEmpty(): Promise<{ seeded: boolean; error?: string }> {
+  const result = await importCanonicalProjects();
+  return { seeded: result.success, error: result.error };
 }
