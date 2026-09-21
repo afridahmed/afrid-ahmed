@@ -6,7 +6,6 @@ import { HeroEditor } from './HeroEditor';
 import { AboutEditor } from './AboutEditor';
 import { ContactEditor } from './ContactEditor';
 import { ProjectsEditor } from './ProjectsEditor';
-import { YouTubeEditor } from './YouTubeEditor';
 import { JourneyEditor } from './JourneyEditor';
 import { MediaLibrary } from './MediaLibrary';
 import { 
@@ -14,7 +13,6 @@ import {
   Sparkles, 
   User, 
   FolderKanban, 
-  Video, 
   Compass, 
   Mail, 
   Image as ImageIcon, 
@@ -37,21 +35,20 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onNavigateHome }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, category: 'MAIN' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, category: 'ADMIN' },
     
     // CONTENT category
-    { id: 'hero', label: 'Hero Section', icon: Sparkles, category: 'CONTENT' },
+    { id: 'hero', label: 'Hero & Identity', icon: Sparkles, category: 'CONTENT' },
     { id: 'about', label: 'About Narrative', icon: User, category: 'CONTENT' },
     { id: 'projects', label: 'Work & Projects', icon: FolderKanban, category: 'CONTENT' },
-    { id: 'youtube', label: 'YouTube Creator', icon: Video, category: 'CONTENT' },
     { id: 'journey', label: 'Journey Timeline', icon: Compass, category: 'CONTENT' },
     { id: 'contact', label: 'Contact & Socials', icon: Mail, category: 'CONTENT' },
     
-    // MEDIA category
+    // STORAGE category
     { id: 'media', label: 'Media Library', icon: ImageIcon, category: 'STORAGE' },
     
-    // SETTINGS category
-    { id: 'settings', label: 'System Settings', icon: SettingsIcon, category: 'SYSTEM' },
+    // SITE SETTINGS category
+    { id: 'settings', label: 'Site Settings', icon: SettingsIcon, category: 'SITE' },
   ];
 
   const handleGoHome = (e: React.MouseEvent) => {
@@ -283,11 +280,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onNavigateHome }) => {
           {activeSection === 'hero' && <HeroEditor />}
           {activeSection === 'about' && <AboutEditor />}
           {activeSection === 'projects' && <ProjectsEditor />}
-          {activeSection === 'youtube' && <YouTubeEditor />}
           {activeSection === 'journey' && <JourneyEditor />}
-          {activeSection === 'contact' && <ContactEditor />}
+          {(activeSection === 'contact' || activeSection === 'settings') && <ContactEditor />}
           {activeSection === 'media' && <MediaLibrary />}
-          {!['dashboard', 'hero', 'about', 'projects', 'youtube', 'journey', 'contact', 'media'].includes(activeSection) && (
+          {!['dashboard', 'hero', 'about', 'projects', 'journey', 'contact', 'settings', 'media'].includes(activeSection) && (
             <AdminSectionPlaceholder sectionId={activeSection} />
           )}
         </main>

@@ -4,7 +4,6 @@ import { supabase } from '../../lib/supabase';
 import { 
   ShieldCheck, 
   FolderKanban, 
-  Video, 
   Compass, 
   FileCheck2, 
   Database, 
@@ -26,13 +25,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
 
   const [stats, setStats] = useState<{
     projectsCount: number | null;
-    videosCount: number | null;
     milestonesCount: number | null;
     mediaCount: number | null;
     isLoading: boolean;
   }>({
     projectsCount: null,
-    videosCount: null,
     milestonesCount: null,
     mediaCount: null,
     isLoading: true,
@@ -42,16 +39,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
     setStats((prev) => ({ ...prev, isLoading: true }));
     try {
       // Safely attempt count queries on existing tables
-      const [projRes, vidRes, journeyRes, mediaRes] = await Promise.allSettled([
+      const [projRes, journeyRes, mediaRes] = await Promise.allSettled([
         supabase.from('projects').select('*', { count: 'exact', head: true }),
-        supabase.from('creator_videos').select('*', { count: 'exact', head: true }),
         supabase.from('journey_milestones').select('*', { count: 'exact', head: true }),
         supabase.from('media').select('*', { count: 'exact', head: true }),
       ]);
 
       setStats({
         projectsCount: projRes.status === 'fulfilled' && projRes.value.count !== null ? projRes.value.count : 4,
-        videosCount: vidRes.status === 'fulfilled' && vidRes.value.count !== null ? vidRes.value.count : 5,
         milestonesCount: journeyRes.status === 'fulfilled' && journeyRes.value.count !== null ? journeyRes.value.count : 5,
         mediaCount: mediaRes.status === 'fulfilled' && mediaRes.value.count !== null ? mediaRes.value.count : 0,
         isLoading: false,
@@ -60,7 +55,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
       console.warn('Dashboard count fetch note:', err);
       setStats({
         projectsCount: 4,
-        videosCount: 5,
         milestonesCount: 5,
         mediaCount: 0,
         isLoading: false,
@@ -132,25 +126,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
           </div>
         </div>
 
-        {/* YouTube Videos Card */}
+        {/* Contact & Reach Card */}
         <div 
-          onClick={() => onSelectSection('youtube')}
+          onClick={() => onSelectSection('contact')}
           className="rounded-2xl border border-white/10 bg-[#0E131F]/80 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 p-5 backdrop-blur-md transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-[#94A3B8] uppercase">YOUTUBE VIDEOS</span>
+            <span className="text-xs font-mono text-[#94A3B8] uppercase">CONTACT & REACH</span>
             <div className="p-2 rounded-lg bg-[#141B2D] text-[#38BDF8] group-hover:bg-[#38BDF8] group-hover:text-[#080B11] transition-colors">
-              <Video className="w-4 h-4" />
+              <Mail className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-bold text-white font-mono">
-              {stats.isLoading ? '—' : stats.videosCount}
+              ACTIVE
             </span>
-            <span className="text-[11px] font-mono text-emerald-400">1 Flagship + Archive</span>
+            <span className="text-[11px] font-mono text-emerald-400">Direct Inquiries</span>
           </div>
           <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-[#64748B] group-hover:text-[#38BDF8]">
-            <span className="font-mono text-[11px]">Manage Showcase</span>
+            <span className="font-mono text-[11px]">Manage Channels</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </div>
         </div>
@@ -277,28 +271,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
             </div>
             <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
               <span>Table: projects</span>
-              <span className="text-emerald-400">Ready</span>
-            </div>
-          </div>
-
-          {/* YouTube */}
-          <div
-            onClick={() => onSelectSection('youtube')}
-            className="p-5 rounded-2xl border border-white/10 bg-[#0E131F]/60 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 transition-all cursor-pointer group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#141B2D] text-[#38BDF8] group-hover:scale-105 transition-transform">
-                <Video className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
-                  YouTube Creator
-                </h3>
-                <p className="text-xs text-[#94A3B8]">Flagship video & archive management</p>
-              </div>
-            </div>
-            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
-              <span>Table: creator_videos</span>
               <span className="text-emerald-400">Ready</span>
             </div>
           </div>

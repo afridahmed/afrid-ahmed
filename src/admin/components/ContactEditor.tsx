@@ -11,13 +11,15 @@ import {
   Github,
   Linkedin,
   Youtube,
-  Send
+  Send,
+  Sparkles
 } from 'lucide-react';
 import { 
   DbSiteSettings, 
   DEFAULT_DB_SETTINGS, 
   getAdminSiteSettings, 
-  saveAdminSiteSettings 
+  saveAdminSiteSettings,
+  seedDefaultSiteSettingsIfEmpty
 } from '../../services/contentService';
 
 export const ContactEditor: React.FC = () => {
@@ -49,27 +51,53 @@ export const ContactEditor: React.FC = () => {
     setIsLoading(false);
   };
 
+  const handleSeedDefaults = async () => {
+    setIsSaving(true);
+    setStatusMessage(null);
+    try {
+      const res = await seedDefaultSiteSettingsIfEmpty();
+      if (res.seeded) {
+        setStatusMessage({ type: 'success', text: 'Default contact settings seeded to Supabase!' });
+        await loadSettingsData();
+      } else if (res.error) {
+        setStatusMessage({ type: 'error', text: `Seed error: ${res.error}` });
+      } else {
+        setStatusMessage({ type: 'success', text: 'Supabase already contains site settings.' });
+        await loadSettingsData();
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message || 'Seed failed' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setStatusMessage(null);
 
     // Basic email validation
-    if (!formData.primary_email.trim() || !formData.primary_email.includes('@')) {
+    const emailToSave = (formData.primary_email || formData.contact_email || '').trim();
+    if (!emailToSave || !emailToSave.includes('@')) {
       setStatusMessage({ type: 'error', text: 'Please provide a valid primary email address.' });
       setIsSaving(false);
       return;
     }
-    if (!formData.owner_name.trim()) {
-      setStatusMessage({ type: 'error', text: 'Owner name cannot be empty.' });
-      setIsSaving(false);
-      return;
-    }
 
-    const { success, error } = await saveAdminSiteSettings(formData);
+    const payloadWithDefaults: DbSiteSettings = {
+      ...formData,
+      primary_email: emailToSave,
+      contact_email: emailToSave,
+      owner_name: formData.owner_name?.trim() || 'Afrid Ahmed',
+      site_title: formData.site_title?.trim() || 'Afrid Ahmed | Portfolio',
+    };
+
+    const { success, error } = await saveAdminSiteSettings(payloadWithDefaults);
     if (success) {
-      setInitialData(formData);
-      setStatusMessage({ type: 'success', text: 'Contact channels and site settings updated successfully!' });
+      setInitialData(payloadWithDefaults);
+      setFormData(payloadWithDefaults);
+      setStatusMessage({ type: 'success', text: 'Contact channels and site settings updated successfully in Supabase!' });
     } else {
       setStatusMessage({ type: 'error', text: error || 'Failed to save changes to database.' });
     }
@@ -108,6 +136,17 @@ export const ContactEditor: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleSeedDefaults}
+            disabled={isSaving}
+            className="px-3.5 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#94A3B8] hover:text-[#38BDF8] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Seed default contact settings into Supabase"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <span>SEED DEFAULTS</span>
+          </button>
+
           <button
             type="button"
             onClick={handleReset}
@@ -269,6 +308,73 @@ export const ContactEditor: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value })}
                 placeholder="https://youtube.com"
                 className="w-full px-3 py-2 rounded-lg bg-[#0E131F] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+
+            {/* Instagram */}
+            <div className="space-y-1.5 p-4 rounded-xl bg-[#080B11] border border-white/5">
+              <label className="block text-xs font-mono text-[#CBD5E1] flex items-center gap-2">
+                <Send className="w-4 h-4 text-pink-400" />
+                <span>INSTAGRAM PROFILE URL</span>
+              </label>
+              <input
+                type="url"
+                value={formData.instagram_url || ''}
+                onChange={(e) => setFormData({ ...formData, instagram_url: e.target.value })}
+                placeholder="https://instagram.com"
+                className="w-full px-3 py-2 rounded-lg bg-[#0E131F] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Section Editorial Copy Card */}
+        <div className="rounded-2xl border border-white/10 bg-[#0E131F]/80 p-6 space-y-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/5 text-xs font-mono text-[#38BDF8] uppercase tracking-wider">
+            <Mail className="w-4 h-4" />
+            <span>CONTACT SECTION EDITORIAL COPY</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* Contact Headline */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-mono text-[#CBD5E1]">
+                SECTION HEADLINE
+              </label>
+              <input
+                type="text"
+                value={formData.contact_headline || ''}
+                onChange={(e) => setFormData({ ...formData, contact_headline: e.target.value })}
+                placeholder="LET'S WORK."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+
+            {/* Primary CTA Label */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-mono text-[#CBD5E1]">
+                PRIMARY BUTTON TEXT
+              </label>
+              <input
+                type="text"
+                value={formData.primary_cta_label || ''}
+                onChange={(e) => setFormData({ ...formData, primary_cta_label: e.target.value })}
+                placeholder="LET'S TALK"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+
+            {/* Supporting Text */}
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="block text-xs font-mono text-[#CBD5E1]">
+                SUPPORTING EDITORIAL MESSAGE
+              </label>
+              <textarea
+                rows={3}
+                value={formData.contact_supporting_text || ''}
+                onChange={(e) => setFormData({ ...formData, contact_supporting_text: e.target.value })}
+                placeholder="Have an idea, automation workflow, AI project, or software build in mind?&#10;Let's build something useful."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8] resize-none"
               />
             </div>
           </div>

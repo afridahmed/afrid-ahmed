@@ -10,7 +10,8 @@ import {
   HERO_CONTENT, 
   ABOUT_CONTENT, 
   SITE_INFO, 
-  SOCIAL_LINKS 
+  SOCIAL_LINKS,
+  CONTACT_CONTENT
 } from '../data/siteContent';
 
 // Re-export project services from projectService
@@ -80,9 +81,14 @@ export interface DbSiteSettings {
   site_title: string;
   owner_name: string;
   primary_email: string;
+  contact_email?: string;
   github_url: string;
   linkedin_url: string;
   youtube_url: string;
+  instagram_url?: string;
+  contact_headline?: string;
+  contact_supporting_text?: string;
+  primary_cta_label?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -124,9 +130,14 @@ export const DEFAULT_DB_SETTINGS: DbSiteSettings = {
   site_title: `${SITE_INFO.fullName} · Portfolio`,
   owner_name: SITE_INFO.fullName,
   primary_email: SITE_INFO.email,
+  contact_email: SITE_INFO.email,
   github_url: 'https://github.com/afridaskar',
   linkedin_url: 'https://linkedin.com',
   youtube_url: 'https://youtube.com',
+  instagram_url: '',
+  contact_headline: CONTACT_CONTENT.headline,
+  contact_supporting_text: CONTACT_CONTENT.supportingText,
+  primary_cta_label: CONTACT_CONTENT.ctaLabel,
 };
 
 // =============================================================================
@@ -414,50 +425,90 @@ export function mapDbToAboutContent(db: DbAboutRow | DbAboutContent | null): Abo
   };
 }
 
-export function mapDbToSiteInfoAndSocials(db: DbSiteSettings | null): { siteInfo: SiteInfo; socialLinks: SocialLink[] } {
+export function mapDbToSiteInfoAndSocials(db: DbSiteSettings | null): {
+  siteInfo: SiteInfo;
+  socialLinks: SocialLink[];
+  contactHeadline?: string;
+  contactSupportingText?: string;
+  primaryCtaLabel?: string;
+} {
   if (!db) {
     return {
       siteInfo: SITE_INFO,
       socialLinks: SOCIAL_LINKS,
+      contactHeadline: CONTACT_CONTENT.headline,
+      contactSupportingText: CONTACT_CONTENT.supportingText,
+      primaryCtaLabel: CONTACT_CONTENT.ctaLabel,
     };
   }
+
+  const effectiveEmail = (db.primary_email || db.contact_email || SITE_INFO.email).trim();
 
   const updatedSiteInfo: SiteInfo = {
     ...SITE_INFO,
     fullName: db.owner_name || SITE_INFO.fullName,
-    email: db.primary_email || SITE_INFO.email,
+    email: effectiveEmail,
   };
 
   const updatedSocials: SocialLink[] = [
     {
-      platform: 'GitHub',
-      label: db.github_url.replace(/^https?:\/\//, ''),
-      url: db.github_url || 'https://github.com/afridaskar',
-      iconName: 'Github',
-    },
-    {
-      platform: 'LinkedIn',
-      label: db.linkedin_url.replace(/^https?:\/\//, ''),
-      url: db.linkedin_url || 'https://linkedin.com',
-      iconName: 'Linkedin',
-    },
-    {
-      platform: 'YouTube',
-      label: db.youtube_url.replace(/^https?:\/\//, ''),
-      url: db.youtube_url || 'https://youtube.com',
-      iconName: 'Youtube',
-    },
-    {
       platform: 'Email',
-      label: db.primary_email || SITE_INFO.email,
-      url: `mailto:${db.primary_email || SITE_INFO.email}`,
+      label: effectiveEmail,
+      url: `mailto:${effectiveEmail}`,
       iconName: 'Mail',
     },
   ];
 
+  if (db.github_url && db.github_url.trim().length > 0) {
+    const cleanUrl = db.github_url.trim();
+    const cleanLabel = cleanUrl.replace(/^https?:\/\/(www\.)?github\.com\/?/, '@').replace(/^https?:\/\//, '');
+    updatedSocials.push({
+      platform: 'GitHub',
+      label: cleanLabel.startsWith('@') ? cleanLabel : `@${cleanLabel}`,
+      url: cleanUrl,
+      iconName: 'Github',
+    });
+  }
+
+  if (db.linkedin_url && db.linkedin_url.trim().length > 0) {
+    const cleanUrl = db.linkedin_url.trim();
+    const cleanLabel = cleanUrl.replace(/^https?:\/\/(www\.)?linkedin\.com\/(in\/)?/, '').replace(/\/$/, '') || 'linkedin.com';
+    updatedSocials.push({
+      platform: 'LinkedIn',
+      label: cleanLabel,
+      url: cleanUrl,
+      iconName: 'Linkedin',
+    });
+  }
+
+  if (db.youtube_url && db.youtube_url.trim().length > 0) {
+    const cleanUrl = db.youtube_url.trim();
+    const cleanLabel = cleanUrl.replace(/^https?:\/\/(www\.)?youtube\.com\/(@)?/, '@').replace(/^https?:\/\//, '');
+    updatedSocials.push({
+      platform: 'YouTube',
+      label: cleanLabel.startsWith('@') ? cleanLabel : `@${cleanLabel}`,
+      url: cleanUrl,
+      iconName: 'Youtube',
+    });
+  }
+
+  if (db.instagram_url && db.instagram_url.trim().length > 0) {
+    const cleanUrl = db.instagram_url.trim();
+    const cleanLabel = cleanUrl.replace(/^https?:\/\/(www\.)?instagram\.com\/?/, '@').replace(/^https?:\/\//, '');
+    updatedSocials.push({
+      platform: 'Instagram',
+      label: cleanLabel.startsWith('@') ? cleanLabel : `@${cleanLabel}`,
+      url: cleanUrl,
+      iconName: 'Instagram',
+    });
+  }
+
   return {
     siteInfo: updatedSiteInfo,
     socialLinks: updatedSocials,
+    contactHeadline: db.contact_headline || CONTACT_CONTENT.headline,
+    contactSupportingText: db.contact_supporting_text || CONTACT_CONTENT.supportingText,
+    primaryCtaLabel: db.primary_cta_label || CONTACT_CONTENT.ctaLabel,
   };
 }
 
@@ -501,7 +552,13 @@ export async function fetchPublicAboutContent(): Promise<AboutContent> {
   }
 }
 
-export async function fetchPublicSiteSettings(): Promise<{ siteInfo: SiteInfo; socialLinks: SocialLink[] }> {
+export async function fetchPublicSiteSettings(): Promise<{
+  siteInfo: SiteInfo;
+  socialLinks: SocialLink[];
+  contactHeadline?: string;
+  contactSupportingText?: string;
+  primaryCtaLabel?: string;
+}> {
   try {
     const { data, error } = await supabase
       .from('site_settings')
@@ -510,12 +567,43 @@ export async function fetchPublicSiteSettings(): Promise<{ siteInfo: SiteInfo; s
       .maybeSingle();
 
     if (error || !data) {
-      return { siteInfo: SITE_INFO, socialLinks: SOCIAL_LINKS };
+      return { 
+        siteInfo: SITE_INFO, 
+        socialLinks: SOCIAL_LINKS,
+        contactHeadline: CONTACT_CONTENT.headline,
+        contactSupportingText: CONTACT_CONTENT.supportingText,
+        primaryCtaLabel: CONTACT_CONTENT.ctaLabel,
+      };
     }
-    return mapDbToSiteInfoAndSocials(data as DbSiteSettings);
+
+    const row = data as Record<string, any>;
+    const merged: DbSiteSettings = {
+      id: 'global',
+      site_title: row.site_title || DEFAULT_DB_SETTINGS.site_title,
+      owner_name: row.owner_name || DEFAULT_DB_SETTINGS.owner_name,
+      primary_email: row.contact_email || row.primary_email || DEFAULT_DB_SETTINGS.primary_email,
+      contact_email: row.contact_email || row.primary_email || DEFAULT_DB_SETTINGS.primary_email,
+      github_url: row.github_url ?? '',
+      linkedin_url: row.linkedin_url ?? '',
+      youtube_url: row.youtube_url ?? '',
+      instagram_url: row.instagram_url ?? '',
+      contact_headline: row.contact_headline || CONTACT_CONTENT.headline,
+      contact_supporting_text: row.contact_supporting_text || CONTACT_CONTENT.supportingText,
+      primary_cta_label: row.primary_cta_label || CONTACT_CONTENT.ctaLabel,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    };
+
+    return mapDbToSiteInfoAndSocials(merged);
   } catch (err) {
     console.warn('Public SiteSettings fetch fallback:', err);
-    return { siteInfo: SITE_INFO, socialLinks: SOCIAL_LINKS };
+    return { 
+      siteInfo: SITE_INFO, 
+      socialLinks: SOCIAL_LINKS,
+      contactHeadline: CONTACT_CONTENT.headline,
+      contactSupportingText: CONTACT_CONTENT.supportingText,
+      primaryCtaLabel: CONTACT_CONTENT.ctaLabel,
+    };
   }
 }
 
@@ -682,36 +770,133 @@ export async function saveAdminAboutContent(payload: DbAboutContent): Promise<{ 
   }
 }
 
+/**
+ * Seeds default site settings into public.site_settings if empty.
+ */
+export async function seedDefaultSiteSettingsIfEmpty(): Promise<{ seeded: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('id')
+      .eq('id', 'global')
+      .maybeSingle();
+
+    if (error) {
+      return { seeded: false, error: error.message };
+    }
+
+    if (!data) {
+      const { error: insertError } = await supabase
+        .from('site_settings')
+        .insert({
+          id: 'global',
+          contact_email: DEFAULT_DB_SETTINGS.primary_email,
+          github_url: DEFAULT_DB_SETTINGS.github_url,
+          linkedin_url: DEFAULT_DB_SETTINGS.linkedin_url,
+          youtube_url: DEFAULT_DB_SETTINGS.youtube_url,
+          instagram_url: DEFAULT_DB_SETTINGS.instagram_url,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        return { seeded: false, error: insertError.message };
+      }
+      return { seeded: true };
+    }
+
+    return { seeded: false };
+  } catch (err: any) {
+    return { seeded: false, error: err.message };
+  }
+}
+
 export async function getAdminSiteSettings(): Promise<{ data: DbSiteSettings | null; error?: string }> {
   try {
+    // Check if table is empty and seed if needed
+    await seedDefaultSiteSettingsIfEmpty();
+
     const { data, error } = await supabase
       .from('site_settings')
       .select('*')
       .eq('id', 'global')
       .maybeSingle();
 
-    if (error) {
-      return { data: null, error: error.message };
+    if (error || !data) {
+      return { data: DEFAULT_DB_SETTINGS };
     }
-    return { data: (data as DbSiteSettings) || null };
+
+    const row = data as Record<string, any>;
+    const merged: DbSiteSettings = {
+      id: 'global',
+      site_title: row.site_title || DEFAULT_DB_SETTINGS.site_title,
+      owner_name: row.owner_name || DEFAULT_DB_SETTINGS.owner_name,
+      primary_email: row.contact_email || row.primary_email || DEFAULT_DB_SETTINGS.primary_email,
+      contact_email: row.contact_email || row.primary_email || DEFAULT_DB_SETTINGS.primary_email,
+      github_url: row.github_url ?? '',
+      linkedin_url: row.linkedin_url ?? '',
+      youtube_url: row.youtube_url ?? '',
+      instagram_url: row.instagram_url ?? '',
+      contact_headline: row.contact_headline || CONTACT_CONTENT.headline,
+      contact_supporting_text: row.contact_supporting_text || CONTACT_CONTENT.supportingText,
+      primary_cta_label: row.primary_cta_label || CONTACT_CONTENT.ctaLabel,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    };
+
+    return { data: merged };
   } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to fetch Site Settings' };
+    return { data: DEFAULT_DB_SETTINGS, error: err.message || 'Failed to fetch Site Settings' };
   }
 }
 
 export async function saveAdminSiteSettings(payload: DbSiteSettings): Promise<{ success: boolean; error?: string }> {
   try {
-    const cleanPayload = {
-      ...payload,
-      id: 'global',
-    };
-    const { error } = await supabase
-      .from('site_settings')
-      .upsert(cleanPayload, { onConflict: 'id' });
+    const emailVal = (payload.primary_email || payload.contact_email || 'afridaskar@gmail.com').trim();
 
-    if (error) {
-      return { success: false, error: error.message };
+    // 1. Send ONLY exact, existing database columns to public.site_settings
+    const dbPayload: Record<string, any> = {
+      id: 'global',
+      contact_email: emailVal,
+      github_url: (payload.github_url || '').trim(),
+      linkedin_url: (payload.linkedin_url || '').trim(),
+      youtube_url: (payload.youtube_url || '').trim(),
+      instagram_url: (payload.instagram_url || '').trim(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Check if row exists
+    const { data: existing } = await supabase
+      .from('site_settings')
+      .select('id')
+      .eq('id', 'global')
+      .maybeSingle();
+
+    let writeError: any = null;
+    if (existing) {
+      const { error } = await supabase
+        .from('site_settings')
+        .update({
+          contact_email: dbPayload.contact_email,
+          github_url: dbPayload.github_url,
+          linkedin_url: dbPayload.linkedin_url,
+          youtube_url: dbPayload.youtube_url,
+          instagram_url: dbPayload.instagram_url,
+          updated_at: dbPayload.updated_at,
+        })
+        .eq('id', 'global');
+      writeError = error;
+    } else {
+      const { error } = await supabase
+        .from('site_settings')
+        .insert(dbPayload);
+      writeError = error;
     }
+
+    if (writeError) {
+      console.warn('Supabase site_settings save error:', writeError.message);
+      return { success: false, error: writeError.message };
+    }
+
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to save Site Settings' };

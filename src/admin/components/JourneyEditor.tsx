@@ -90,6 +90,26 @@ export const JourneyEditor: React.FC = () => {
     }
   };
 
+  const handleSeedDefaults = async () => {
+    setIsSaving(true);
+    setStatusMessage(null);
+    try {
+      const res = await seedDefaultJourneyMilestonesIfEmpty();
+      if (res.seeded) {
+        setStatusMessage({ type: 'success', text: `Successfully seeded ${res.count} canonical milestones into Supabase!` });
+        await loadMilestones();
+      } else if (res.error) {
+        setStatusMessage({ type: 'error', text: `Seed error: ${res.error}` });
+      } else {
+        setStatusMessage({ type: 'success', text: `Table already contains ${res.count} milestones.` });
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message || 'Seed failed' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Open modal to add a new milestone
   const handleOpenAdd = () => {
     const nextOrder = milestones.length > 0 ? Math.max(...milestones.map(m => m.display_order || 0)) + 1 : 1;
@@ -202,9 +222,7 @@ export const JourneyEditor: React.FC = () => {
         setStatusMessage({ type: 'success', text: `Milestone "${trimmedYear} - ${formTitle}" updated successfully!` });
       } else {
         // CREATE
-        const newId = `milestone-${trimmedYear}-${Date.now().toString().slice(-4)}`;
         const insertPayload: DbJourneyMilestoneInsert = {
-          id: newId,
           year: trimmedYear,
           phase: formPhase.trim(),
           title: formTitle.trim(),
@@ -365,6 +383,16 @@ export const JourneyEditor: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
+          <button
+            onClick={handleSeedDefaults}
+            disabled={isLoading || isSaving}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#CBD5E1] hover:text-[#38BDF8] transition-all cursor-pointer disabled:opacity-50"
+            title="Seed canonical default milestones into database if empty"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <span>SEED DEFAULTS</span>
+          </button>
+
           <button
             onClick={loadMilestones}
             disabled={isLoading}
@@ -622,6 +650,27 @@ export const JourneyEditor: React.FC = () => {
                 </div>
               );
             })}
+
+            {milestones.length === 0 && (
+              <div className="p-8 rounded-xl border border-white/5 bg-[#080B11] text-center space-y-4">
+                <Compass className="w-10 h-10 text-[#38BDF8] mx-auto opacity-50" />
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-white">No Journey Milestones in Database</p>
+                  <p className="text-xs text-[#94A3B8] font-mono max-w-md mx-auto">
+                    The table public.journey_milestones is currently empty. Seed canonical 2026–2030 trajectory milestones to populate both Admin and the public website.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSeedDefaults}
+                  disabled={isSaving}
+                  className="px-4 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#7DD3FC] text-[#080B11] font-bold text-xs font-mono transition-all inline-flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.25)]"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>SEED CANONICAL MILESTONES</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

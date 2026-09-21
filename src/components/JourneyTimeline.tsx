@@ -21,21 +21,53 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 
   const initialYear = () => {
     const current = milestoneList.find(m => m.status === 'current');
-    if (current) return current.year;
-    return milestoneList[0]?.year || '2026';
+    if (current && current.year !== undefined && current.year !== null) return String(current.year);
+    return milestoneList[0]?.year !== undefined && milestoneList[0]?.year !== null ? String(milestoneList[0].year) : '2026';
   };
 
   const [selectedYear, setSelectedYear] = useState<string>(initialYear);
 
   // Sync selectedYear if milestoneList changes and selectedYear is not in list
   React.useEffect(() => {
-    if (milestoneList.length > 0 && !milestoneList.some(m => m.year === selectedYear)) {
+    if (milestoneList.length > 0 && !milestoneList.some(m => String(m.year) === String(selectedYear))) {
       const current = milestoneList.find(m => m.status === 'current');
-      setSelectedYear(current ? current.year : milestoneList[0].year);
+      setSelectedYear(current && current.year !== undefined && current.year !== null ? String(current.year) : String(milestoneList[0].year));
     }
   }, [milestoneList, selectedYear]);
 
-  const activeMilestone = milestoneList.find(m => m.year === selectedYear) || milestoneList[0];
+  const activeMilestone = milestoneList.find(m => String(m.year) === String(selectedYear)) || milestoneList[0];
+
+  if (milestoneList.length === 0 || !activeMilestone) {
+    return (
+      <section id="journey" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10">
+        <div className="max-w-6xl mx-auto mb-8 sm:mb-12">
+          <div className="border-b border-white/10 pb-4 sm:pb-6 flex flex-col md:flex-row md:items-end justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1">
+                <Milestone className="w-3.5 h-3.5" />
+                <span>{content.badge}</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-display font-extrabold text-white tracking-tight">
+                {content.title}
+              </h2>
+              <p className="text-xs sm:text-sm font-mono text-[#94A3B8] mt-1">
+                {content.subtitle}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto flex flex-col items-center justify-center py-16 px-4 text-center border border-white/10 rounded-2xl bg-[#050816]/70 backdrop-blur-md">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] animate-pulse mb-3" />
+          <p className="text-white font-display font-semibold text-lg mb-1">
+            Trajectory Roadmaps Updating
+          </p>
+          <p className="text-sm font-mono text-[#94A3B8] max-w-md">
+            Milestones from 2026 to 2030 are currently being refreshed. Check back shortly.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="journey" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10">
@@ -71,13 +103,15 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
           <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-gradient-to-r from-[#38BDF8] via-[#60A5FA] to-[#1E3A8A]/40 -translate-y-1/2 z-0 pointer-events-none hidden sm:block" />
 
           {milestoneList.map((m) => {
-            const isSelected = m.year === selectedYear;
+            const yearStr = String(m.year ?? '');
+            const shortYear = yearStr.length >= 2 ? yearStr.slice(-2) : yearStr;
+            const isSelected = yearStr === selectedYear;
             const isCurrent = m.status === 'current';
 
             return (
               <button
-                key={m.year}
-                onClick={() => setSelectedYear(m.year)}
+                key={yearStr}
+                onClick={() => setSelectedYear(yearStr)}
                 className={`relative z-10 flex flex-col items-center gap-1.5 p-2 sm:p-3.5 rounded-xl border transition-all duration-200 min-w-[70px] sm:min-w-[120px] cursor-pointer ${
                   isSelected
                     ? 'border-[#38BDF8] bg-[#07101F] shadow-[0_0_20px_rgba(56,189,248,0.25)]'
@@ -92,12 +126,12 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                     ? 'bg-[#0B1120] text-[#38BDF8] border border-[#38BDF8]'
                     : 'bg-[#07101F] text-[#94A3B8] border border-white/10'
                 }`}>
-                  {m.year.slice(2)}
+                  {shortYear}
                 </div>
 
                 <div className="text-center">
                   <div className="font-mono text-xs font-bold text-white tracking-wider">
-                    {m.year}
+                    {yearStr}
                   </div>
                   <div className={`text-[9px] sm:text-[10px] font-mono truncate max-w-[65px] sm:max-w-[90px] ${
                     isCurrent ? 'text-[#38BDF8]' : 'text-[#94A3B8]'
@@ -120,7 +154,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         {/* Milestone Detail Card */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeMilestone.year}
+            key={String(activeMilestone.year)}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
@@ -133,7 +167,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <span className="text-2xl sm:text-3xl font-display font-extrabold text-[#38BDF8]">
-                    {activeMilestone.year}
+                    {String(activeMilestone.year)}
                   </span>
                   <div className="h-5 w-[1px] bg-white/10" />
                   <span className="font-mono text-xs sm:text-sm tracking-wider uppercase text-white font-semibold">

@@ -26,9 +26,7 @@ import {
   fetchPublicAboutContent, 
   fetchPublicSiteSettings,
   fetchPublicProjects,
-  fetchPublicCreatorVideos,
-  fetchPublicJourneyMilestones,
-  DbCreatorVideo
+  fetchPublicJourneyMilestones
 } from './services/contentService';
 
 export default function App() {
@@ -45,18 +43,17 @@ export default function App() {
   // Dynamic Supabase content state with initial static fallbacks
   const [heroData, setHeroData] = useState<HeroContent>(HERO_CONTENT);
   const [aboutData, setAboutData] = useState<AboutContent>(ABOUT_CONTENT);
-  const [siteSettings, setSiteSettings] = useState<{ siteInfo: SiteInfo; socialLinks: SocialLink[] }>({
+  const [siteSettings, setSiteSettings] = useState<{
+    siteInfo: SiteInfo;
+    socialLinks: SocialLink[];
+    contactHeadline?: string;
+    contactSupportingText?: string;
+    primaryCtaLabel?: string;
+  }>({
     siteInfo: SITE_INFO,
     socialLinks: SOCIAL_LINKS
   });
   const [projectsData, setProjectsData] = useState<ProjectItem[]>(PROJECTS);
-  const [creatorVideosData, setCreatorVideosData] = useState<{
-    featuredVideo: DbCreatorVideo | null;
-    archiveVideos: DbCreatorVideo[];
-  }>({
-    featuredVideo: null,
-    archiveVideos: []
-  });
   const [journeyMilestones, setJourneyMilestones] = useState<JourneyMilestone[]>(JOURNEY.milestones);
 
   // Fetch published database content gracefully
@@ -65,12 +62,11 @@ export default function App() {
     
     const loadPublishedContent = async () => {
       try {
-        const [hero, about, settings, publishedProjects, creatorVideos, journeyRes] = await Promise.all([
+        const [hero, about, settings, publishedProjects, journeyRes] = await Promise.all([
           fetchPublicHeroContent(),
           fetchPublicAboutContent(),
           fetchPublicSiteSettings(),
           fetchPublicProjects(),
-          fetchPublicCreatorVideos(),
           fetchPublicJourneyMilestones()
         ]);
 
@@ -80,12 +76,6 @@ export default function App() {
           if (settings) setSiteSettings(settings);
           if (publishedProjects !== undefined) {
             setProjectsData(publishedProjects);
-          }
-          if (creatorVideos) {
-            setCreatorVideosData({
-              featuredVideo: creatorVideos.featuredVideo,
-              archiveVideos: creatorVideos.archiveVideos
-            });
           }
           if (journeyRes && journeyRes.milestones && journeyRes.milestones.length > 0) {
             setJourneyMilestones(journeyRes.milestones);
@@ -104,9 +94,9 @@ export default function App() {
     };
     window.addEventListener('focus', handleWindowFocus);
 
-    // Listen to real-time changes to the projects table in Supabase
-    const projectsChannel = supabase
-      .channel('public-projects-live-sync')
+    // Listen to real-time changes to the projects, journey_milestones, and site_settings tables in Supabase
+    const liveCmsChannel = supabase
+      .channel('public-cms-unified-sync')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'projects' },
@@ -121,24 +111,56 @@ export default function App() {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'journey_milestones' },
+        async () => {
+          try {
+            const res = await fetchPublicJourneyMilestones();
+            if (isMounted && res && res.milestones && res.milestones.length > 0) {
+              setJourneyMilestones(res.milestones);
+            }
+          } catch (err) {
+            console.warn('Live journey sync note:', err);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'site_settings' },
+        async () => {
+          try {
+            const updatedSettings = await fetchPublicSiteSettings();
+            if (isMounted && updatedSettings) {
+              setSiteSettings(updatedSettings);
+            }
+          } catch (err) {
+            console.warn('Live site_settings sync note:', err);
+          }
+        }
+      )
       .subscribe();
 
     return () => {
       isMounted = false;
       window.removeEventListener('focus', handleWindowFocus);
-      supabase.removeChannel(projectsChannel);
+      supabase.removeChannel(liveCmsChannel);
     };
   }, []);
 
-  // When returning from /admin route to public home, refresh projects immediately
+  // When returning from /admin route to public home, refresh all public content immediately
   useEffect(() => {
     const isCurrentlyAdmin = currentPath.startsWith('/admin') || currentPath.startsWith('#/admin') || currentPath.startsWith('#admin');
     if (!isCurrentlyAdmin) {
-      fetchPublicProjects().then((projs) => {
-        if (projs !== undefined) {
-          setProjectsData(projs);
-        }
-      });
+      Promise.all([
+        fetchPublicProjects(),
+        fetchPublicJourneyMilestones(),
+        fetchPublicSiteSettings(),
+      ]).then(([projs, journeyRes, settings]) => {
+        if (projs !== undefined) setProjectsData(projs);
+        if (journeyRes?.milestones && journeyRes.milestones.length > 0) setJourneyMilestones(journeyRes.milestones);
+        if (settings) setSiteSettings(settings);
+      }).catch(err => console.warn('Navigation content refresh note:', err));
     }
   }, [currentPath]);
 
@@ -249,6 +271,9 @@ export default function App() {
         <ContactSection 
           siteInfo={siteSettings.siteInfo} 
           socialLinks={siteSettings.socialLinks} 
+          contactHeadline={siteSettings.contactHeadline}
+          contactSupportingText={siteSettings.contactSupportingText}
+          primaryCtaLabel={siteSettings.primaryCtaLabel}
         />
       </main>
 

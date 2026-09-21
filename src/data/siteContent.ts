@@ -299,6 +299,13 @@ export const SOCIAL_LINKS: SocialLink[] = [
   }
 ];
 
+export const CONTACT_CONTENT = {
+  headline: "LET'S WORK.",
+  supportingText: "Have an idea, automation workflow, AI project, or software build in mind?\nLet's build something useful.",
+  ctaLabel: "LET'S TALK",
+  badge: "COLLABORATION & INQUIRIES"
+};
+
 /**
  * AQUASENSE TELEMETRY NODES (Hardware visualizer telemetry)
  */

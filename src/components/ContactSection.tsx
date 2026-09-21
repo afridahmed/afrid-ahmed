@@ -1,61 +1,71 @@
 import React from 'react';
-import { Mail, Linkedin, Github, Youtube, ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Mail, Linkedin, Github, Youtube, Instagram, ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react';
 import { SITE_INFO, SOCIAL_LINKS } from '../data/siteContent';
 import { SiteInfo, SocialLink } from '../types';
 
 interface ContactSectionProps {
   siteInfo?: SiteInfo;
   socialLinks?: SocialLink[];
+  contactHeadline?: string;
+  contactSupportingText?: string;
+  primaryCtaLabel?: string;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
   siteInfo = SITE_INFO,
-  socialLinks = SOCIAL_LINKS
+  socialLinks = SOCIAL_LINKS,
+  contactHeadline = "LET'S WORK.",
+  contactSupportingText = "Have an idea, automation workflow, AI project, or software build in mind?\nLet's build something useful.",
+  primaryCtaLabel = "LET'S TALK"
 }) => {
-  // Map social links and primary email into contact channels
-  const emailLink = socialLinks.find(l => l.platform.toLowerCase() === 'email');
-  const linkedinLink = socialLinks.find(l => l.platform.toLowerCase() === 'linkedin');
-  const githubLink = socialLinks.find(l => l.platform.toLowerCase() === 'github');
-  const youtubeLink = socialLinks.find(l => l.platform.toLowerCase() === 'youtube');
-
-  const contactChannels = [
-    {
-      id: 'email',
-      label: 'EMAIL',
-      value: siteInfo.email,
-      href: emailLink?.url || `mailto:${siteInfo.email}`,
-      icon: Mail,
-      iconColor: 'text-[#38BDF8]',
-      external: false
-    },
-    {
-      id: 'linkedin',
-      label: 'LINKEDIN',
-      value: linkedinLink?.label || 'linkedin.com',
-      href: linkedinLink?.url || 'https://linkedin.com',
-      icon: Linkedin,
-      iconColor: 'text-[#38BDF8]',
-      external: true
-    },
-    {
-      id: 'github',
-      label: 'GITHUB',
-      value: githubLink?.label || '@afridaskar',
-      href: githubLink?.url || 'https://github.com/afridaskar',
-      icon: Github,
-      iconColor: 'text-[#38BDF8]',
-      external: true
-    },
-    {
-      id: 'youtube',
-      label: 'YOUTUBE',
-      value: youtubeLink?.label || '@afridtech',
-      href: youtubeLink?.url || 'https://youtube.com',
-      icon: Youtube,
-      iconColor: 'text-red-400',
-      external: true
+  // Map configured social links and primary email into contact channels
+  const getIconConfig = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'email':
+        return { icon: Mail, iconColor: 'text-[#38BDF8]', external: false };
+      case 'linkedin':
+        return { icon: Linkedin, iconColor: 'text-[#38BDF8]', external: true };
+      case 'github':
+        return { icon: Github, iconColor: 'text-[#38BDF8]', external: true };
+      case 'youtube':
+        return { icon: Youtube, iconColor: 'text-red-400', external: true };
+      case 'instagram':
+        return { icon: Instagram, iconColor: 'text-pink-400', external: true };
+      default:
+        return { icon: ArrowUpRight, iconColor: 'text-[#38BDF8]', external: true };
     }
-  ];
+  };
+
+  // Build channels from active social links that have URLs
+  const activeLinks = (socialLinks && socialLinks.length > 0 ? socialLinks : SOCIAL_LINKS)
+    .filter(l => l && l.url && l.url.trim().length > 0);
+
+  // Guarantee email channel is present
+  const hasEmail = activeLinks.some(l => l.platform.toLowerCase() === 'email');
+  const linksToRender: SocialLink[] = hasEmail
+    ? activeLinks
+    : [
+        {
+          platform: 'Email',
+          label: siteInfo.email,
+          url: `mailto:${siteInfo.email}`,
+          iconName: 'Mail',
+        },
+        ...activeLinks,
+      ];
+
+  const contactChannels = linksToRender.map(link => {
+    const config = getIconConfig(link.platform);
+    return {
+      id: link.platform.toLowerCase(),
+      label: link.platform.toUpperCase(),
+      value: link.label || link.url.replace(/^https?:\/\//, ''),
+      href: link.url,
+      icon: config.icon,
+      iconColor: config.iconColor,
+      external: config.external,
+    };
+  });
 
   return (
     <section id="contact" className="relative w-full py-12 sm:py-16 md:py-20 px-4 sm:px-8 md:px-12 z-10">
@@ -77,29 +87,24 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 <span>COLLABORATION & INQUIRIES</span>
               </div>
 
-              {/* Exact Primary Heading: LET'S WORK. */}
+              {/* Exact Primary Heading */}
               <h2 className="text-2xl sm:text-4xl lg:text-[45px] font-display font-black text-white tracking-tight leading-tight sm:leading-none whitespace-nowrap">
-                LET'S WORK.
+                {contactHeadline}
               </h2>
 
               {/* Short Supporting Text */}
-              <div className="space-y-1.5 text-xs sm:text-sm md:text-base text-[#CBD5E1] font-light leading-relaxed max-w-lg">
-                <p>
-                  Have an idea, automation workflow, AI project, or software build in mind?
-                </p>
-                <p className="text-[#94A3B8]">
-                  Let's build something useful.
-                </p>
+              <div className="text-xs sm:text-sm md:text-base text-[#CBD5E1] font-light leading-relaxed max-w-lg whitespace-pre-line">
+                {contactSupportingText}
               </div>
 
-              {/* Primary Action Button: LET'S TALK → */}
+              {/* Primary Action Button */}
               <div className="pt-2">
                 <a
                   id="contact-primary-talk-btn"
-                  href={`mailto:${SITE_INFO.email}?subject=Project%20Collaboration%20with%20Afrid`}
+                  href={`mailto:${siteInfo.email}?subject=Project%20Collaboration%20with%20Afrid`}
                   className="group min-h-[44px] px-6 py-2.5 rounded-full bg-[#38BDF8] hover:bg-[#60A5FA] text-[#03050B] font-mono text-xs sm:text-sm font-bold tracking-wider uppercase inline-flex items-center gap-2.5 transition-all shadow-[0_0_20px_rgba(56,189,248,0.25)] active:scale-95 cursor-pointer"
                 >
-                  <span>LET'S TALK</span>
+                  <span>{primaryCtaLabel}</span>
                   <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </a>
               </div>
