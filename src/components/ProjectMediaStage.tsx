@@ -73,11 +73,47 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
   const currentMedia: ProjectMedia | undefined = mediaItems[activeMediaIndex];
   const totalMedia = mediaItems.length;
 
-  // Reset media loaded state when active media changes
+  // Reset media loaded state and handle image preloading / cached image detection
   useEffect(() => {
     setIsMediaLoaded(false);
     setMediaLoadError(false);
-  }, [activeMediaIndex, currentMedia?.mediaUrl]);
+
+    if (!currentMedia || currentMedia.mediaType !== 'image') {
+      return;
+    }
+
+    let isCancelled = false;
+
+    // Use native Image object to verify load / cached status reliably
+    const img = new Image();
+    img.src = currentMedia.mediaUrl;
+
+    if (img.complete) {
+      if (img.naturalWidth > 0 || img.naturalHeight > 0) {
+        setIsMediaLoaded(true);
+      } else {
+        setIsMediaLoaded(true);
+        setMediaLoadError(true);
+      }
+    } else {
+      img.onload = () => {
+        if (!isCancelled) {
+          setIsMediaLoaded(true);
+          setMediaLoadError(false);
+        }
+      };
+      img.onerror = () => {
+        if (!isCancelled) {
+          setIsMediaLoaded(true);
+          setMediaLoadError(true);
+        }
+      };
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeMediaIndex, currentMedia?.id, currentMedia?.mediaUrl, currentMedia?.mediaType]);
 
   // Navigate to previous media
   const handlePrevMedia = useCallback((e?: React.MouseEvent) => {
@@ -239,9 +275,13 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                         </div>
                       ) : (
                         <img
+                          key={`${currentMedia.id}-${currentMedia.mediaUrl}`}
                           src={currentMedia.mediaUrl}
                           alt={currentMedia.altText || currentMedia.caption || project.title}
-                          onLoad={() => setIsMediaLoaded(true)}
+                          onLoad={() => {
+                            setIsMediaLoaded(true);
+                            setMediaLoadError(false);
+                          }}
                           onError={() => {
                             setIsMediaLoaded(true);
                             setMediaLoadError(true);
