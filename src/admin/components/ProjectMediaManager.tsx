@@ -130,7 +130,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
     setIsAddModalOpen(true);
   };
 
-  // Handle local file selection
+  // Handle local file selection with temporary object URL for modal preview
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -138,6 +138,10 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
     setUploadFile(file);
     const isVideo = file.type.startsWith('video/');
     setMediaType(isVideo ? 'video' : 'image');
+
+    // Generate temporary object URL for immediate UI preview in modal
+    const tempPreviewUrl = URL.createObjectURL(file);
+    setMediaUrl(tempPreviewUrl);
 
     // Auto-generate caption / alt text if empty
     if (!caption) {
@@ -156,11 +160,11 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
     try {
       let finalUrl = mediaUrl.trim();
 
-      // If a file was selected, upload it first
+      // If a file was selected, upload it to Supabase Storage
       if (uploadFile) {
         const { url, mediaType: detectedType, error: uploadErr } = await uploadProjectMediaFile(uploadFile, project.slug || project.id);
         if (uploadErr) {
-          setStatusMessage({ type: 'error', text: `Upload failed: ${uploadErr}` });
+          setStatusMessage({ type: 'error', text: `Storage upload failed: ${uploadErr}` });
           setIsUploading(false);
           return;
         }
@@ -168,8 +172,9 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
         setMediaType(detectedType);
       }
 
-      if (!finalUrl) {
-        setStatusMessage({ type: 'error', text: 'Media URL or file is required.' });
+      // Enforce persistent URL check (prevent saving blob: or data: URLs to DB)
+      if (!finalUrl || finalUrl.startsWith('blob:') || finalUrl.startsWith('data:')) {
+        setStatusMessage({ type: 'error', text: 'Persistent media URL from Supabase Storage is required before saving.' });
         setIsUploading(false);
         return;
       }
@@ -187,10 +192,11 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
         });
 
         if (!success) {
-          setStatusMessage({ type: 'error', text: error || 'Failed to update media item.' });
+          setStatusMessage({ type: 'error', text: error || 'Failed to update media item in database.' });
         } else {
-          setStatusMessage({ type: 'success', text: 'Media item updated successfully!' });
+          setStatusMessage({ type: 'success', text: 'Media item updated and saved to Supabase Storage!' });
           setIsAddModalOpen(false);
+          setUploadFile(null);
           await loadMedia();
           onMediaUpdated?.();
         }
@@ -208,10 +214,11 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
         });
 
         if (error || !data) {
-          setStatusMessage({ type: 'error', text: error || 'Failed to create media item.' });
+          setStatusMessage({ type: 'error', text: error || 'Failed to create media item in database.' });
         } else {
-          setStatusMessage({ type: 'success', text: 'Media item added successfully!' });
+          setStatusMessage({ type: 'success', text: 'Media item uploaded and saved to Supabase Storage!' });
           setIsAddModalOpen(false);
+          setUploadFile(null);
           await loadMedia();
           onMediaUpdated?.();
         }

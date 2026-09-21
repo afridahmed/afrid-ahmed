@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { ProjectMedia, ProjectMediaType } from '../types';
-import { STORAGE_BUCKET } from './mediaService';
+import { STORAGE_BUCKET, ensureMediaBucketExists } from './mediaService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACE (public.project_media)
@@ -169,6 +169,9 @@ export async function uploadProjectMediaFile(
       };
     }
 
+    // 1. Ensure Storage bucket exists in Supabase
+    await ensureMediaBucketExists();
+
     const cleanProject = projectIdOrSlug.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'general';
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 7);
@@ -180,6 +183,7 @@ export async function uploadProjectMediaFile(
     
     const storagePath = `projects/${cleanProject}/${cleanFileName}-${timestamp}-${randomSuffix}${extension}`;
 
+    // 2. Upload file object to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(storagePath, file, {
@@ -189,15 +193,21 @@ export async function uploadProjectMediaFile(
       });
 
     if (uploadError) {
-      return { url: '', mediaType: isVideo ? 'video' : 'image', error: uploadError.message };
+      return { url: '', mediaType: isVideo ? 'video' : 'image', error: `Storage upload failed: ${uploadError.message}` };
     }
 
+    // 3. Obtain persistent Public Storage URL
     const { data: publicUrlData } = supabase.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(storagePath);
 
+    const publicUrl = publicUrlData?.publicUrl || '';
+    if (!publicUrl || publicUrl.startsWith('blob:')) {
+      return { url: '', mediaType: isVideo ? 'video' : 'image', error: 'Failed to generate persistent public URL for uploaded media.' };
+    }
+
     return {
-      url: publicUrlData?.publicUrl || '',
+      url: publicUrl,
       mediaType: isVideo ? 'video' : 'image',
       error: null,
     };
@@ -215,15 +225,24 @@ export async function uploadProjectMediaFile(
 // =============================================================================
 
 /**
+ * Helper to ensure a media URL is a persistent HTTP/HTTPS web address.
+ */
+function isPersistentMediaUrl(url?: string | null): boolean {
+  if (!url) return false;
+  const trimmed = url.trim();
+  return (trimmed.startsWith('http://') || trimmed.startsWith('https://')) && !trimmed.startsWith('blob:');
+}
+
+/**
  * Fetch published project media for a specific project.
- * Returns only items where is_published === true.
+ * Returns only items where is_published === true and media_url is persistent.
  * Ordered by is_featured DESC (primary first), then display_order ASC.
  */
 export async function fetchPublishedProjectMedia(projectIdOrSlug: string): Promise<ProjectMedia[]> {
   try {
     const { id: uuid, slug } = await resolveProjectIdentifiers(projectIdOrSlug);
 
-    // Try Supabase first
+    // Try Supabase project_media table first
     const { data, error } = await supabase
       .from('project_media')
       .select('*')
@@ -232,13 +251,55 @@ export async function fetchPublishedProjectMedia(projectIdOrSlug: string): Promi
       .order('is_featured', { ascending: false })
       .order('display_order', { ascending: true });
 
-    if (!error && data) {
-      return (data as DbProjectMedia[]).map(mapDbToProjectMedia);
+    if (!error && data && data.length > 0) {
+      return (data as DbProjectMedia[])
+        .filter((item) => isPersistentMediaUrl(item.media_url))
+        .map(mapDbToProjectMedia);
+    }
+
+    // Try public.media table in Supabase
+    const { data: mediaData } = await supabase
+      .from('media')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (mediaData && mediaData.length > 0) {
+      const matchedFromMedia: ProjectMedia[] = [];
+      for (const m of mediaData) {
+        if (!isPersistentMediaUrl(m.public_url)) continue;
+        if (m.file_path?.includes(`/${uuid}/`) || m.file_path?.includes(`/${slug}/`)) {
+          let meta: any = {};
+          try {
+            if (m.alt_text?.startsWith('{')) meta = JSON.parse(m.alt_text);
+          } catch {}
+
+          matchedFromMedia.push({
+            id: m.id,
+            projectId: uuid || slug,
+            mediaType: m.media_type?.includes('video') ? 'video' : 'image',
+            mediaUrl: m.public_url,
+            caption: meta.caption || m.file_name || '',
+            displayOrder: meta.display_order ?? 0,
+            isFeatured: !!meta.is_featured,
+            isPublished: meta.is_published ?? true,
+            altText: meta.alt_text || m.alt_text || '',
+            createdAt: m.created_at,
+          });
+        }
+      }
+      if (matchedFromMedia.length > 0) {
+        matchedFromMedia.sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          return a.displayOrder - b.displayOrder;
+        });
+        return matchedFromMedia;
+      }
     }
 
     // Fallback to local storage if table doesn't exist yet
     const local = getLocalMedia().filter(
-      (m) => (m.project_id === uuid || m.project_id === slug) && m.is_published
+      (m) => (m.project_id === uuid || m.project_id === slug) && m.is_published && isPersistentMediaUrl(m.media_url)
     );
     local.sort((a, b) => {
       if (a.is_featured && !b.is_featured) return -1;
@@ -269,17 +330,63 @@ export async function fetchAllPublishedProjectMedia(): Promise<Record<string, Pr
 
     if (!error && data && data.length > 0) {
       for (const item of data as DbProjectMedia[]) {
+        if (!isPersistentMediaUrl(item.media_url)) continue;
         const mapped = mapDbToProjectMedia(item);
         if (!result[item.project_id]) {
           result[item.project_id] = [];
         }
         result[item.project_id].push(mapped);
       }
-      return result;
+      if (Object.keys(result).length > 0) {
+        return result;
+      }
+    }
+
+    // Try public.media table in Supabase
+    const { data: mediaData } = await supabase
+      .from('media')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (mediaData && mediaData.length > 0) {
+      for (const m of mediaData) {
+        if (!isPersistentMediaUrl(m.public_url)) continue;
+        if (m.file_path?.startsWith('projects/')) {
+          const parts = m.file_path.split('/');
+          const projKey = parts[1];
+          if (projKey) {
+            let meta: any = {};
+            try {
+              if (m.alt_text?.startsWith('{')) meta = JSON.parse(m.alt_text);
+            } catch {}
+
+            const mappedItem: ProjectMedia = {
+              id: m.id,
+              projectId: projKey,
+              mediaType: m.media_type?.includes('video') ? 'video' : 'image',
+              mediaUrl: m.public_url,
+              caption: meta.caption || m.file_name || '',
+              displayOrder: meta.display_order ?? 0,
+              isFeatured: !!meta.is_featured,
+              isPublished: meta.is_published ?? true,
+              altText: meta.alt_text || '',
+              createdAt: m.created_at,
+            };
+
+            if (!result[projKey]) {
+              result[projKey] = [];
+            }
+            result[projKey].push(mappedItem);
+          }
+        }
+      }
+      if (Object.keys(result).length > 0) {
+        return result;
+      }
     }
 
     // Fallback to local storage
-    const local = getLocalMedia().filter((m) => m.is_published);
+    const local = getLocalMedia().filter((m) => m.is_published && isPersistentMediaUrl(m.media_url));
     for (const item of local) {
       const mapped = mapDbToProjectMedia(item);
       if (!result[item.project_id]) {
@@ -343,6 +450,10 @@ export async function createAdminProjectMedia(
   payload: DbProjectMediaInsert
 ): Promise<{ data: ProjectMedia | null; error?: string }> {
   try {
+    if (!payload.media_url || payload.media_url.startsWith('blob:') || payload.media_url.startsWith('data:')) {
+      return { data: null, error: 'Cannot save a temporary local preview URL. File upload to persistent Supabase Storage is required.' };
+    }
+
     const { id: projectUuid } = await resolveProjectIdentifiers(payload.project_id);
     const resolvedProjectId = projectUuid || payload.project_id;
 
@@ -376,7 +487,30 @@ export async function createAdminProjectMedia(
       return { data: mapDbToProjectMedia(data as DbProjectMedia) };
     }
 
-    // Fallback to local storage
+    // Register metadata in public.media as well for cross-device query resilience
+    try {
+      await supabase.from('media').insert({
+        bucket: STORAGE_BUCKET,
+        file_path: payload.media_url.includes(STORAGE_BUCKET)
+          ? payload.media_url.split(`/${STORAGE_BUCKET}/`)[1]?.split('?')[0] || `projects/${resolvedProjectId}/${Date.now()}.jpg`
+          : `projects/${resolvedProjectId}/${Date.now()}.jpg`,
+        public_url: payload.media_url,
+        file_name: payload.caption || 'project_media',
+        media_type: payload.media_type === 'video' ? 'video/mp4' : 'image/jpeg',
+        file_size_bytes: 0,
+        alt_text: JSON.stringify({
+          project_id: resolvedProjectId,
+          caption: payload.caption,
+          display_order: payload.display_order,
+          is_featured: payload.is_featured,
+          is_published: payload.is_published,
+        }),
+      });
+    } catch {
+      // non-blocking
+    }
+
+    // Fallback to local storage for offline resiliency
     const local = getLocalMedia();
     if (payload.is_featured) {
       local.forEach((m) => {
