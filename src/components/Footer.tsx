@@ -72,8 +72,8 @@ export const Footer: React.FC<FooterProps> = ({
           </button>
         </div>
 
-        {/* Copyright */}
-        <div className="text-[10px] font-mono text-[#64748B]">
+        {/* Copyright (Hidden on mobile since Contact Section displays it) */}
+        <div className="hidden md:block text-[10px] font-mono text-[#64748B]">
           © {new Date().getFullYear()} Afrid Ahmed. All rights reserved.
         </div>
 

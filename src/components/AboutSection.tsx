@@ -18,10 +18,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
   content = ABOUT_CONTENT
 }) => {
   return (
-    <section id="about" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10">
+    <section id="about" className="relative w-full py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-12 z-10 scroll-mt-20 sm:scroll-mt-24">
       
-      {/* Section Header */}
-      <div className="max-w-6xl mx-auto mb-8 sm:mb-12">
+      {/* Desktop Section Header (lg+) */}
+      <div className="hidden lg:block max-w-6xl mx-auto mb-6 sm:mb-10">
         <div className="border-b border-white/10 pb-4 sm:pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1">
@@ -42,14 +42,84 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
       <div className="max-w-6xl mx-auto">
         
-        {/* Main 2-Column Balanced Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        {/* ========================================================================= */}
+        {/* 1. MOBILE ABOUT COMPOSITION (< lg): SCREEN 2 RECREATION                    */}
+        {/* ========================================================================= */}
+        <div className="relative flex flex-col space-y-5 lg:hidden overflow-hidden pb-8">
+          
+          {/* Eyebrow Label: 01 / ABOUT (Screen 2) */}
+          <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
+            <span>01 / ABOUT</span>
+          </div>
+
+          {/* Heading: Curious by nature. Building by practice. (Screen 2) */}
+          <div>
+            <h3 className="text-2xl min-[360px]:text-3xl font-display font-black text-white leading-tight">
+              Curious by nature.<br />
+              Building by <span className="text-[#38BDF8]">practice.</span>
+            </h3>
+          </div>
+
+          {/* Authentic Biography Narrative (Readable line measure, high contrast) */}
+          <div className="space-y-3 text-sm text-[#CBD5E1] leading-relaxed font-light">
+            {(Array.isArray(content.biography) && content.biography.length > 0 
+              ? content.biography 
+              : ABOUT_CONTENT.biography
+            ).map((paragraph, idx) => (
+              <p key={idx}>{paragraph}</p>
+            ))}
+          </div>
+
+          {/* Interest Pills (Screen 2) */}
+          <div className="pt-2">
+            <div className="flex flex-wrap gap-2.5">
+              {[
+                'AI / ML',
+                'Software Engineering',
+                'Automation',
+                'Robotics'
+              ].map((interest) => (
+                <span
+                  key={interest}
+                  className="px-4 py-2 rounded-full text-xs font-sans text-white/90 bg-white/5 border border-white/15"
+                >
+                  {interest}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Accent: INTERESTS & FOCUS with cyan line and curved cosmic glow (Screen 2) */}
+          <div className="pt-8 relative">
+            <div className="flex flex-col">
+              <span className="text-[11px] font-mono tracking-widest text-[#94A3B8] uppercase">
+                INTERESTS & FOCUS
+              </span>
+              <div className="w-8 h-[2px] bg-[#38BDF8] mt-1.5 rounded-full" />
+            </div>
+
+            {/* Glowing cosmic arc in bottom corner */}
+            <div 
+              className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full pointer-events-none opacity-40"
+              style={{
+                background: 'radial-gradient(circle at center, rgba(56,189,248,0.3) 0%, rgba(30,58,138,0.15) 50%, transparent 75%)',
+                filter: 'blur(20px)'
+              }}
+            />
+          </div>
+
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 2. DESKTOP ABOUT COMPOSITION (lg+): 100% PRESERVED BALANCED 2-COLUMN GRID  */}
+        {/* ========================================================================= */}
+        <div className="hidden lg:grid grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* LEFT COLUMN: Editorial Portrait + Anchored Details (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col items-center lg:items-start space-y-5">
+          <div className="col-span-5 flex flex-col items-start space-y-5">
             
             {/* Portrait Frame */}
-            <div className="relative w-full max-w-[320px] sm:max-w-sm aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-[#050816] shadow-[0_10px_35px_rgba(0,0,0,0.6)] group mx-auto lg:mx-0">
+            <div className="relative w-full max-w-sm aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-[#050816] shadow-[0_10px_35px_rgba(0,0,0,0.6)] group">
               
               {/* Soft background blue tint */}
               <div className="absolute -top-10 -right-10 w-36 h-36 bg-[#38BDF8]/10 rounded-full blur-2xl pointer-events-none" />
@@ -92,13 +162,13 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
             </div>
 
             {/* Authenticity Verification Tag */}
-            <div className="flex items-center gap-2 text-xs font-mono text-[#94A3B8] w-full max-w-[320px] sm:max-w-sm justify-center lg:justify-start">
+            <div className="flex items-center gap-2 text-xs font-mono text-[#94A3B8] w-full max-w-sm justify-start">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>{content.photoCaption.verifiedText}</span>
             </div>
 
             {/* Anchored Orientation Highlights */}
-            <div className="w-full max-w-[320px] sm:max-w-sm space-y-2 pt-1">
+            <div className="w-full max-w-sm space-y-2 pt-1">
               <div className="p-3 rounded-xl bg-[#050816] border border-white/5 flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/10 text-[#38BDF8] flex items-center justify-center shrink-0">
                   <Cpu className="w-4 h-4" />
@@ -133,7 +203,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
           </div>
 
           {/* RIGHT COLUMN: Authentic Biography & Technical Toolsets (7 cols) */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="col-span-7 space-y-6">
             
             {/* Supporting Statement */}
             <div>

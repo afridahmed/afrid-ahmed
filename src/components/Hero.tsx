@@ -23,13 +23,13 @@ export const Hero: React.FC<HeroProps> = ({
 
   const rotatingStatements = content.rotatingStatements || ['I BUILD.', 'I CREATE.', 'I EXPLORE.'];
 
-  // Smooth deterministic entrance sequence
+  // Smooth deterministic entrance sequence — fast-tracked for instant mobile responsiveness
   useEffect(() => {
-    const t1 = setTimeout(() => setStage(1), 100);
-    const t2 = setTimeout(() => setStage(2), 350);
-    const t3 = setTimeout(() => setStage(3), 700);
-    const t4 = setTimeout(() => setStage(4), 1100);
-    const t5 = setTimeout(() => setStage(5), 1500);
+    const t1 = setTimeout(() => setStage(1), 40);
+    const t2 = setTimeout(() => setStage(2), 140);
+    const t3 = setTimeout(() => setStage(3), 280);
+    const t4 = setTimeout(() => setStage(4), 450);
+    const t5 = setTimeout(() => setStage(5), 650);
 
     return () => {
       clearTimeout(t1);
@@ -52,7 +52,7 @@ export const Hero: React.FC<HeroProps> = ({
   return (
     <section
       id="hero"
-      className="relative min-h-[100svh] w-full flex flex-col justify-between items-center px-4 sm:px-8 md:px-12 pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-10 overflow-hidden z-10 select-none"
+      className="relative min-h-[100svh] w-full flex flex-col justify-between items-center px-4 sm:px-8 md:px-12 pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-10 overflow-hidden z-10 select-none scroll-mt-20 sm:scroll-mt-24"
     >
       {/* Soft atmospheric cosmic light field (stationary, zero cursor drift) */}
       <div
@@ -64,12 +64,12 @@ export const Hero: React.FC<HeroProps> = ({
         }}
       />
 
-      {/* Top Meta Bar — Breathing room under navbar */}
+      {/* Top Meta Bar — Desktop only */}
       <motion.div
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: stage >= 1 ? 1 : 0, y: stage >= 1 ? 0 : -6 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="w-full max-w-6xl flex justify-between items-center text-[10px] sm:text-xs tracking-wider text-[#94A3B8] font-mono border-b border-white/5 pb-2 sm:pb-3 mb-2 sm:mb-4 relative z-20"
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="hidden lg:flex w-full max-w-6xl justify-between items-center text-[10px] sm:text-xs tracking-wider text-[#94A3B8] font-mono border-b border-white/5 pb-2 sm:pb-3 mb-2 sm:mb-4 relative z-20"
       >
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" />
@@ -86,125 +86,120 @@ export const Hero: React.FC<HeroProps> = ({
       </motion.div>
 
       {/* ========================================================================= */}
-      {/* 1. MOBILE HERO COMPOSITION (< lg): DEDICATED COMPACT REDESIGN             */}
-      {/* Order per User Instructions:                                              */}
-      {/* 1. PROFILE PHOTO (appears ABOVE name)                                     */}
-      {/* 2. AFRID AHMED (ONE line strictly across 320px-430px)                     */}
-      {/* 3. Computer Science · AI/ML · Creator                                     */}
-      {/* 4. I BUILD. / I CREATE. / I EXPLORE. (rotating)                           */}
-      {/* 5. Short description                                                      */}
-      {/* 6. Compact actions (text-link style)                                      */}
+      {/* 1. MOBILE HERO COMPOSITION (< lg): SCREEN 1 RECREATION                     */}
       {/* ========================================================================= */}
-      <div className="w-full my-auto py-2 flex flex-col items-center text-center lg:hidden relative z-10 max-w-sm mx-auto">
+      <div className="w-full py-2 flex flex-col items-center text-center lg:hidden relative z-10 max-w-md mx-auto px-3">
         
-        {/* 1. PROFILE PHOTO (Placed ABOVE name, carefully sized, cosmic integrated) */}
+        {/* 1. REAL PROFILE PORTRAIT — Prominent upper-body portrait with blue atmospheric glow (Screen 1) */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: stage >= 1 ? 1 : 0, scale: stage >= 1 ? 1 : 0.9 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="relative mb-3"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: stage >= 1 ? 1 : 0, scale: stage >= 1 ? 1 : 0.95 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-full flex items-center justify-center mb-3 pt-2"
         >
-          {/* Subtle cosmic aura behind photo */}
+          {/* Intense atmospheric electric blue/cyan aura behind head and shoulders */}
           <div 
-            className="absolute inset-0 rounded-full bg-[#38BDF8]/20 blur-md pointer-events-none"
-            style={{ transform: 'scale(1.15)' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] min-[380px]:w-[280px] h-[240px] min-[380px]:h-[280px] rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 45%, rgba(56,189,248,0.38) 0%, rgba(30,58,138,0.22) 50%, transparent 75%)',
+              filter: 'blur(32px)'
+            }}
           />
 
-          <div className="relative w-20 h-20 min-[360px]:w-24 min-[360px]:h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border border-[#38BDF8]/30 shadow-[0_0_24px_rgba(56,189,248,0.25)] flex items-center justify-center">
+          {/* Large portrait container with subtle rounded framing and seamless bottom fade */}
+          <div 
+            className="relative w-[240px] min-[380px]:w-[270px] min-[420px]:w-[290px] h-[260px] min-[380px]:h-[290px] min-[420px]:h-[310px] overflow-hidden flex items-center justify-center"
+            style={{
+              maskImage: 'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)'
+            }}
+          >
             <img
               src={content.photo || '/images/afrid-hero.jpg'}
               alt={content.name}
-              className="w-full h-full object-cover object-center filter contrast-105 brightness-95"
+              className="w-full h-full object-cover object-top filter contrast-[1.05] brightness-95"
               referrerPolicy="no-referrer"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/images/afrid-hero.jpg';
               }}
             />
-            {/* Dark optical vignette for cosmic integration */}
+
+            {/* Seamless edge and bottom blending overlay */}
             <div 
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'radial-gradient(circle at 50% 50%, transparent 60%, rgba(3, 5, 11, 0.5) 85%, #03050B 100%)'
+                background: 'linear-gradient(to bottom, transparent 65%, rgba(5,8,22,0.85) 92%, #050816 100%)'
               }}
             />
           </div>
         </motion.div>
 
-        {/* 2. PRIMARY IDENTITY: AFRID AHMED (CRITICAL: MUST APPEAR ON ONE LINE) */}
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: stage >= 2 ? 1 : 0, y: stage >= 2 ? 0 : 10 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-[1.65rem] min-[360px]:text-[1.85rem] min-[400px]:text-[2.15rem] sm:text-4xl font-display font-black tracking-tight text-white leading-none whitespace-nowrap px-1"
-        >
-          {content.name}
-        </motion.h1>
-
-        {/* 3. Identity Line: Computer Science · AI/ML · Creator */}
-        <motion.p
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: stage >= 2 ? 1 : 0, y: stage >= 2 ? 0 : 6 }}
-          transition={{ duration: 0.5, delay: 0.05, ease: 'easeOut' }}
-          className="text-[11px] min-[360px]:text-xs sm:text-sm font-mono text-[#38BDF8] tracking-wide font-medium mt-1.5"
-        >
-          {content.category}
-        </motion.p>
-
-        {/* 4. DYNAMIC STATEMENT: I BUILD. / I CREATE. / I EXPLORE. */}
-        <div className="h-7 sm:h-8 flex items-center justify-center overflow-hidden w-full px-2 mt-1">
-          <AnimatePresence mode="wait">
-            {stage >= 3 && (
-              <motion.div
-                key={rotatingStatements[statementIndex]}
-                initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="font-display font-extrabold text-base min-[360px]:text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-white via-[#E2E8F0] to-[#38BDF8]"
-              >
-                {rotatingStatements[statementIndex]}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* 5. Short Description (Concise, no vertical bloat) */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: stage >= 4 ? 1 : 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="text-[11px] min-[360px]:text-xs sm:text-sm text-[#CBD5E1] max-w-xs sm:max-w-sm px-2 leading-relaxed font-light mt-1.5"
-        >
-          {content.description}
-        </motion.p>
-
-        {/* 6. Compact Actions (Text-link style per User Instructions, min-44px touch) */}
+        {/* 2. EYEBROW TAG: CS UNDERGRADUATE · SLIIT (Screen 1) */}
         <motion.div
           initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: stage >= 4 ? 1 : 0, y: stage >= 4 ? 0 : 6 }}
+          animate={{ opacity: stage >= 2 ? 1 : 0, y: stage >= 2 ? 0 : 6 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="flex items-center justify-center gap-4 sm:gap-6 pt-3 font-mono text-xs tracking-wider"
+          className="text-[11px] sm:text-xs font-mono text-[#38BDF8] tracking-widest uppercase font-semibold mb-1.5"
+        >
+          CS UNDERGRADUATE · SLIIT
+        </motion.div>
+
+        {/* 3. PRIMARY IDENTITY: Afrid Ahmed (Screen 1) */}
+        <motion.h1
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: stage >= 2 ? 1 : 0, y: stage >= 2 ? 0 : 8 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="text-3xl min-[360px]:text-4xl min-[400px]:text-[2.75rem] font-display font-black tracking-tight text-white leading-none whitespace-nowrap px-1"
+        >
+          Afrid <span className="text-[#38BDF8]">Ahmed</span>
+        </motion.h1>
+
+        {/* 4. CONCISE TAGLINE (Screen 1): "Building with AI & code." */}
+        <motion.p
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: stage >= 3 ? 1 : 0, y: stage >= 3 ? 0 : 6 }}
+          transition={{ duration: 0.5, delay: 0.05, ease: 'easeOut' }}
+          className="text-sm min-[360px]:text-base text-[#CBD5E1] font-normal mt-2 max-w-[34ch]"
+        >
+          Building with AI & code.
+        </motion.p>
+
+        {/* 5. DUAL ACTION BUTTONS (Screen 1): [Explore work →] [About] */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: stage >= 4 ? 1 : 0, y: stage >= 4 ? 0 : 8 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="flex flex-row items-center justify-center gap-3 pt-4 w-full max-w-xs mx-auto"
         >
           <button
             id="mobile-hero-link-work"
             onClick={onExploreWork}
-            className="min-h-[44px] px-2 text-[#38BDF8] hover:text-white font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="flex-1 min-h-[44px] px-5 py-2.5 rounded-full bg-[#38BDF8] hover:bg-[#60A5FA] text-[#03050B] font-display font-bold text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_22px_rgba(56,189,248,0.35)] active:scale-95 transition-all cursor-pointer whitespace-nowrap"
           >
-            <span>{content.primaryLinkText}</span>
-            <span className="text-sm">→</span>
+            <span>Explore work</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
-
-          <span className="text-white/20 text-xs">·</span>
 
           <button
-            id="mobile-hero-link-connect"
-            onClick={onConnect}
-            className="min-h-[44px] px-2 text-[#CBD5E1] hover:text-[#38BDF8] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            id="mobile-hero-link-about"
+            onClick={onExploreAbout || (() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }))}
+            className="min-h-[44px] px-6 py-2.5 rounded-full bg-[#0B1528]/80 hover:bg-[#0F1B33] border border-white/20 hover:border-[#38BDF8]/60 text-white font-display font-medium text-xs tracking-wider flex items-center justify-center active:scale-95 transition-all cursor-pointer whitespace-nowrap"
           >
-            <span>{content.secondaryLinkText}</span>
-            <span className="text-sm">→</span>
+            <span>About</span>
           </button>
         </motion.div>
+
+        {/* 6. SUBTLE SCROLL CHEVRON (Screen 1): ⌄ */}
+        <motion.button
+          onClick={onExploreAbout || onExploreWork}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: stage >= 4 ? 1 : 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-6 flex flex-col items-center text-[#94A3B8] hover:text-[#38BDF8] transition-colors cursor-pointer p-2"
+          aria-label="Scroll to about"
+        >
+          <ChevronDown className="w-5 h-5 animate-bounce text-[#38BDF8]/80" />
+        </motion.button>
 
       </div>
 
@@ -354,12 +349,12 @@ export const Hero: React.FC<HeroProps> = ({
 
       </div>
 
-      {/* Bottom Scroll Prompt */}
+      {/* Bottom Scroll Prompt — Desktop Only */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: stage >= 4 ? 1 : 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-6xl flex justify-between items-center text-[10px] sm:text-xs font-mono text-[#94A3B8] border-t border-white/5 pt-2 sm:pt-3 relative z-20"
+        className="hidden lg:flex w-full max-w-6xl justify-between items-center text-[10px] sm:text-xs font-mono text-[#94A3B8] border-t border-white/5 pt-2 sm:pt-3 relative z-20"
       >
         <button
           onClick={onExploreAbout || onExploreWork}

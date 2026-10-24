@@ -386,14 +386,14 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                 </button>
               </div>
 
-              {/* Prev / Next Navigation Arrows (Appear on hover & touch friendly) */}
+              {/* Prev / Next Navigation Arrows (Visible on touch, hover on desktop) */}
               {totalMedia > 1 && (
                 <>
                   <button
                     type="button"
                     onClick={handlePrevMedia}
                     aria-label="Previous project media"
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-[#07101F]/80 hover:bg-[#0B1528] text-white/70 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90"
+                    className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -402,7 +402,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                     type="button"
                     onClick={handleNextMedia}
                     aria-label="Next project media"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-[#07101F]/80 hover:bg-[#0B1528] text-white/70 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90"
+                    className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -414,99 +414,110 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
       </div>
 
       {/* ===================================================================== */}
-      {/* 2. FULLSCREEN LIGHTBOX / MEDIA VIEWER                                 */}
+      {/* 2. FULLSCREEN LIGHTBOX / MEDIA VIEWER (Screen 8)                      */}
       {/* ===================================================================== */}
       <AnimatePresence>
         {isLightboxOpen && currentMedia && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-xl">
-            {/* Modal Container */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-2xl border border-white/10 bg-[#07101F]/90 overflow-hidden shadow-2xl"
-            >
-              {/* Lightbox Header */}
-              <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 bg-[#0B1120]/80">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="font-mono text-xs font-bold text-[#38BDF8] tracking-wider uppercase">
-                    {project.title}
-                  </span>
-                  <span className="text-white/20">•</span>
-                  <span className="font-mono text-xs text-[#94A3B8] tracking-widest">
-                    {String(activeMediaIndex + 1).padStart(2, '0')} / {String(totalMedia).padStart(2, '0')}
-                  </span>
-                  {currentMedia.caption && (
-                    <>
-                      <span className="text-white/20 hidden sm:inline">•</span>
-                      <span className="text-xs font-mono text-[#CBD5E1] truncate hidden sm:inline">
-                        {currentMedia.caption}
-                      </span>
-                    </>
-                  )}
-                </div>
+          <div className="fixed inset-0 z-[70] flex flex-col justify-between bg-black/95 backdrop-blur-2xl p-2 sm:p-6">
+            
+            {/* Top Bar (Screen 8): Left Counter "1/5", Right Close "✕" */}
+            <div className="w-full flex items-center justify-between px-3 py-2 z-20">
+              <span className="font-mono text-sm sm:text-base font-semibold text-[#CBD5E1] tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                {activeMediaIndex + 1}/{totalMedia}
+              </span>
 
-                {/* Close Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsLightboxOpen(false)}
-                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#94A3B8] hover:text-white transition-colors cursor-pointer"
-                  aria-label="Close fullscreen lightbox"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsLightboxOpen(false)}
+                className="min-w-[42px] min-h-[42px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+                aria-label="Close fullscreen lightbox"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              {/* Lightbox Main Media Body */}
-              <div className="relative flex-1 min-h-[300px] max-h-[75vh] p-4 sm:p-8 flex items-center justify-center overflow-hidden">
-                {currentMedia.mediaType === 'image' ? (
-                  <img
-                    src={currentMedia.mediaUrl}
-                    alt={currentMedia.altText || currentMedia.caption || project.title}
-                    className="max-w-full max-h-[72vh] object-contain rounded-xl shadow-2xl"
-                  />
-                ) : (
-                  <video
-                    src={currentMedia.mediaUrl}
-                    controls
-                    autoPlay
-                    className="max-w-full max-h-[72vh] object-contain rounded-xl shadow-2xl"
-                  />
-                )}
-
-                {/* Lightbox Left/Right Navigation */}
-                {totalMedia > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handlePrevMedia}
-                      aria-label="Previous item"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-[#0B1528]/80 hover:bg-[#0F1E38] text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all cursor-pointer backdrop-blur-md shadow-xl active:scale-95"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNextMedia}
-                      aria-label="Next item"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-[#0B1528]/80 hover:bg-[#0F1E38] text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all cursor-pointer backdrop-blur-md shadow-xl active:scale-95"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Lightbox Footer Caption on mobile */}
-              {currentMedia.caption && (
-                <div className="px-4 py-2.5 sm:hidden border-t border-white/10 bg-[#0B1120]/80">
-                  <p className="text-xs font-mono text-[#CBD5E1] truncate">
-                    {currentMedia.caption}
-                  </p>
-                </div>
+            {/* Main Media Display with Floating Arrows */}
+            <div className="relative flex-1 w-full max-h-[75vh] flex items-center justify-center p-2 sm:p-6">
+              {currentMedia.mediaType === 'image' ? (
+                <img
+                  src={currentMedia.mediaUrl}
+                  alt={currentMedia.altText || currentMedia.caption || project.title}
+                  className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl"
+                />
+              ) : (
+                <video
+                  src={currentMedia.mediaUrl}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl"
+                />
               )}
-            </motion.div>
+
+              {/* Lightbox Left/Right Navigation Arrows */}
+              {totalMedia > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevMedia}
+                    aria-label="Previous item"
+                    className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNextMedia}
+                    aria-label="Next item"
+                    className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Bottom Thumbnail Strip (Screen 8) */}
+            {totalMedia > 1 && (
+              <div className="w-full flex items-center justify-center gap-2 py-3 overflow-x-auto z-20">
+                {mediaItems.map((item, idx) => (
+                  <button
+                    key={item.id || idx}
+                    type="button"
+                    onClick={() => {
+                      setMediaDirection(idx > activeMediaIndex ? 1 : -1);
+                      setActiveMediaIndex(idx);
+                    }}
+                    className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                      idx === activeMediaIndex
+                        ? 'border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.5)] scale-105'
+                        : 'border-white/10 opacity-50 hover:opacity-80'
+                    }`}
+                  >
+                    {item.mediaType === 'image' ? (
+                      <img
+                        src={item.mediaUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#07101F] flex items-center justify-center text-[#38BDF8]">
+                        <VideoIcon className="w-4 h-4" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Optional Caption */}
+            {currentMedia.caption && (
+              <div className="w-full text-center pb-2 px-4">
+                <p className="text-xs font-mono text-[#CBD5E1] truncate">
+                  {currentMedia.caption}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </AnimatePresence>

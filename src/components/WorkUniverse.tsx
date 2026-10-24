@@ -4,8 +4,11 @@ import {
   Github, 
   ChevronLeft, 
   ChevronRight, 
-  ArrowUpRight,
-  ExternalLink
+  ArrowUpRight, 
+  ArrowRight, 
+  ExternalLink, 
+  X,
+  Sparkles
 } from 'lucide-react';
 import { ProjectItem } from '../types';
 import { PROJECTS } from '../data/siteContent';
@@ -30,46 +33,46 @@ const ProjectHeaderContent: React.FC<ProjectHeaderContentProps> = React.memo(({
   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
     {/* Number and titles (7 cols) */}
     <div className="lg:col-span-7 space-y-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="font-mono text-xl sm:text-2xl font-black text-[#38BDF8]">
+      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+        <span className="font-mono text-lg min-[360px]:text-xl sm:text-2xl font-black text-[#38BDF8]">
           {project.number || (index < 9 ? `0${index + 1}` : `${index + 1}`)}{' '}
           <span className="text-[#38BDF8]/40 font-normal">
             / {totalProjects < 10 ? `0${totalProjects}` : totalProjects}
           </span>
         </span>
         {project.isFlagship && (
-          <span className="px-2.5 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-xs font-mono text-[#38BDF8] font-semibold">
+          <span className="px-2.5 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[11px] sm:text-xs font-mono text-[#38BDF8] font-semibold">
             FLAGSHIP SYSTEM
           </span>
         )}
-        <span className="text-xs font-mono text-[#94A3B8] tracking-widest uppercase">
+        <span className="text-[11px] sm:text-xs font-mono text-[#94A3B8] tracking-widest uppercase">
           {project.category}
         </span>
       </div>
 
-      <h3 className="text-3xl sm:text-4xl xl:text-5xl font-display font-black text-white tracking-tight">
+      <h3 className="text-2xl min-[360px]:text-3xl sm:text-4xl xl:text-5xl font-display font-black text-white tracking-tight leading-tight">
         {project.title}
       </h3>
-      <p className="text-base sm:text-lg font-mono text-[#38BDF8] font-medium">
+      <p className="text-sm min-[360px]:text-base sm:text-lg font-mono text-[#38BDF8] font-medium">
         {project.subtitle}
       </p>
 
-      <p className="text-sm sm:text-base text-[#CBD5E1] leading-relaxed max-w-2xl font-light">
+      <p className="text-xs min-[360px]:text-sm sm:text-base text-[#CBD5E1] leading-relaxed max-w-2xl font-light">
         {project.description}
       </p>
     </div>
 
     {/* Technologies & Action Links (5 cols) */}
-    <div className="lg:col-span-5 flex flex-col justify-between space-y-5 sm:space-y-6 bg-[#050816]/60 p-5 sm:p-6 rounded-2xl border border-white/5 backdrop-blur-md">
-      <div className="space-y-3">
-        <div className="text-xs font-mono tracking-wider text-[#94A3B8] uppercase">
+    <div className="lg:col-span-5 flex flex-col justify-between space-y-4 sm:space-y-6 bg-[#050816]/70 p-4 sm:p-6 rounded-2xl border border-white/5 backdrop-blur-md">
+      <div className="space-y-2.5">
+        <div className="text-[11px] sm:text-xs font-mono tracking-wider text-[#94A3B8] uppercase">
           ARCHITECTURAL STACK
         </div>
         <div className="flex flex-wrap gap-1.5">
           {(project.technologies || []).map((tech) => (
             <span
               key={tech}
-              className="px-2.5 py-1 rounded text-xs font-mono bg-[#07101F] text-[#CBD5E1] border border-white/5"
+              className="px-2.5 py-1 rounded text-[11px] sm:text-xs font-mono bg-[#07101F] text-[#CBD5E1] border border-white/5"
             >
               {tech}
             </span>
@@ -78,14 +81,14 @@ const ProjectHeaderContent: React.FC<ProjectHeaderContentProps> = React.memo(({
       </div>
 
       {/* Highlights */}
-      <div className="space-y-2 border-t border-white/5 pt-4">
-        <div className="text-xs font-mono text-[#94A3B8] uppercase">
+      <div className="space-y-2 border-t border-white/5 pt-3 sm:pt-4">
+        <div className="text-[11px] sm:text-xs font-mono text-[#94A3B8] uppercase">
           ENGINEERING HIGHLIGHTS
         </div>
         <ul className="space-y-1.5 text-xs text-[#CBD5E1] font-mono">
           {(project.highlights || []).map((h, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-[#38BDF8] mt-0.5">›</span>
+              <span className="text-[#38BDF8] mt-0.5 shrink-0">›</span>
               <span>{h}</span>
             </li>
           ))}
@@ -93,13 +96,13 @@ const ProjectHeaderContent: React.FC<ProjectHeaderContentProps> = React.memo(({
       </div>
 
       {/* Action Links */}
-      <div className="flex items-center gap-4 pt-2">
+      <div className="flex flex-wrap items-center gap-3 pt-2">
         {project.githubUrl && (
           <a
             href={project.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-xl bg-[#07101F] hover:bg-[#0B1120] border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono text-white flex items-center gap-2 transition-all cursor-pointer"
+            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-[#07101F] hover:bg-[#0B1120] border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono text-white flex items-center gap-2 transition-all cursor-pointer active:scale-95"
           >
             <Github className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>REPOSITORY</span>
@@ -111,7 +114,7 @@ const ProjectHeaderContent: React.FC<ProjectHeaderContentProps> = React.memo(({
             href={project.liveUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-xl bg-[#38BDF8] text-[#03050B] font-bold text-xs font-mono flex items-center gap-2 hover:bg-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.3)]"
+            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-[#38BDF8] text-[#03050B] font-bold text-xs font-mono flex items-center gap-2 hover:bg-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.3)] active:scale-95"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>LIVE SYSTEM</span>
@@ -154,6 +157,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   const [direction, setDirection] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
 
   // Respect system prefers-reduced-motion
   useEffect(() => {
@@ -322,23 +326,34 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   }, [handleNext, handlePrev, goToProject, visibleProjects.length]);
 
   return (
-    <section id="work" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10 overflow-x-hidden">
+    <section id="work" className="relative w-full py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-12 z-10 overflow-x-hidden scroll-mt-20 sm:scroll-mt-24">
       
       {/* Section Header */}
-      <div className="max-w-6xl mx-auto mb-6 sm:mb-8">
+      <div className="max-w-6xl mx-auto mb-4 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-4 sm:pb-6">
-          <div>
+          {/* Mobile Header (Screen 3) */}
+          <div className="lg:hidden">
+            <div className="text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold mb-1">
+              02 / WORK
+            </div>
+            <h2 className="text-3xl font-display font-extrabold text-white tracking-tight leading-tight">
+              Selected Work.
+            </h2>
+          </div>
+
+          {/* Desktop Header */}
+          <div className="hidden lg:block">
             <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1.5">
               <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
               <span>SINGULAR CONTINUOUS WORK UNIVERSE</span>
             </div>
-            <h2 className="text-4xl sm:text-[60px] sm:leading-[60px] font-display font-extrabold text-white tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-5xl md:text-[60px] md:leading-[60px] font-display font-extrabold text-white tracking-tight leading-tight">
               PROJECTS.
             </h2>
           </div>
 
-          {/* Trajectory Counter */}
-          <div className="flex items-center gap-3">
+          {/* Trajectory Counter — Desktop only */}
+          <div className="hidden lg:flex items-center gap-3">
             <span className="text-xs font-mono text-[#94A3B8] tracking-wider uppercase">
               ACTIVE TRAJECTORY
             </span>
@@ -354,9 +369,32 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* Centered Contextual Carousel Navigation: [Previous] [Active] [Next]       */}
+      {/* MOBILE HORIZONTAL PILL RAIL (Screen 3) (< lg)                             */}
       {/* ========================================================================= */}
-      <div className="max-w-4xl sm:max-w-5xl mx-auto mb-8 sm:mb-12">
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar py-1 mb-4 touch-pan-x -mx-1 px-1">
+        {visibleProjects.map((project, idx) => {
+          const isActive = project.id === activeProjectId;
+          return (
+            <button
+              key={project.id || idx}
+              type="button"
+              onClick={() => goToProject(idx)}
+              className={`px-4 py-2 rounded-full text-xs whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                isActive
+                  ? 'bg-[#38BDF8] text-[#050816] font-bold shadow-[0_0_16px_rgba(56,189,248,0.35)]'
+                  : 'bg-white/5 hover:bg-white/10 text-[#94A3B8] hover:text-white border border-white/10 font-medium'
+              }`}
+            >
+              {project.title}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* DESKTOP CONTEXTUAL CAROUSEL RAIL (lg+) — 100% PRESERVED                   */}
+      {/* ========================================================================= */}
+      <div className="hidden lg:block max-w-4xl sm:max-w-5xl mx-auto mb-6 sm:mb-10">
         <div 
           className="relative flex items-center justify-between gap-2 sm:gap-4 w-full"
           role="region"
@@ -369,17 +407,17 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
             onClick={handlePrev}
             disabled={activeIndex <= 0}
             aria-label="Previous project"
-            className="shrink-0 p-2 sm:p-2.5 rounded-full border border-white/10 bg-[#07101F]/90 backdrop-blur-md text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1528] active:scale-95 disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-[#07101F]/90 disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] z-20"
+            className="shrink-0 p-2 sm:p-2.5 rounded-full border border-white/10 bg-[#07101F]/90 backdrop-blur-md text-[#CBD5E1] hover:text-white hover:border-[#38BDF8]/40 hover:bg-[#0B1528] active:scale-95 disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-[#07101F]/90 disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] z-20 min-w-[40px] min-h-[40px] flex items-center justify-center"
           >
             <ChevronLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
           </button>
 
-          {/* Continuous Premium Carousel Viewport */}
+          {/* Continuous Premium Carousel Viewport (touch-pan-y enables smooth native scrolling) */}
           <div 
             ref={viewportRef}
             role="tablist"
             aria-label="Selected project carousel navigation"
-            className="relative flex-1 min-w-0 h-14 sm:h-16 overflow-hidden flex items-center"
+            className="relative flex-1 min-w-0 h-14 sm:h-16 overflow-hidden flex items-center touch-pan-y"
             style={{
               maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
@@ -518,11 +556,14 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
       {/* ========================================================================= */}
       {/* Active Project Presentation Panel (Stable height, smooth GPU transition)   */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* Active Project Presentation Panel (Screen 3 on mobile, preserved desktop) */}
+      {/* ========================================================================= */}
       <div 
         id="active-project-panel" 
         role="tabpanel" 
         aria-labelledby={activeProject ? `project-tab-${activeProject.id}` : undefined}
-        className="w-full max-w-6xl mx-auto min-h-[620px] sm:min-h-[580px]"
+        className="w-full max-w-6xl mx-auto"
       >
         {!activeProject ? (
           <div className="flex flex-col items-center justify-center py-20 text-center border border-white/10 rounded-2xl bg-[#07101F]/60 backdrop-blur-md">
@@ -535,85 +576,263 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-6 sm:space-y-8">
-            
-            {/* Top Project Identification Header (Directional PopLayout crossfade) */}
-            <div className="relative min-h-[260px] sm:min-h-[220px]">
-              <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-                <motion.div
-                  key={activeProject.id}
-                  custom={direction}
-                  variants={{
-                    enter: (dir: number) => ({
-                      x: reducedMotion ? 0 : dir > 0 ? 24 : -24,
-                      opacity: 0,
-                    }),
-                    center: {
-                      x: 0,
-                      opacity: 1,
-                      transition: reducedMotion
-                        ? { duration: 0.12 }
-                        : {
-                            x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
-                            opacity: { duration: 0.22, ease: 'easeOut' },
-                          },
-                    },
-                    exit: (dir: number) => ({
-                      x: reducedMotion ? 0 : dir > 0 ? -24 : 24,
-                      opacity: 0,
-                      transition: reducedMotion
-                        ? { duration: 0.1 }
-                        : {
-                            x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
-                            opacity: { duration: 0.18, ease: 'easeIn' },
-                          },
-                    }),
-                  }}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  style={{ willChange: 'transform, opacity' }}
-                  className="w-full"
-                >
-                  <ProjectHeaderContent
-                    project={activeProject}
-                    totalProjects={visibleProjects.length}
-                    index={activeIndex}
-                  />
-                </motion.div>
-              </AnimatePresence>
+          <>
+            {/* 1. MOBILE PROJECT CARD (Screen 3) (< lg) */}
+            <div className="lg:hidden flex flex-col rounded-2xl border border-white/10 bg-[#07101F]/90 backdrop-blur-md overflow-hidden">
+              <div className="w-full">
+                <ProjectMediaStage project={activeProject} />
+              </div>
+
+              <div className="p-4 sm:p-5 flex flex-col space-y-2.5">
+                <div>
+                  <h3 className="text-xl font-display font-extrabold text-white">
+                    {activeProject.title}
+                  </h3>
+                  {activeProject.subtitle && (
+                    <p className="text-xs font-mono text-[#94A3B8] mt-0.5">
+                      {activeProject.subtitle}
+                    </p>
+                  )}
+                </div>
+
+                {/* Tech stack tags (Screen 3) */}
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {(activeProject.technologies || []).slice(0, 4).map((tech) => (
+                    <span
+                      key={tech}
+                      className="px-3 py-1 rounded-full text-[11px] font-mono bg-white/5 text-[#CBD5E1] border border-white/10"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+
+                {/* View project action link (Screen 3) */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileDetailOpen(true)}
+                    className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#38BDF8] hover:text-[#7DD3FC] transition-colors cursor-pointer py-1"
+                  >
+                    <span>View project</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* Reusable Project Media Stage */}
-            <div className="w-full pt-4 sm:pt-6">
-              <ProjectMediaStage project={activeProject} />
-            </div>
+            {/* 2. DESKTOP PROJECT PRESENTATION (lg+) — 100% PRESERVED */}
+            <div className="hidden lg:block space-y-6 sm:space-y-8">
+              {/* Top Project Identification Header (Directional PopLayout crossfade) */}
+              <div className="relative min-h-[260px] sm:min-h-[220px]">
+                <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+                  <motion.div
+                    key={activeProject.id}
+                    custom={direction}
+                    variants={{
+                      enter: (dir: number) => ({
+                        x: reducedMotion ? 0 : dir > 0 ? 24 : -24,
+                        opacity: 0,
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 1,
+                        transition: reducedMotion
+                          ? { duration: 0.12 }
+                          : {
+                              x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
+                              opacity: { duration: 0.22, ease: 'easeOut' },
+                            },
+                      },
+                      exit: (dir: number) => ({
+                        x: reducedMotion ? 0 : dir > 0 ? -24 : 24,
+                        opacity: 0,
+                        transition: reducedMotion
+                          ? { duration: 0.1 }
+                          : {
+                              x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
+                              opacity: { duration: 0.18, ease: 'easeIn' },
+                            },
+                      }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    style={{ willChange: 'transform, opacity' }}
+                    className="w-full"
+                  >
+                    <ProjectHeaderContent
+                      project={activeProject}
+                      totalProjects={visibleProjects.length}
+                      index={activeIndex}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-          </div>
+              {/* Reusable Project Media Stage */}
+              <div className="w-full pt-4 sm:pt-6">
+                <ProjectMediaStage project={activeProject} />
+              </div>
+            </div>
+          </>
         )}
       </div>
 
-      {/* Concluding Work Collaboration Section: Compact Premium Statement with 3D Visualizer */}
-      <div className="max-w-6xl mx-auto mt-12 sm:mt-16 md:mt-20">
+      {/* ========================================================================= */}
+      {/* 3. MOBILE PROJECT DETAIL MODAL (Screen 7)                                  */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isMobileDetailOpen && activeProject && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-[65] bg-[#03050B]/98 backdrop-blur-2xl flex flex-col p-4 sm:p-6 overflow-y-auto lg:hidden"
+          >
+            {/* Top Bar: Back to projects */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsMobileDetailOpen(false)}
+                className="flex items-center gap-2 text-xs font-mono text-[#CBD5E1] hover:text-[#38BDF8] cursor-pointer min-h-[44px]"
+              >
+                <ChevronLeft className="w-4 h-4 text-[#38BDF8]" />
+                <span>Back to projects</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileDetailOpen(false)}
+                className="min-w-[40px] min-h-[40px] rounded-full bg-white/5 flex items-center justify-center text-[#94A3B8] hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Media Stage (Tap opens Screen 8 Lightbox) */}
+            <div className="w-full mb-4 shrink-0">
+              <ProjectMediaStage project={activeProject} />
+            </div>
+
+            {/* Details Content */}
+            <div className="space-y-4 flex-1">
+              <div className="flex items-center gap-2 text-xs font-mono text-[#38BDF8]">
+                <span>{activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)}</span>
+                <span>/</span>
+                <span className="uppercase tracking-widest">{activeProject.category}</span>
+              </div>
+
+              <h2 className="text-2xl font-display font-black text-white">
+                {activeProject.title}
+              </h2>
+
+              {activeProject.subtitle && (
+                <p className="text-sm font-mono text-[#38BDF8]">
+                  {activeProject.subtitle}
+                </p>
+              )}
+
+              <p className="text-sm text-[#CBD5E1] leading-relaxed font-light">
+                {activeProject.description}
+              </p>
+
+              {/* Technologies Stack */}
+              <div className="space-y-2 pt-2">
+                <div className="text-xs font-mono text-[#94A3B8] uppercase">Technologies</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(activeProject.technologies || []).map((t) => (
+                    <span key={t} className="px-2.5 py-1 rounded text-xs font-mono bg-[#07101F] text-[#CBD5E1] border border-white/10">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Highlights */}
+              {activeProject.highlights && activeProject.highlights.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-white/5">
+                  <div className="text-xs font-mono text-[#94A3B8] uppercase">Engineering Highlights</div>
+                  <ul className="space-y-1.5 text-xs text-[#CBD5E1] font-mono">
+                    {activeProject.highlights.map((h, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-[#38BDF8] shrink-0 mt-0.5">›</span>
+                        <span>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Actions (Screen 7) */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 pb-6">
+                {activeProject.liveUrl && activeProject.liveUrl !== '#' && (
+                  <a
+                    href={activeProject.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full min-h-[46px] rounded-full bg-[#38BDF8] text-[#03050B] font-display font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#7DD3FC] transition-all shadow-[0_0_20px_rgba(56,189,248,0.25)]"
+                  >
+                    <span>View live demo</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+                {activeProject.githubUrl && (
+                  <a
+                    href={activeProject.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full min-h-[46px] rounded-full bg-[#07101F] border border-white/20 hover:border-[#38BDF8]/60 text-white font-mono text-xs flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Github className="w-3.5 h-3.5 text-[#38BDF8]" />
+                    <span>View code</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Concluding Work Collaboration Section */}
+      <div className="max-w-6xl mx-auto mt-8 sm:mt-16 md:mt-20">
+        
+        {/* Mobile Collaboration Card (Screen 3) */}
+        <div className="lg:hidden p-4 rounded-xl border border-white/10 bg-[#07101F]/80 backdrop-blur-md flex flex-col gap-3 text-left">
+          <div className="flex items-center gap-2.5 text-white font-display font-medium text-sm">
+            <div className="w-6 h-6 rounded-md bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] shrink-0">
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+            <span>Let's build something great together.</span>
+          </div>
+          <button
+            type="button"
+            onClick={onWorkTogether || (() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }))}
+            className="min-h-[42px] px-5 py-2.5 rounded-full bg-[#38BDF8] text-[#03050B] font-display font-bold text-xs tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#7DD3FC] active:scale-95 transition-all shadow-[0_0_18px_rgba(56,189,248,0.3)] w-full cursor-pointer"
+          >
+            <span>Get in touch</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Desktop Collaboration Card (lg+) — 100% PRESERVED */}
         <div 
-          className="group relative rounded-2xl border border-white/10 hover:border-[#38BDF8]/40 bg-[#050816]/85 backdrop-blur-xl p-6 sm:p-8 md:p-10 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(56,189,248,0.08)] overflow-hidden"
+          className="hidden lg:block group relative rounded-2xl border border-white/10 hover:border-[#38BDF8]/40 bg-[#050816]/85 backdrop-blur-xl p-5 sm:p-8 md:p-10 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(56,189,248,0.08)] overflow-hidden"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          
           {/* Ambient subtle light accent */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#38BDF8]/6 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-[#38BDF8]/10 transition-all duration-500" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            
+          <div className="grid grid-cols-12 gap-8 items-center relative z-10">
             {/* Left Column: Authentic Direct Technical Statement (7 cols) */}
-            <div className="lg:col-span-7 space-y-4">
+            <div className="col-span-7 space-y-3.5 text-left">
               <div className="flex items-center gap-2 font-mono text-xs text-[#38BDF8] tracking-widest uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
                 <span>CO-CREATION & ENGINEERING</span>
               </div>
 
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-display font-black text-white tracking-tight leading-tight">
+              <h3 className="text-3xl sm:text-4xl font-display font-black text-white tracking-tight leading-tight">
                 LET'S WORK.
               </h3>
 
@@ -621,17 +840,11 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                 Whether you need low-level embedded telemetry with the ESP32-S3, high-performance C state engines, or modern web interfaces powered by TypeScript and AI, I build clean, reliable systems from the ground up.
               </p>
 
-              <div className="pt-2 flex flex-wrap items-center gap-4">
+              <div className="pt-2 flex items-center gap-3.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (onWorkTogether) {
-                      onWorkTogether();
-                    } else {
-                      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="px-6 py-3 rounded-xl bg-[#38BDF8] text-[#03050B] font-mono font-bold text-xs flex items-center gap-2 hover:bg-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.3)] active:scale-95"
+                  onClick={onWorkTogether || (() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }))}
+                  className="min-h-[46px] px-6 py-2.5 rounded-full bg-[#38BDF8] text-[#03050B] font-mono font-bold text-xs flex items-center gap-2 hover:bg-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.3)] active:scale-95"
                 >
                   <span>LET'S TALK</span>
                   <ArrowUpRight className="w-4 h-4" />
@@ -639,16 +852,15 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
 
                 <div className="flex items-center gap-2 text-xs font-mono text-[#94A3B8]">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Available for summer & project collaborations</span>
+                  <span>Available for project collaborations</span>
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Interactive 3D Canvas Visualizer (5 cols) */}
-            <div className="lg:col-span-5 h-56 sm:h-64 lg:h-72 w-full rounded-xl bg-[#03050B]/80 border border-white/5 overflow-hidden relative">
+            {/* Right Column: Scaled 3D Canvas Visualizer (5 cols) */}
+            <div className="col-span-5 h-64 w-full rounded-xl bg-[#03050B]/80 border border-white/5 overflow-hidden relative">
               <AiBuilderScene3D isHovered={isHovered} />
             </div>
-
           </div>
         </div>
       </div>

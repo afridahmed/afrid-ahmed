@@ -70,12 +70,23 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
   }
 
   return (
-    <section id="journey" className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-8 md:px-12 z-10">
+    <section id="journey" className="relative w-full py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-12 z-10 scroll-mt-20 sm:scroll-mt-24">
       
       {/* Header */}
-      <div className="max-w-6xl mx-auto mb-8 sm:mb-12">
+      <div className="max-w-6xl mx-auto mb-6 sm:mb-10">
         <div className="border-b border-white/10 pb-4 sm:pb-6 flex flex-col md:flex-row md:items-end justify-between gap-3">
-          <div>
+          {/* Mobile Header (Screen 4) */}
+          <div className="md:hidden">
+            <div className="text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold mb-1">
+              03 / JOURNEY
+            </div>
+            <h2 className="text-3xl font-display font-extrabold text-white tracking-tight leading-tight">
+              The journey.
+            </h2>
+          </div>
+
+          {/* Desktop Header */}
+          <div className="hidden md:block">
             <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1">
               <Milestone className="w-3.5 h-3.5" />
               <span>{content.badge}</span>
@@ -88,7 +99,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#07101F] border border-[#38BDF8]/20 text-xs font-mono text-[#CBD5E1]">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#07101F] border border-[#38BDF8]/20 text-xs font-mono text-[#CBD5E1]">
             <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
             <span>{content.horizonAnchor}</span>
           </div>
@@ -97,70 +108,137 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 
       <div className="max-w-6xl mx-auto space-y-6 sm:space-y-10">
         
-        {/* Constellation Year Scrubber / Navigation Rail (Compact on mobile, expanded on desktop) */}
-        <div className="relative flex items-center justify-between gap-2 overflow-x-auto pb-2 sm:pb-4 pt-1 scrollbar-none">
-          {/* Background constellation beam */}
-          <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-gradient-to-r from-[#38BDF8] via-[#60A5FA] to-[#1E3A8A]/40 -translate-y-1/2 z-0 pointer-events-none hidden sm:block" />
+        {/* ========================================================================= */}
+        {/* 1. MOBILE VERTICAL TIMELINE (Screen 4) (< md)                             */}
+        {/* ========================================================================= */}
+        <div className="md:hidden relative pl-6 space-y-5">
+          {/* Continuous vertical cyan line */}
+          <div className="absolute left-2.5 top-2 bottom-2 w-[2px] bg-gradient-to-b from-[#38BDF8] via-[#38BDF8]/40 to-transparent" />
 
-          {milestoneList.map((m) => {
-            const yearStr = String(m.year ?? '');
-            const shortYear = yearStr.length >= 2 ? yearStr.slice(-2) : yearStr;
-            const isSelected = yearStr === selectedYear;
+          {milestoneList.map((m, idx) => {
             const isCurrent = m.status === 'current';
-
             return (
-              <button
-                key={yearStr}
-                onClick={() => setSelectedYear(yearStr)}
-                className={`relative z-10 flex flex-col items-center gap-1.5 p-2 sm:p-3.5 rounded-xl border transition-all duration-200 min-w-[70px] sm:min-w-[120px] cursor-pointer ${
-                  isSelected
-                    ? 'border-[#38BDF8] bg-[#07101F] shadow-[0_0_20px_rgba(56,189,248,0.25)]'
-                    : 'border-white/10 bg-[#03050B]/80 hover:border-white/20 hover:bg-[#07101F]/60'
-                }`}
-              >
-                {/* Small Node Orb */}
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-mono text-xs font-bold transition-all ${
-                  isSelected
-                    ? 'bg-[#38BDF8] text-[#03050B] scale-105 shadow-[0_0_12px_#38BDF8]'
-                    : isCurrent
-                    ? 'bg-[#0B1120] text-[#38BDF8] border border-[#38BDF8]'
-                    : 'bg-[#07101F] text-[#94A3B8] border border-white/10'
+              <div key={m.year || idx} className="relative group">
+                {/* Glowing node dot */}
+                <div 
+                  className={`absolute -left-[19.5px] top-2 w-3.5 h-3.5 rounded-full border-2 border-[#03050B] z-10 ${
+                    isCurrent 
+                      ? 'bg-[#38BDF8] shadow-[0_0_10px_#38BDF8]' 
+                      : 'bg-[#0B1528] border-white/20'
+                  }`} 
+                />
+
+                {/* Milestone Card (Screen 4) */}
+                <div className={`p-4 rounded-xl border backdrop-blur-md space-y-2.5 transition-all ${
+                  isCurrent 
+                    ? 'bg-[#07101F]/90 border-[#38BDF8]/40 shadow-[0_0_20px_rgba(56,189,248,0.12)]' 
+                    : 'bg-[#050816]/80 border-white/10'
                 }`}>
-                  {shortYear}
-                </div>
-
-                <div className="text-center">
-                  <div className="font-mono text-xs font-bold text-white tracking-wider">
-                    {yearStr}
+                  {/* Top row: Year & Status badge */}
+                  <div className="flex items-center justify-between">
+                    <span className="font-display font-extrabold text-xl text-white">
+                      {String(m.year)}
+                    </span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider ${
+                      isCurrent 
+                        ? 'bg-[#38BDF8] text-[#03050B]' 
+                        : 'bg-white/10 text-[#94A3B8] border border-white/10'
+                    }`}>
+                      {isCurrent ? 'NOW' : m.phase || 'HORIZON'}
+                    </span>
                   </div>
-                  <div className={`text-[9px] sm:text-[10px] font-mono truncate max-w-[65px] sm:max-w-[90px] ${
-                    isCurrent ? 'text-[#38BDF8]' : 'text-[#94A3B8]'
-                  }`}>
-                    {m.phase}
-                  </div>
-                </div>
 
-                {isCurrent && (
-                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38BDF8] opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38BDF8]" />
-                  </span>
-                )}
-              </button>
+                  {/* Title */}
+                  <h3 className="font-display font-bold text-base text-white leading-snug">
+                    {m.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-xs text-[#CBD5E1] leading-relaxed font-light">
+                    {m.description}
+                  </p>
+
+                  {/* Focus Tag (Screen 4) */}
+                  {m.focusAreas && m.focusAreas.length > 0 && (
+                    <div className="pt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-mono text-[#38BDF8]">
+                      <span className="text-[#94A3B8]">Key focus:</span>
+                      <span>{m.focusAreas.slice(0, 2).join(' · ')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>
 
-        {/* Milestone Detail Card */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={String(activeMilestone.year)}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            className="relative rounded-2xl border border-[#38BDF8]/20 bg-[#050816]/90 backdrop-blur-xl p-4 sm:p-8 shadow-[0_0_40px_rgba(56,189,248,0.06)] overflow-hidden"
-          >
+        {/* ========================================================================= */}
+        {/* 2. DESKTOP CONSTELLATION TIMELINE (md+) — 100% PRESERVED                  */}
+        {/* ========================================================================= */}
+        <div className="hidden md:block space-y-6 sm:space-y-10">
+          {/* Constellation Year Scrubber / Navigation Rail */}
+          <div className="relative flex items-center justify-between gap-2 overflow-x-auto pb-2 sm:pb-4 pt-1 scrollbar-none touch-pan-x">
+            {/* Background constellation beam */}
+            <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-gradient-to-r from-[#38BDF8] via-[#60A5FA] to-[#1E3A8A]/40 -translate-y-1/2 z-0 pointer-events-none" />
+
+            {milestoneList.map((m) => {
+              const yearStr = String(m.year ?? '');
+              const shortYear = yearStr.length >= 2 ? yearStr.slice(-2) : yearStr;
+              const isSelected = yearStr === selectedYear;
+              const isCurrent = m.status === 'current';
+
+              return (
+                <button
+                  key={yearStr}
+                  onClick={() => setSelectedYear(yearStr)}
+                  className={`relative z-10 flex flex-col items-center gap-1.5 p-2 sm:p-3.5 rounded-xl border transition-all duration-200 min-w-[65px] min-h-[48px] sm:min-w-[120px] cursor-pointer active:scale-95 ${
+                    isSelected
+                      ? 'border-[#38BDF8] bg-[#07101F] shadow-[0_0_20px_rgba(56,189,248,0.25)]'
+                      : 'border-white/10 bg-[#03050B]/80 hover:border-white/20 hover:bg-[#07101F]/60'
+                  }`}
+                >
+                  {/* Small Node Orb */}
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-mono text-xs font-bold transition-all ${
+                    isSelected
+                      ? 'bg-[#38BDF8] text-[#03050B] scale-105 shadow-[0_0_12px_#38BDF8]'
+                      : isCurrent
+                      ? 'bg-[#0B1120] text-[#38BDF8] border border-[#38BDF8]'
+                      : 'bg-[#07101F] text-[#94A3B8] border border-white/10'
+                  }`}>
+                    {shortYear}
+                  </div>
+
+                  <div className="text-center">
+                    <div className="font-mono text-xs font-bold text-white tracking-wider">
+                      {yearStr}
+                    </div>
+                    <div className={`text-[9px] sm:text-[10px] font-mono truncate max-w-[65px] sm:max-w-[90px] ${
+                      isCurrent ? 'text-[#38BDF8]' : 'text-[#94A3B8]'
+                    }`}>
+                      {m.phase}
+                    </div>
+                  </div>
+
+                  {isCurrent && (
+                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38BDF8] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38BDF8]" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Milestone Detail Card */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={String(activeMilestone.year)}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="relative rounded-2xl border border-[#38BDF8]/20 bg-[#050816]/90 backdrop-blur-xl p-4 sm:p-8 shadow-[0_0_40px_rgba(56,189,248,0.06)] overflow-hidden"
+            >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
               
               {/* Left Column (7 cols) */}
@@ -247,6 +325,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
             </div>
           </motion.div>
         </AnimatePresence>
+        </div>
 
       </div>
 

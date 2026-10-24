@@ -197,10 +197,12 @@ export default function App() {
   // Canonical data sources from central siteContent.ts
   const milestones = JOURNEY.milestones;
 
-  // IntersectionObserver to update active navigation tab based on scroll position
+  // Optimized scroll tracking for active navigation tab with RAF throttle
   useEffect(() => {
     const sections = ['hero', 'about', 'work', 'journey', 'contact'];
-    const handleScroll = () => {
+    let ticking = false;
+
+    const updateActiveSection = () => {
       const scrollPosition = window.scrollY + window.innerHeight * 0.35;
       for (const sectionId of sections) {
         const element = document.getElementById(sectionId);
@@ -208,10 +210,18 @@ export default function App() {
           const top = element.offsetTop;
           const height = element.offsetHeight;
           if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(sectionId);
+            setActiveSection(prev => prev === sectionId ? prev : sectionId);
             break;
           }
         }
+      }
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(updateActiveSection);
       }
     };
 
