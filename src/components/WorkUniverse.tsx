@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { ProjectItem } from '../types';
 import { PROJECTS } from '../data/siteContent';
-import { AiBuilderScene3D } from './AiBuilderScene3D';
+import { InteractiveRobot } from './InteractiveRobot';
 import { ProjectMediaStage } from './ProjectMediaStage';
 
 // ============================================================================
@@ -796,37 +796,17 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
 
       {/* Concluding Work Collaboration Section */}
       <div className="max-w-6xl mx-auto mt-8 sm:mt-16 md:mt-20">
-        
-        {/* Mobile Collaboration Card (Screen 3) */}
-        <div className="lg:hidden p-4 rounded-xl border border-white/10 bg-[#07101F]/80 backdrop-blur-md flex flex-col gap-3 text-left">
-          <div className="flex items-center gap-2.5 text-white font-display font-medium text-sm">
-            <div className="w-6 h-6 rounded-md bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] shrink-0">
-              <Sparkles className="w-3.5 h-3.5" />
-            </div>
-            <span>Let's build something great together.</span>
-          </div>
-          <button
-            type="button"
-            onClick={onWorkTogether || (() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }))}
-            className="min-h-[42px] px-5 py-2.5 rounded-full bg-[#38BDF8] text-[#03050B] font-display font-bold text-xs tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#7DD3FC] active:scale-95 transition-all shadow-[0_0_18px_rgba(56,189,248,0.3)] w-full cursor-pointer"
-          >
-            <span>Get in touch</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Desktop Collaboration Card (lg+) — 100% PRESERVED */}
         <div 
-          className="hidden lg:block group relative rounded-2xl border border-white/10 hover:border-[#38BDF8]/40 bg-[#050816]/85 backdrop-blur-xl p-5 sm:p-8 md:p-10 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(56,189,248,0.08)] overflow-hidden"
+          className="group relative rounded-2xl border border-white/10 hover:border-[#38BDF8]/40 bg-[#050816]/85 backdrop-blur-xl p-5 sm:p-8 md:p-10 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(56,189,248,0.08)] overflow-hidden"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Ambient subtle light accent */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#38BDF8]/6 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-[#38BDF8]/10 transition-all duration-500" />
 
-          <div className="grid grid-cols-12 gap-8 items-center relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             {/* Left Column: Authentic Direct Technical Statement (7 cols) */}
-            <div className="col-span-7 space-y-3.5 text-left">
+            <div className="lg:col-span-7 space-y-3.5 text-left">
               <div className="flex items-center gap-2 font-mono text-xs text-[#38BDF8] tracking-widest uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
                 <span>CO-CREATION & ENGINEERING</span>
@@ -840,7 +820,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                 Whether you need low-level embedded telemetry with the ESP32-S3, high-performance C state engines, or modern web interfaces powered by TypeScript and AI, I build clean, reliable systems from the ground up.
               </p>
 
-              <div className="pt-2 flex items-center gap-3.5">
+              <div className="pt-2 flex flex-wrap items-center gap-3.5">
                 <button
                   type="button"
                   onClick={onWorkTogether || (() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }))}
@@ -857,9 +837,9 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
               </div>
             </div>
 
-            {/* Right Column: Scaled 3D Canvas Visualizer (5 cols) */}
-            <div className="col-span-5 h-64 w-full rounded-xl bg-[#03050B]/80 border border-white/5 overflow-hidden relative">
-              <AiBuilderScene3D isHovered={isHovered} />
+            {/* Right Column: Interactive Robot Animation (5 cols on desktop, responsive & attractive on mobile) */}
+            <div className="lg:col-span-5 w-full flex items-center justify-center">
+              <InteractiveRobot reducedMotion={reducedMotion} />
             </div>
           </div>
         </div>
