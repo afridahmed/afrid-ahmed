@@ -89,3 +89,76 @@ h1, h2, h3, .font-display {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 189, 248, 0.4);
 }
+
+/* Desktop Work Showcase Fluid Viewport Fit (lg+ >= 1024px) */
+@media (min-width: 1024px) {
+  .work-desktop-section {
+    scroll-margin-top: 72px;
+    padding-top: clamp(0.75rem, 1.9vh, 2.25rem);
+  }
+
+  .work-desktop-header-wrap {
+    margin-bottom: clamp(0.5rem, 1.35vh, 1.25rem);
+  }
+
+  .work-desktop-header {
+    padding-bottom: clamp(0.55rem, 1.25vh, 1.15rem);
+  }
+
+  .work-desktop-title {
+    font-size: clamp(2.125rem, min(4.2vw, 4.7vh), 3.35rem);
+    line-height: 1.02;
+  }
+
+  .work-desktop-rail-wrap {
+    margin-bottom: clamp(0.625rem, 1.5vh, 1.375rem);
+  }
+
+  .work-desktop-showcase {
+    padding: clamp(1rem, min(1.6vw, 2vh), 1.625rem);
+  }
+
+  .work-desktop-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr);
+    gap: clamp(1.125rem, min(2vw, 2.3vh), 2rem);
+    align-items: stretch;
+  }
+
+  .work-desktop-gallery {
+    height: 100%;
+    min-height: clamp(275px, 44vh, 455px);
+  }
+
+  .work-desktop-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(0.5rem, 1.1vh, 0.875rem);
+  }
+
+  .work-desktop-project-title {
+    font-size: clamp(1.375rem, min(2.2vw, 3.45vh), 2.05rem);
+    line-height: 1.12;
+  }
+
+  .work-desktop-project-subtitle {
+    font-size: clamp(0.8125rem, min(1.05vw, 1.7vh), 0.95rem);
+    line-height: 1.35;
+  }
+
+  .work-desktop-project-desc {
+    font-size: clamp(0.8125rem, min(0.96vw, 1.65vh), 0.925rem);
+    line-height: 1.5;
+  }
+
+  .work-desktop-divider-block {
+    padding-top: clamp(0.45rem, 1vh, 0.8rem);
+  }
+
+  .work-desktop-highlights {
+    font-size: clamp(0.75rem, min(0.88vw, 1.5vh), 0.8125rem);
+    line-height: 1.38;
+  }
+}
+

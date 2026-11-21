@@ -8,7 +8,8 @@ import {
   ArrowRight, 
   ExternalLink, 
   X,
-  Sparkles
+  Sparkles,
+  Lock
 } from 'lucide-react';
 import { ProjectItem } from '../types';
 import { PROJECTS } from '../data/siteContent';
@@ -16,116 +17,158 @@ import { InteractiveRobot } from './InteractiveRobot';
 import { ProjectMediaStage } from './ProjectMediaStage';
 
 // ============================================================================
-// MEMOIZED PROJECT IDENTIFICATION HEADER
+// MEMOIZED DESKTOP EDITORIAL PROJECT DETAILS (Right Column)
 // ============================================================================
 
-interface ProjectHeaderContentProps {
+interface DesktopProjectDetailsProps {
   project: ProjectItem;
   totalProjects: number;
   index: number;
 }
 
-const ProjectHeaderContent: React.FC<ProjectHeaderContentProps> = React.memo(({
+const DesktopProjectDetails: React.FC<DesktopProjectDetailsProps> = React.memo(({
   project,
   totalProjects,
   index
 }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-    {/* Number and titles (7 cols) */}
-    <div className="lg:col-span-7 space-y-3">
-      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-        <span className="font-mono text-lg min-[360px]:text-xl sm:text-2xl font-black text-[#38BDF8]">
-          {project.number || (index < 9 ? `0${index + 1}` : `${index + 1}`)}{' '}
-          <span className="text-[#38BDF8]/40 font-normal">
-            / {totalProjects < 10 ? `0${totalProjects}` : totalProjects}
-          </span>
+  <div className="work-desktop-info min-w-0">
+    {/* 1. Project number & flagship/category indicator */}
+    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+      <span className="font-mono text-sm font-bold text-[#38BDF8] tabular-nums">
+        {project.number || (index < 9 ? `0${index + 1}` : `${index + 1}`)}
+        <span className="text-[#38BDF8]/40 font-normal">
+          {' '}/ {totalProjects < 10 ? `0${totalProjects}` : totalProjects}
         </span>
-        {project.isFlagship && (
-          <span className="px-2.5 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[11px] sm:text-xs font-mono text-[#38BDF8] font-semibold">
-            FLAGSHIP SYSTEM
+      </span>
+      <span className="text-white/20 text-xs" aria-hidden="true">·</span>
+      {project.isFlagship && (
+        <>
+          <span className="px-2 py-0.5 rounded-full bg-[#38BDF8]/12 border border-[#38BDF8]/30 text-[10px] font-mono text-[#38BDF8] font-semibold tracking-wider uppercase whitespace-nowrap">
+            Flagship System
           </span>
-        )}
-        <span className="text-[11px] sm:text-xs font-mono text-[#94A3B8] tracking-widest uppercase">
-          {project.category}
-        </span>
-      </div>
-
-      <h3 className="text-2xl min-[360px]:text-3xl sm:text-4xl xl:text-5xl font-display font-black text-white tracking-tight leading-tight">
-        {project.title}
-      </h3>
-      <p className="text-sm min-[360px]:text-base sm:text-lg font-mono text-[#38BDF8] font-medium">
-        {project.subtitle}
-      </p>
-
-      <p className="text-xs min-[360px]:text-sm sm:text-base text-[#CBD5E1] leading-relaxed max-w-2xl font-light">
-        {project.description}
-      </p>
+          <span className="text-white/20 text-xs" aria-hidden="true">·</span>
+        </>
+      )}
+      <span className="text-[11px] font-mono text-[#94A3B8] tracking-wider uppercase">
+        {project.category}
+      </span>
     </div>
 
-    {/* Technologies & Action Links (5 cols) */}
-    <div className="lg:col-span-5 flex flex-col justify-between space-y-4 sm:space-y-6 bg-[#050816]/70 p-4 sm:p-6 rounded-2xl border border-white/5 backdrop-blur-md">
-      <div className="space-y-2.5">
-        <div className="text-[11px] sm:text-xs font-mono tracking-wider text-[#94A3B8] uppercase">
-          ARCHITECTURAL STACK
+    {/* 2. Project name & 3. Short subtitle */}
+    <div className="space-y-1">
+      <h3 className="work-desktop-project-title font-display font-black text-white tracking-tight text-balance">
+        {project.title}
+      </h3>
+      {project.subtitle && (
+        <p className="work-desktop-project-subtitle font-mono text-[#38BDF8] font-medium">
+          {project.subtitle}
+        </p>
+      )}
+    </div>
+
+    {/* 4. Project description */}
+    {project.description && (
+      <p className="work-desktop-project-desc text-[#CBD5E1] font-light">
+        {project.description}
+      </p>
+    )}
+
+    {/* 5. Architectural Stack heading & technology chips */}
+    {project.technologies && project.technologies.length > 0 && (
+      <div className="work-desktop-divider-block border-t border-white/10 space-y-1.5">
+        <div className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase font-medium">
+          Architectural Stack
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {(project.technologies || []).map((tech) => (
+          {project.technologies.map((tech) => (
             <span
               key={tech}
-              className="px-2.5 py-1 rounded text-[11px] sm:text-xs font-mono bg-[#07101F] text-[#CBD5E1] border border-white/5"
+              className="px-2.5 py-[3px] rounded-md text-[11px] font-mono bg-[#07101F]/95 text-[#CBD5E1] border border-white/10 hover:border-[#38BDF8]/30 transition-colors"
             >
               {tech}
             </span>
           ))}
         </div>
       </div>
+    )}
 
-      {/* Highlights */}
-      <div className="space-y-2 border-t border-white/5 pt-3 sm:pt-4">
-        <div className="text-[11px] sm:text-xs font-mono text-[#94A3B8] uppercase">
-          ENGINEERING HIGHLIGHTS
+    {/* 6. Engineering highlights, if available */}
+    {project.highlights && project.highlights.length > 0 && (
+      <div className="work-desktop-divider-block border-t border-white/10 space-y-1.5">
+        <div className="text-[10px] font-mono tracking-widest text-[#94A3B8] uppercase font-medium">
+          Engineering Highlights
         </div>
-        <ul className="space-y-1.5 text-xs text-[#CBD5E1] font-mono">
-          {(project.highlights || []).map((h, i) => (
+        <ul className="work-desktop-highlights space-y-1 text-[#CBD5E1] font-mono">
+          {project.highlights.map((h, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-[#38BDF8] mt-0.5 shrink-0">›</span>
+              <span className="text-[#38BDF8] shrink-0">›</span>
               <span>{h}</span>
             </li>
           ))}
         </ul>
       </div>
+    )}
 
-      {/* Action Links */}
-      <div className="flex flex-wrap items-center gap-3 pt-2">
-        {project.githubUrl && (
-          <a
-            href={project.githubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-[#07101F] hover:bg-[#0B1120] border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono text-white flex items-center gap-2 transition-all cursor-pointer active:scale-95"
-          >
-            <Github className="w-3.5 h-3.5 text-[#38BDF8]" />
-            <span>REPOSITORY</span>
-            <ArrowUpRight className="w-3 h-3 text-[#94A3B8]" />
-          </a>
-        )}
-        {project.liveUrl && project.liveUrl !== '#' && (
-          <a
-            href={project.liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-[#38BDF8] text-[#03050B] font-bold text-xs font-mono flex items-center gap-2 hover:bg-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.3)] active:scale-95"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>LIVE SYSTEM</span>
-          </a>
-        )}
-      </div>
-    </div>
+    {/* Optional external repository & live links */}
+    {(() => {
+      const rawGithub = (project.githubUrl || '').trim();
+      const rawLive = (project.liveUrl || '').trim();
+      const isPrivateRepo = rawGithub.toLowerCase() === 'private' || rawGithub === '#private';
+      const hasGithub = Boolean(rawGithub && rawGithub !== '#' && !isPrivateRepo);
+      const hasLive = Boolean(rawLive && rawLive !== '#');
+      const showRepoSlot = hasGithub || isPrivateRepo;
+
+      if (!showRepoSlot && !hasLive) return null;
+
+      const isTwoCol = showRepoSlot && hasLive;
+
+      return (
+        <div
+          className={`work-desktop-divider-block border-t border-white/10 grid gap-2.5 w-full ${
+            isTwoCol ? 'grid-cols-2' : 'grid-cols-1'
+          }`}
+        >
+          {hasGithub && (
+            <a
+              href={rawGithub}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full min-w-0 min-h-[42px] px-4 py-2 rounded-lg bg-[#07101F] hover:bg-[#0B1120] border border-white/10 hover:border-[#38BDF8]/40 text-[11px] font-mono font-medium text-white flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+            >
+              <Github className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
+              <span className="truncate">REPOSITORY</span>
+              <ArrowUpRight className="w-3 h-3 text-[#94A3B8] shrink-0" />
+            </a>
+          )}
+
+          {isPrivateRepo && (
+            <div
+              aria-label="Private repository"
+              className="w-full min-w-0 min-h-[42px] px-4 py-2 rounded-lg bg-[#07101F]/70 border border-white/10 text-[11px] font-mono font-medium text-[#94A3B8] flex items-center justify-center gap-2 select-none whitespace-nowrap"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#94A3B8] shrink-0" />
+              <span className="truncate">PRIVATE</span>
+            </div>
+          )}
+
+          {hasLive && (
+            <a
+              href={rawLive}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full min-w-0 min-h-[42px] px-4 py-2 rounded-lg bg-[#38BDF8] border border-[#38BDF8] text-[#03050B] font-bold text-[11px] font-mono flex items-center justify-center gap-2 hover:bg-[#7DD3FC] hover:border-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.25)] active:scale-95 whitespace-nowrap"
+            >
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">LIVE SYSTEM</span>
+            </a>
+          )}
+        </div>
+      );
+    })()}
   </div>
 ));
 
-ProjectHeaderContent.displayName = 'ProjectHeaderContent';
+DesktopProjectDetails.displayName = 'DesktopProjectDetails';
 
 // ============================================================================
 // MAIN WORKUNIVERSE COMPONENT
@@ -326,11 +369,11 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   }, [handleNext, handlePrev, goToProject, visibleProjects.length]);
 
   return (
-    <section id="work" className="relative w-full py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-12 z-10 overflow-x-hidden scroll-mt-20 sm:scroll-mt-24">
+    <section id="work" className="relative w-full py-14 sm:py-20 md:py-28 work-desktop-section px-4 sm:px-8 md:px-12 z-10 overflow-x-hidden scroll-mt-20 sm:scroll-mt-24">
       
       {/* Section Header */}
-      <div className="max-w-6xl mx-auto mb-4 sm:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-4 sm:pb-6">
+      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 work-desktop-header-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-4 sm:pb-6 work-desktop-header">
           {/* Mobile Header (Screen 3) */}
           <div className="lg:hidden">
             <div className="text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold mb-1">
@@ -343,11 +386,11 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
 
           {/* Desktop Header */}
           <div className="hidden lg:block">
-            <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1.5">
+            <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1">
               <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
               <span>SINGULAR CONTINUOUS WORK UNIVERSE</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl md:text-[60px] md:leading-[60px] font-display font-extrabold text-white tracking-tight leading-tight">
+            <h2 className="work-desktop-title font-display font-extrabold text-white tracking-tight">
               PROJECTS.
             </h2>
           </div>
@@ -357,7 +400,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
             <span className="text-xs font-mono text-[#94A3B8] tracking-wider uppercase">
               ACTIVE TRAJECTORY
             </span>
-            <div className="px-3 py-1 rounded-full bg-[#07101F] border border-white/10 font-mono text-xs">
+            <div className="px-3 py-1 rounded-full bg-[#07101F] border border-white/10 font-mono text-xs tabular-nums">
               <span className="text-[#38BDF8] font-bold">
                 {activeProject ? (activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)) : '--'}
               </span>
@@ -394,7 +437,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
       {/* ========================================================================= */}
       {/* DESKTOP CONTEXTUAL CAROUSEL RAIL (lg+) — 100% PRESERVED                   */}
       {/* ========================================================================= */}
-      <div className="hidden lg:block max-w-4xl sm:max-w-5xl mx-auto mb-6 sm:mb-10">
+      <div className="hidden lg:block max-w-4xl sm:max-w-5xl mx-auto mb-6 sm:mb-10 work-desktop-rail-wrap">
         <div 
           className="relative flex items-center justify-between gap-2 sm:gap-4 w-full"
           role="region"
@@ -621,58 +664,72 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
               </div>
             </div>
 
-            {/* 2. DESKTOP PROJECT PRESENTATION (lg+) — 100% PRESERVED */}
-            <div className="hidden lg:block space-y-6 sm:space-y-8">
-              {/* Top Project Identification Header (Directional PopLayout crossfade) */}
-              <div className="relative min-h-[260px] sm:min-h-[220px]">
-                <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-                  <motion.div
-                    key={activeProject.id}
-                    custom={direction}
-                    variants={{
-                      enter: (dir: number) => ({
-                        x: reducedMotion ? 0 : dir > 0 ? 24 : -24,
-                        opacity: 0,
-                      }),
-                      center: {
-                        x: 0,
-                        opacity: 1,
-                        transition: reducedMotion
-                          ? { duration: 0.12 }
-                          : {
-                              x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
-                              opacity: { duration: 0.22, ease: 'easeOut' },
-                            },
-                      },
-                      exit: (dir: number) => ({
-                        x: reducedMotion ? 0 : dir > 0 ? -24 : 24,
-                        opacity: 0,
-                        transition: reducedMotion
-                          ? { duration: 0.1 }
-                          : {
-                              x: { type: 'spring', stiffness: 450, damping: 36, mass: 0.65 },
-                              opacity: { duration: 0.18, ease: 'easeIn' },
-                            },
-                      }),
-                    }}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    style={{ willChange: 'transform, opacity' }}
-                    className="w-full"
-                  >
-                    <ProjectHeaderContent
-                      project={activeProject}
-                      totalProjects={visibleProjects.length}
-                      index={activeIndex}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+            {/* 2. DESKTOP PROJECT PRESENTATION (lg+) — COMPACT TWO-COLUMN GLASS SHOWCASE */}
+            <div className="hidden lg:block">
+              <div className="relative work-desktop-showcase rounded-2xl border border-white/10 hover:border-[#38BDF8]/30 bg-[#050816]/85 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.55)] overflow-hidden transition-colors duration-300">
+                {/* Restrained Cosmic Ambient Glow */}
+                <div
+                  className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[#38BDF8]/[0.06] blur-3xl pointer-events-none"
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#60A5FA]/[0.05] blur-3xl pointer-events-none"
+                  aria-hidden="true"
+                />
 
-              {/* Reusable Project Media Stage */}
-              <div className="w-full pt-4 sm:pt-6">
-                <ProjectMediaStage project={activeProject} />
+                <div className="work-desktop-grid relative z-10">
+                  {/* LEFT COLUMN — Compact Project Image Gallery Stage */}
+                  <div className="min-w-0 h-full">
+                    <ProjectMediaStage project={activeProject} variant="desktop-compact" />
+                  </div>
+
+                  {/* RIGHT COLUMN — Unified Editorial Project Information */}
+                  <div className="relative min-w-0 flex flex-col justify-center overflow-hidden">
+                    <AnimatePresence mode="wait" custom={direction} initial={false}>
+                      <motion.div
+                        key={activeProject.id}
+                        custom={direction}
+                        variants={{
+                          enter: (dir: number) => ({
+                            x: reducedMotion ? 0 : dir > 0 ? 18 : -18,
+                            opacity: 0,
+                          }),
+                          center: {
+                            x: 0,
+                            opacity: 1,
+                            transition: reducedMotion
+                              ? { duration: 0.1 }
+                              : {
+                                  x: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+                                  opacity: { duration: 0.18, ease: 'easeOut' },
+                                },
+                          },
+                          exit: (dir: number) => ({
+                            x: reducedMotion ? 0 : dir > 0 ? -18 : 18,
+                            opacity: 0,
+                            transition: reducedMotion
+                              ? { duration: 0.08 }
+                              : {
+                                  x: { duration: 0.13, ease: 'easeIn' },
+                                  opacity: { duration: 0.12, ease: 'easeIn' },
+                                },
+                          }),
+                        }}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        style={{ willChange: 'transform, opacity' }}
+                        className="w-full"
+                      >
+                        <DesktopProjectDetails
+                          project={activeProject}
+                          totalProjects={visibleProjects.length}
+                          index={activeIndex}
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+                </div>
               </div>
             </div>
           </>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ChevronLeft, 
@@ -19,12 +20,15 @@ import { fetchPublishedProjectMedia } from '../services/projectMediaService';
 interface ProjectMediaStageProps {
   project: ProjectItem;
   mediaList?: ProjectMedia[];
+  variant?: 'default' | 'desktop-compact';
 }
 
 export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({ 
   project,
-  mediaList: initialMediaList
+  mediaList: initialMediaList,
+  variant = 'default'
 }) => {
+  const isDesktopCompact = variant === 'desktop-compact';
   const [mediaItems, setMediaItems] = useState<ProjectMedia[]>(initialMediaList || []);
   const [isLoading, setIsLoading] = useState<boolean>(!initialMediaList);
   const [activeMediaIndex, setActiveMediaIndex] = useState<number>(0);
@@ -131,9 +135,12 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
     setActiveMediaIndex((prev) => (prev < totalMedia - 1 ? prev + 1 : 0));
   }, [totalMedia]);
 
-  // Keyboard navigation for lightbox
+  // Keyboard navigation and body scroll lock for lightbox
   useEffect(() => {
     if (!isLightboxOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -146,7 +153,10 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isLightboxOpen, handlePrevMedia, handleNextMedia]);
 
   // Mobile Touch handlers for swipe
@@ -170,17 +180,20 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
   };
 
   return (
-    <div className="w-full">
+    <div className={isDesktopCompact ? 'w-full h-full' : 'w-full'}>
       {/* ===================================================================== */}
       {/* 1. FIXED-FOOTPRINT MEDIA STAGE CONTAINER                              */}
-      {/* Stable cinematic proportions: 16:7 on desktop, 16:9 on mobile          */}
-      {/* No vertical shift or height oscillation between projects or items    */}
+      {/* Stable cinematic proportions: fluid two-col on desktop-compact, 16:9 mobile */}
       {/* ===================================================================== */}
       <div 
         id={`project-media-stage-${project.id}`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="group relative w-full h-[260px] sm:h-[320px] md:h-[360px] lg:h-[380px] rounded-2xl border border-white/10 bg-[#050816]/95 backdrop-blur-xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:border-[#38BDF8]/30"
+        className={
+          isDesktopCompact
+            ? 'group relative w-full work-desktop-gallery rounded-xl border border-white/10 bg-[#030612]/90 overflow-hidden shadow-[inset_0_0_24px_rgba(3,5,11,0.7)] transition-all duration-300 hover:border-[#38BDF8]/30'
+            : 'group relative w-full h-[260px] sm:h-[320px] md:h-[360px] lg:h-[380px] rounded-2xl border border-white/10 bg-[#050816]/95 backdrop-blur-xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:border-[#38BDF8]/30'
+        }
       >
         {/* Ambient Subtle Glow Layer */}
         <div className="absolute inset-0 bg-radial from-[#38BDF8]/5 via-transparent to-transparent pointer-events-none" />
@@ -230,7 +243,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
             {/* Media Content with directional smooth GPU transition */}
             <div 
               onClick={() => setIsLightboxOpen(true)}
-              className="relative w-full h-full flex items-center justify-center cursor-pointer select-none"
+              className={
+                isDesktopCompact
+                  ? 'absolute inset-0 flex items-center justify-center cursor-pointer select-none'
+                  : 'relative w-full h-full flex items-center justify-center cursor-pointer select-none'
+              }
             >
               <AnimatePresence mode="wait" custom={mediaDirection}>
                 <motion.div
@@ -258,7 +275,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  className="w-full h-full flex items-center justify-center p-3 sm:p-5"
+                  className={
+                    isDesktopCompact
+                      ? 'w-full h-full flex items-center justify-center pt-11 pb-12 px-4'
+                      : 'w-full h-full flex items-center justify-center p-3 sm:p-5'
+                  }
                 >
                   {/* Image Display */}
                   {currentMedia.mediaType === 'image' ? (
@@ -393,7 +414,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                     type="button"
                     onClick={handlePrevMedia}
                     aria-label="Previous project media"
-                    className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center"
+                    className={`absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
+                      isDesktopCompact
+                        ? 'opacity-75 group-hover:opacity-100'
+                        : 'opacity-85 sm:opacity-0 sm:group-hover:opacity-100'
+                    }`}
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -402,7 +427,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                     type="button"
                     onClick={handleNextMedia}
                     aria-label="Next project media"
-                    className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center"
+                    className={`absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
+                      isDesktopCompact
+                        ? 'opacity-75 group-hover:opacity-100'
+                        : 'opacity-85 sm:opacity-0 sm:group-hover:opacity-100'
+                    }`}
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -414,113 +443,144 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
       </div>
 
       {/* ===================================================================== */}
-      {/* 2. FULLSCREEN LIGHTBOX / MEDIA VIEWER (Screen 8)                      */}
+      {/* 2. FULLSCREEN LIGHTBOX / MEDIA VIEWER (Portaled to document.body)     */}
       {/* ===================================================================== */}
-      <AnimatePresence>
-        {isLightboxOpen && currentMedia && (
-          <div className="fixed inset-0 z-[70] flex flex-col justify-between bg-black/95 backdrop-blur-2xl p-2 sm:p-6">
-            
-            {/* Top Bar (Screen 8): Left Counter "1/5", Right Close "✕" */}
-            <div className="w-full flex items-center justify-between px-3 py-2 z-20">
-              <span className="font-mono text-sm sm:text-base font-semibold text-[#CBD5E1] tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                {activeMediaIndex + 1}/{totalMedia}
-              </span>
-
-              <button
-                type="button"
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isLightboxOpen && currentMedia && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
                 onClick={() => setIsLightboxOpen(false)}
-                className="min-w-[42px] min-h-[42px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all"
-                aria-label="Close fullscreen lightbox"
+                className="fixed inset-0 z-[70] h-[100dvh] w-screen overflow-hidden flex flex-col bg-black/95 backdrop-blur-2xl px-3 py-3 sm:px-6 sm:py-4"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${project.title} expanded media viewer`}
               >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+                {/* Top Bar: Counter + Close Button (shrink-0 preserves exact remaining height) */}
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="shrink-0 w-full flex items-center justify-between gap-3 py-1 z-20"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-mono text-xs sm:text-sm font-semibold text-[#CBD5E1] tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10 tabular-nums shrink-0">
+                      {activeMediaIndex + 1}/{totalMedia}
+                    </span>
+                    <span className="hidden sm:inline-block text-xs font-mono text-[#94A3B8] truncate">
+                      {project.title}
+                    </span>
+                  </div>
 
-            {/* Main Media Display with Floating Arrows */}
-            <div className="relative flex-1 w-full max-h-[75vh] flex items-center justify-center p-2 sm:p-6">
-              {currentMedia.mediaType === 'image' ? (
-                <img
-                  src={currentMedia.mediaUrl}
-                  alt={currentMedia.altText || currentMedia.caption || project.title}
-                  className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl"
-                />
-              ) : (
-                <video
-                  src={currentMedia.mediaUrl}
-                  controls
-                  autoPlay
-                  className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl"
-                />
-              )}
-
-              {/* Lightbox Left/Right Navigation Arrows */}
-              {totalMedia > 1 && (
-                <>
                   <button
                     type="button"
-                    onClick={handlePrevMedia}
-                    aria-label="Previous item"
-                    className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
+                    onClick={() => setIsLightboxOpen(false)}
+                    className="min-w-[42px] min-h-[42px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all shrink-0"
+                    aria-label="Close fullscreen lightbox"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <X className="w-5 h-5" />
                   </button>
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={handleNextMedia}
-                    aria-label="Next item"
-                    className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Bottom Thumbnail Strip (Screen 8) */}
-            {totalMedia > 1 && (
-              <div className="w-full flex items-center justify-center gap-2 py-3 overflow-x-auto z-20">
-                {mediaItems.map((item, idx) => (
-                  <button
-                    key={item.id || idx}
-                    type="button"
-                    onClick={() => {
-                      setMediaDirection(idx > activeMediaIndex ? 1 : -1);
-                      setActiveMediaIndex(idx);
-                    }}
-                    className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                      idx === activeMediaIndex
-                        ? 'border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.5)] scale-105'
-                        : 'border-white/10 opacity-50 hover:opacity-80'
-                    }`}
-                  >
-                    {item.mediaType === 'image' ? (
+                {/* Main Media Display: Dynamically fills exact remaining viewport height */}
+                <div className="relative flex-1 min-h-0 min-w-0 w-full my-2 sm:my-3">
+                  <div className="absolute inset-y-0 inset-x-12 sm:inset-x-16 flex items-center justify-center">
+                    {currentMedia.mediaType === 'image' ? (
                       <img
-                        src={item.mediaUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
+                        src={currentMedia.mediaUrl}
+                        alt={currentMedia.altText || currentMedia.caption || project.title}
+                        onClick={(e) => e.stopPropagation()}
+                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl shadow-2xl select-none"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#07101F] flex items-center justify-center text-[#38BDF8]">
-                        <VideoIcon className="w-4 h-4" />
+                      <video
+                        src={currentMedia.mediaUrl}
+                        controls
+                        autoPlay
+                        onClick={(e) => e.stopPropagation()}
+                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl shadow-2xl"
+                      />
+                    )}
+                  </div>
+
+                  {/* Lightbox Left/Right Navigation Arrows */}
+                  {totalMedia > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handlePrevMedia}
+                        aria-label="Previous item"
+                        className="absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-20 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleNextMedia}
+                        aria-label="Next item"
+                        className="absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-20 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Bottom Chrome: Thumbnails & Caption (shrink-0 so main image never collides) */}
+                {(totalMedia > 1 || currentMedia.caption) && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="shrink-0 w-full flex flex-col items-center gap-1.5 pt-1 z-20"
+                  >
+                    {totalMedia > 1 && (
+                      <div className="w-full flex items-center justify-center gap-2 py-1 overflow-x-auto no-scrollbar">
+                        {mediaItems.map((item, idx) => (
+                          <button
+                            key={item.id || idx}
+                            type="button"
+                            onClick={() => {
+                              setMediaDirection(idx > activeMediaIndex ? 1 : -1);
+                              setActiveMediaIndex(idx);
+                            }}
+                            className={`relative w-11 h-11 sm:w-14 sm:h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                              idx === activeMediaIndex
+                                ? 'border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.5)] scale-105'
+                                : 'border-white/10 opacity-50 hover:opacity-80'
+                            }`}
+                          >
+                            {item.mediaType === 'image' ? (
+                              <img
+                                src={item.mediaUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-[#07101F] flex items-center justify-center text-[#38BDF8]">
+                                <VideoIcon className="w-4 h-4" />
+                              </div>
+                            )}
+                          </button>
+                        ))}
                       </div>
                     )}
-                  </button>
-                ))}
-              </div>
-            )}
 
-            {/* Optional Caption */}
-            {currentMedia.caption && (
-              <div className="w-full text-center pb-2 px-4">
-                <p className="text-xs font-mono text-[#CBD5E1] truncate">
-                  {currentMedia.caption}
-                </p>
-              </div>
+                    {currentMedia.caption && (
+                      <div className="w-full text-center px-4">
+                        <p className="text-xs font-mono text-[#CBD5E1] truncate max-w-2xl mx-auto">
+                          {currentMedia.caption}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </div>
   );
 };
