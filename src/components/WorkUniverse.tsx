@@ -198,7 +198,6 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
     return visibleProjects[0]?.id || null;
   });
   const [direction, setDirection] = useState<number>(0);
-  const [isHovered, setIsHovered] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
 
@@ -852,50 +851,43 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
       </AnimatePresence>
 
       {/* Concluding Work Collaboration Section */}
-      <div className="max-w-6xl mx-auto mt-8 sm:mt-16 md:mt-20">
-        <div 
-          className="group relative rounded-2xl border border-white/10 hover:border-[#38BDF8]/40 bg-[#050816]/85 backdrop-blur-xl p-5 sm:p-8 md:p-10 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(56,189,248,0.08)] overflow-hidden"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+      <div className="max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-10">
+        <div
+          className="group relative rounded-2xl border border-white/10 hover:border-[#38BDF8]/40 bg-[#050816]/85 backdrop-blur-xl px-5 py-5 sm:px-7 sm:py-5 lg:px-8 lg:py-5 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(56,189,248,0.08)] overflow-hidden"
         >
           {/* Ambient subtle light accent */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#38BDF8]/6 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-[#38BDF8]/10 transition-all duration-500" />
+          <div className="absolute top-0 right-0 w-72 h-72 bg-[#38BDF8]/6 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-[#38BDF8]/10 transition-all duration-500" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            {/* Left Column: Authentic Direct Technical Statement (7 cols) */}
-            <div className="lg:col-span-7 space-y-3.5 text-left">
-              <div className="flex items-center gap-2 font-mono text-xs text-[#38BDF8] tracking-widest uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
-                <span>CO-CREATION & ENGINEERING</span>
-              </div>
-
-              <h3 className="text-3xl sm:text-4xl font-display font-black text-white tracking-tight leading-tight">
-                LET'S WORK.
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-center relative z-10">
+            {/* Left Column: Compact Statement, Copy & Primary CTA */}
+            <div className="lg:col-span-8 space-y-2.5 text-left min-w-0">
+              <h3 className="text-2xl sm:text-3xl lg:text-[clamp(1.65rem,2.3vw,2.1rem)] font-display font-black text-white tracking-tight leading-tight">
+                LET&apos;S WORK.
               </h3>
 
-              <p className="text-sm sm:text-base text-[#CBD5E1] leading-relaxed max-w-xl font-light">
-                Whether you need low-level embedded telemetry with the ESP32-S3, high-performance C state engines, or modern web interfaces powered by TypeScript and AI, I build clean, reliable systems from the ground up.
+              <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed max-w-lg font-light">
+                Have an idea worth building? Let&apos;s turn it into something real through engineering, software, and creative collaboration.
               </p>
 
-              <div className="pt-2 flex flex-wrap items-center gap-3.5">
+              <div className="pt-1.5 flex flex-wrap items-center gap-3.5">
                 <button
                   type="button"
                   onClick={onWorkTogether || (() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }))}
-                  className="min-h-[46px] px-6 py-2.5 rounded-full bg-[#38BDF8] text-[#03050B] font-mono font-bold text-xs flex items-center gap-2 hover:bg-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.3)] active:scale-95"
+                  className="min-h-[42px] px-5 py-2 rounded-full bg-[#38BDF8] text-[#03050B] font-mono font-bold text-xs flex items-center gap-2 hover:bg-[#7DD3FC] transition-all cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.28)] active:scale-95 whitespace-nowrap"
                 >
-                  <span>LET'S TALK</span>
-                  <ArrowUpRight className="w-4 h-4" />
+                  <span>LET&apos;S TALK</span>
+                  <ArrowUpRight className="w-4 h-4 shrink-0" />
                 </button>
 
-                <div className="flex items-center gap-2 text-xs font-mono text-[#94A3B8]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#94A3B8]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80 shrink-0" />
                   <span>Available for project collaborations</span>
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Interactive Robot Animation (5 cols on desktop, responsive & attractive on mobile) */}
-            <div className="lg:col-span-5 w-full flex items-center justify-center">
+            {/* Right Column: Compact Interactive Robot Visual */}
+            <div className="lg:col-span-4 w-full flex items-center justify-center">
               <InteractiveRobot reducedMotion={reducedMotion} />
             </div>
           </div>

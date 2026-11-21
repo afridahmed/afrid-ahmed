@@ -1,41 +1,54 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import type { DotLottie } from '@lottiefiles/dotlottie-react';
-import { Sparkles, Hand, Brain, CheckCircle2, Eye } from 'lucide-react';
 
 interface InteractiveRobotProps {
   reducedMotion?: boolean;
   className?: string;
 }
 
-type RobotAction = 'idle' | 'jump' | 'thinking' | 'yes' | 'alert' | 'no';
+type RobotAction = 'idle' | 'jump' | 'thinking' | 'yes' | 'alert';
 
-interface ActionOption {
-  key: RobotAction;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  hint: string;
-}
+const REACTIONS: readonly RobotAction[] = ['jump', 'thinking', 'yes', 'alert'];
+const MIN_REACTION_DELAY_MS = 3000;
+const MAX_REACTION_DELAY_MS = 5000;
 
-const ACTION_OPTIONS: ActionOption[] = [
-  { key: 'jump', label: 'Say Hi', icon: Hand, hint: 'Waves & jumps with excitement' },
-  { key: 'thinking', label: 'Brainstorm', icon: Brain, hint: 'Contemplates architecture' },
-  { key: 'yes', label: 'Agree', icon: CheckCircle2, hint: 'Nods enthusiastically' },
-  { key: 'alert', label: 'Perk Up', icon: Eye, hint: 'Notices new message' },
-];
-
-export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
+export const InteractiveRobot: React.FC<InteractiveRobotProps> = React.memo(({
   reducedMotion = false,
   className = '',
 }) => {
   const [dotLottie, setDotLottie] = useState<DotLottie | null>(null);
   const [currentAction, setCurrentAction] = useState<RobotAction>('idle');
-  const [reactionIndex, setReactionIndex] = useState(0);
-  const isPlayingReactionRef = useRef(false);
 
-  // Play a specific marker
+  const isPlayingReactionRef = useRef(false);
+  const lastReactionRef = useRef<RobotAction | null>(null);
+  const autoTimerRef = useRef<number | null>(null);
+  const safetyTimerRef = useRef<number | null>(null);
+  const isMountedRef = useRef(true);
+
+  const clearTimers = useCallback(() => {
+    if (autoTimerRef.current !== null) {
+      window.clearTimeout(autoTimerRef.current);
+      autoTimerRef.current = null;
+    }
+    if (safetyTimerRef.current !== null) {
+      window.clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
+  }, []);
+
+  const pickNextRandomReaction = useCallback((): RobotAction => {
+    const candidates = REACTIONS.filter((r) => r !== lastReactionRef.current);
+    const pool = candidates.length > 0 ? candidates : REACTIONS;
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    lastReactionRef.current = chosen;
+    return chosen;
+  }, []);
+
+  const scheduleNextReactionRef = useRef<() => void>(() => {});
+
   const playMarker = useCallback((marker: RobotAction) => {
-    if (!dotLottie) return;
+    if (!dotLottie || !isMountedRef.current) return;
 
     try {
       if (marker === 'idle') {
@@ -47,64 +60,104 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
           dotLottie.play();
         }
       } else {
+        clearTimers();
         isPlayingReactionRef.current = true;
+        lastReactionRef.current = marker;
         setCurrentAction(marker);
         dotLottie.setLoop(false);
         dotLottie.setMarker(marker);
         dotLottie.play();
+
+        // Safety recovery if browser throttles background animation frames
+        safetyTimerRef.current = window.setTimeout(() => {
+          if (isMountedRef.current && isPlayingReactionRef.current) {
+            isPlayingReactionRef.current = false;
+            playMarker('idle');
+            scheduleNextReactionRef.current();
+          }
+        }, 3200);
       }
     } catch {
-      // Fallback if marker fails
+      isPlayingReactionRef.current = false;
       dotLottie.play();
     }
-  }, [dotLottie, reducedMotion]);
+  }, [dotLottie, reducedMotion, clearTimers]);
 
-  // Cycle to next playful reaction on direct robot tap
+  const scheduleNextReaction = useCallback(() => {
+    clearTimers();
+    if (!dotLottie || reducedMotion || !isMountedRef.current) return;
+
+    const randomDelay =
+      MIN_REACTION_DELAY_MS +
+      Math.random() * (MAX_REACTION_DELAY_MS - MIN_REACTION_DELAY_MS);
+
+    autoTimerRef.current = window.setTimeout(() => {
+      if (!isMountedRef.current || reducedMotion || isPlayingReactionRef.current) {
+        return;
+      }
+      const next = pickNextRandomReaction();
+      playMarker(next);
+    }, randomDelay);
+  }, [dotLottie, reducedMotion, clearTimers, pickNextRandomReaction, playMarker]);
+
+  scheduleNextReactionRef.current = scheduleNextReaction;
+
+  // Trigger a non-repeating random reaction on tap/click
   const handleRobotClick = useCallback(() => {
-    if (!dotLottie) return;
-    const reactions: RobotAction[] = ['jump', 'thinking', 'yes', 'alert'];
-    const nextMarker = reactions[reactionIndex % reactions.length];
-    setReactionIndex((prev) => prev + 1);
+    if (!dotLottie || reducedMotion) return;
+    const nextMarker = pickNextRandomReaction();
     playMarker(nextMarker);
-  }, [dotLottie, reactionIndex, playMarker]);
+  }, [dotLottie, reducedMotion, pickNextRandomReaction, playMarker]);
 
-  // Hover reaction on desktop
+  // Subtle alert reaction when hovering while idle
   const handleMouseEnter = useCallback(() => {
     if (!dotLottie || reducedMotion || isPlayingReactionRef.current) return;
-    // When hovering while idle, trigger a subtle alert/notice
-    playMarker('alert');
-  }, [dotLottie, reducedMotion, playMarker]);
+    const nextMarker = lastReactionRef.current === 'alert' ? pickNextRandomReaction() : 'alert';
+    playMarker(nextMarker);
+  }, [dotLottie, reducedMotion, pickNextRandomReaction, playMarker]);
 
-  // Initialize and register event listeners
+  // Track mount lifecycle cleanly
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      clearTimers();
+    };
+  }, [clearTimers]);
+
+  // Initialize player events and automatic random reaction loop
   useEffect(() => {
     if (!dotLottie) return;
 
     const handleReady = () => {
+      if (!isMountedRef.current) return;
       if (reducedMotion) {
+        clearTimers();
         dotLottie.pause();
       } else {
-        // Start in idle loop
         playMarker('idle');
+        scheduleNextReaction();
       }
     };
 
     const handleComplete = () => {
-      // When a single-shot reaction finishes, return smoothly to idle loop
+      if (!isMountedRef.current) return;
       if (isPlayingReactionRef.current) {
         isPlayingReactionRef.current = false;
         playMarker('idle');
+        scheduleNextReaction();
       }
     };
 
     dotLottie.addEventListener('ready', handleReady);
     dotLottie.addEventListener('complete', handleComplete);
 
-    // Initial trigger if already ready
     if (dotLottie.isLoaded) {
       handleReady();
     }
 
     return () => {
+      clearTimers();
       try {
         dotLottie.removeEventListener('ready', handleReady);
         dotLottie.removeEventListener('complete', handleComplete);
@@ -112,23 +165,27 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
         // Cleanup safety
       }
     };
-  }, [dotLottie, reducedMotion, playMarker]);
+  }, [dotLottie, reducedMotion, playMarker, scheduleNextReaction, clearTimers]);
 
-  // Update on reduced motion change
+  // Respond cleanly to reduced motion toggles
   useEffect(() => {
     if (!dotLottie) return;
     if (reducedMotion) {
+      clearTimers();
+      isPlayingReactionRef.current = false;
+      setCurrentAction('idle');
       dotLottie.pause();
     } else if (!isPlayingReactionRef.current) {
       playMarker('idle');
+      scheduleNextReaction();
     }
-  }, [reducedMotion, dotLottie, playMarker]);
+  }, [reducedMotion, dotLottie, playMarker, scheduleNextReaction, clearTimers]);
 
   return (
-    <div className={`flex flex-col items-center justify-center w-full select-none ${className}`}>
-      {/* Robot Canvas Container */}
-      <div 
-        className="relative w-full max-w-[240px] sm:max-w-[270px] lg:max-w-[310px] aspect-square flex items-center justify-center cursor-pointer group"
+    <div className={`flex items-center justify-center w-full select-none ${className}`}>
+      {/* Compact Interactive Robot Canvas */}
+      <div
+        className="relative w-[156px] sm:w-[176px] lg:w-[clamp(154px,19vh,202px)] aspect-square flex items-center justify-center cursor-pointer group"
         onClick={handleRobotClick}
         onMouseEnter={handleMouseEnter}
         role="button"
@@ -139,12 +196,12 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
             handleRobotClick();
           }
         }}
-        aria-label="Interactive AI Robot: Click or tap to trigger reactions"
+        aria-label="Interactive AI Robot: Click or tap to trigger a reaction"
       >
         {/* Soft cosmic glow behind robot */}
-        <div 
-          className="absolute inset-4 rounded-full bg-gradient-to-tr from-[#38BDF8]/15 to-[#60A5FA]/10 blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700" 
-          aria-hidden="true" 
+        <div
+          className="absolute inset-3 rounded-full bg-gradient-to-tr from-[#38BDF8]/15 to-[#60A5FA]/10 blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700"
+          aria-hidden="true"
         />
 
         {/* Lottie Canvas with 100% transparent background */}
@@ -154,47 +211,13 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
             dotLottieRefCallback={setDotLottie}
             autoplay={!reducedMotion}
             loop={currentAction === 'idle' && !reducedMotion}
-            className="w-full h-full object-contain pointer-events-auto filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+            className="w-full h-full object-contain pointer-events-auto filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.45)]"
             style={{ background: 'transparent' }}
           />
         </div>
-
-        {/* Subtle interactive hover cue pill */}
-        <div 
-          className="absolute -top-1 right-2 sm:right-4 z-20 px-2 py-0.5 rounded-full bg-[#0B1120]/90 border border-[#38BDF8]/30 text-[10px] font-mono text-[#38BDF8] flex items-center gap-1 shadow-lg pointer-events-none opacity-80 group-hover:opacity-100 group-hover:border-[#38BDF8]/60 transition-all"
-        >
-          <Sparkles className="w-2.5 h-2.5 text-[#38BDF8] animate-spin-slow" />
-          <span>{currentAction === 'idle' ? 'Tap to react' : currentAction.toUpperCase()}</span>
-        </div>
-      </div>
-
-      {/* Interactive Micro Reaction Chips */}
-      <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-[320px]">
-        {ACTION_OPTIONS.map((action) => {
-          const Icon = action.icon;
-          const isActive = currentAction === action.key;
-
-          return (
-            <button
-              key={action.key}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                playMarker(action.key);
-              }}
-              title={action.hint}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-mono flex items-center gap-1.5 transition-all cursor-pointer border ${
-                isActive
-                  ? 'bg-[#38BDF8] text-[#03050B] font-bold border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.4)] scale-105'
-                  : 'bg-[#0B1120]/75 hover:bg-[#0E172B] text-[#94A3B8] hover:text-white border-white/10 hover:border-[#38BDF8]/40 active:scale-95'
-              }`}
-            >
-              <Icon className={`w-3 h-3 ${isActive ? 'text-[#03050B]' : 'text-[#38BDF8]'}`} />
-              <span>{action.label}</span>
-            </button>
-          );
-        })}
       </div>
     </div>
   );
-};
+});
+
+InteractiveRobot.displayName = 'InteractiveRobot';
