@@ -22,6 +22,9 @@ export * from './creatorVideoService';
 export * from './journeyService';
 // Re-export media services from mediaService
 export * from './mediaService';
+// Re-export About CMS services from aboutCmsService
+export * from './aboutCmsService';
+import { fetchPublicAboutCmsContent } from './aboutCmsService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACES (Mapped to Supabase schema)
@@ -535,21 +538,7 @@ export async function fetchPublicHeroContent(): Promise<HeroContent> {
 }
 
 export async function fetchPublicAboutContent(): Promise<AboutContent> {
-  try {
-    const { data, error } = await supabase
-      .from('about_content')
-      .select('*')
-      .eq('id', 'global')
-      .maybeSingle();
-
-    if (error || !data) {
-      return ABOUT_CONTENT;
-    }
-    return mapDbToAboutContent(data as DbAboutRow);
-  } catch (err) {
-    console.warn('Public About fetch fallback:', err);
-    return ABOUT_CONTENT;
-  }
+  return fetchPublicAboutCmsContent();
 }
 
 export async function fetchPublicSiteSettings(): Promise<{

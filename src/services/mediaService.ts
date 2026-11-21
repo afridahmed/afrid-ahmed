@@ -220,10 +220,10 @@ export async function checkMediaReferences(
       });
     }
 
-    // Check About Content
+    // Check About Content (Portrait + Signature)
     const { data: aboutData } = await supabase
       .from('about_content')
-      .select('id, about_image_url')
+      .select('*')
       .eq('id', 'global')
       .maybeSingle();
 
@@ -232,7 +232,16 @@ export async function checkMediaReferences(
       reference.locations.push({
         section: 'About',
         field: 'Portrait Photo (about_image_url)',
-        details: 'Currently active as the editorial portrait in About Narrative',
+        details: 'Currently active as the portrait in About Section',
+      });
+    }
+
+    if (aboutData?.signature_image_url && (aboutData.signature_image_url === url || aboutData.signature_image_url.includes(path))) {
+      reference.isReferenced = true;
+      reference.locations.push({
+        section: 'About',
+        field: 'Signature Graphic (signature_image_url)',
+        details: 'Currently active as the profile signature in About Section',
       });
     }
 

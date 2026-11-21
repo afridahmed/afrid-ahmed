@@ -39,7 +39,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onNavigateHome }) => {
     
     // CONTENT category
     { id: 'hero', label: 'Hero & Identity', icon: Sparkles, category: 'CONTENT' },
-    { id: 'about', label: 'About Narrative', icon: User, category: 'CONTENT' },
+    { id: 'about', label: 'About Section', icon: User, category: 'CONTENT' },
     { id: 'projects', label: 'Work & Projects', icon: FolderKanban, category: 'CONTENT' },
     { id: 'journey', label: 'Journey Timeline', icon: Compass, category: 'CONTENT' },
     { id: 'contact', label: 'Contact & Socials', icon: Mail, category: 'CONTENT' },

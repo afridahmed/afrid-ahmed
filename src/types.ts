@@ -32,6 +32,60 @@ export interface TechStackGroup {
   items: string[];
 }
 
+export interface AboutInterestItem {
+  id: string;
+  title: string;
+  iconName: string;
+  description?: string;
+  displayOrder: number;
+  isVisible: boolean;
+}
+
+export interface AboutHighlightItem {
+  id: string;
+  title: string;
+  supportingText?: string;
+  iconName: string;
+  description?: string;
+  displayOrder: number;
+  isVisible: boolean;
+}
+
+export interface AboutVisualSettings {
+  showPortrait: boolean;
+  showEducationBadge: boolean;
+  showSignature: boolean;
+  showInterestTags: boolean;
+  showHighlights: boolean;
+  showSectionDivider: boolean;
+  showProfileCard: boolean;
+  showCosmicDecor: boolean;
+  portraitScale: number;
+  portraitFit: 'cover' | 'contain';
+  portraitPosition: string;
+  cardSpacing: 'compact' | 'balanced' | 'relaxed';
+  cardRadius: 'lg' | 'xl' | '2xl';
+  glowIntensity: 'subtle' | 'medium' | 'vivid';
+}
+
+export interface AboutEducationBadge {
+  institution: string;
+  program: string;
+  graduationYear: string;
+  iconName: string;
+  supportingText?: string;
+}
+
+export interface AboutProfileCard {
+  fullName: string;
+  nameAccent: string;
+  academicRole: string;
+  degreeProgram: string;
+  institution: string;
+  introduction: string;
+  signatureImageUrl: string;
+}
+
 export interface AboutContent {
   badge: string;
   title: string;
@@ -48,6 +102,18 @@ export interface AboutContent {
     verifiedText: string;
   };
   techStack: TechStackGroup[];
+  // Extended CMS fields (optional for backwards compatibility with static defaults)
+  isPublished?: boolean;
+  sectionLabel?: string;
+  heading?: string;
+  headingAccent?: string;
+  subtitle?: string;
+  portraitAlt?: string;
+  educationBadge?: AboutEducationBadge;
+  profileCard?: AboutProfileCard;
+  interests?: AboutInterestItem[];
+  highlights?: AboutHighlightItem[];
+  visualSettings?: AboutVisualSettings;
 }
 
 export interface CreatorContent {
@@ -143,4 +209,3 @@ export interface SocialLink {
   url: string;
   iconName: string;
 }
-

@@ -244,11 +244,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
                 <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
                   About Section
                 </h3>
-                <p className="text-xs text-[#94A3B8]">Biography, quote & tech stack pillars</p>
+                <p className="text-xs text-[#94A3B8]">Header, portrait, badge, signature, interests &amp; highlights</p>
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
-              <span>Table: about_content</span>
+              <span>about_content · interests · highlights</span>
               <span className="text-emerald-400">Ready</span>
             </div>
           </div>

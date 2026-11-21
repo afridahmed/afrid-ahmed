@@ -139,6 +139,48 @@ export default function App() {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'about_content' },
+        async () => {
+          try {
+            const updatedAbout = await fetchPublicAboutContent();
+            if (isMounted && updatedAbout) {
+              setAboutData(updatedAbout);
+            }
+          } catch (err) {
+            console.warn('Live about_content sync note:', err);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'about_interests' },
+        async () => {
+          try {
+            const updatedAbout = await fetchPublicAboutContent();
+            if (isMounted && updatedAbout) {
+              setAboutData(updatedAbout);
+            }
+          } catch (err) {
+            console.warn('Live about_interests sync note:', err);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'about_highlights' },
+        async () => {
+          try {
+            const updatedAbout = await fetchPublicAboutContent();
+            if (isMounted && updatedAbout) {
+              setAboutData(updatedAbout);
+            }
+          } catch (err) {
+            console.warn('Live about_highlights sync note:', err);
+          }
+        }
+      )
       .subscribe();
 
     return () => {
@@ -153,10 +195,12 @@ export default function App() {
     const isCurrentlyAdmin = currentPath.startsWith('/admin') || currentPath.startsWith('#/admin') || currentPath.startsWith('#admin');
     if (!isCurrentlyAdmin) {
       Promise.all([
+        fetchPublicAboutContent(),
         fetchPublicProjects(),
         fetchPublicJourneyMilestones(),
         fetchPublicSiteSettings(),
-      ]).then(([projs, journeyRes, settings]) => {
+      ]).then(([about, projs, journeyRes, settings]) => {
+        if (about) setAboutData(about);
         if (projs !== undefined) setProjectsData(projs);
         if (journeyRes?.milestones && journeyRes.milestones.length > 0) setJourneyMilestones(journeyRes.milestones);
         if (settings) setSiteSettings(settings);
