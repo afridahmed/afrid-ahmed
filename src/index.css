@@ -162,3 +162,82 @@ h1, h2, h3, .font-display {
   }
 }
 
+/* Desktop/Laptop Journey Section Fluid Single-Viewport Fit (xl+ >= 1280px) */
+@media (min-width: 1280px) {
+  .journey-desktop-section {
+    scroll-margin-top: 72px;
+    min-height: clamp(500px, calc(100svh - 76px), 780px);
+    padding-top: clamp(0.75rem, 2vh, 1.75rem);
+    padding-bottom: clamp(0.75rem, 2vh, 1.75rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .journey-desktop-header {
+    padding-bottom: clamp(0.45rem, 1.1vh, 0.85rem);
+    margin-bottom: clamp(0.45rem, 1.2vh, 1rem);
+  }
+
+  .journey-desktop-title {
+    font-size: clamp(1.65rem, min(2.75vw, 4.1vh), 2.65rem);
+    line-height: 1.02;
+  }
+
+  .journey-desktop-subtitle {
+    font-size: clamp(0.75rem, min(0.92vw, 1.6vh), 0.875rem);
+    line-height: 1.35;
+  }
+
+  @keyframes journey-float {
+    0%, 100% {
+      transform: translate3d(0, 0px, 0);
+    }
+    50% {
+      transform: translate3d(0, -4px, 0);
+    }
+  }
+
+  @keyframes journey-halo-pulse {
+    0%, 100% {
+      opacity: 0.45;
+    }
+    50% {
+      opacity: 0.82;
+    }
+  }
+
+  @keyframes journey-orbit-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .journey-active-float {
+    animation: journey-float 5.5s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .journey-halo-glow {
+    animation: journey-halo-pulse 4.2s ease-in-out infinite;
+    will-change: opacity;
+  }
+
+  .journey-orbit-ring-spin {
+    transform-origin: center;
+    animation: journey-orbit-spin 42s linear infinite;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .journey-active-float,
+    .journey-halo-glow,
+    .journey-orbit-ring-spin {
+      animation: none !important;
+    }
+  }
+}
+
