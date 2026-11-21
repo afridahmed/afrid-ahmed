@@ -241,3 +241,70 @@ h1, h2, h3, .font-display {
   }
 }
 
+/* Desktop/Laptop About Section Fluid Single-Viewport Fit (lg+ >= 1024px) */
+@media (min-width: 1024px) {
+  .about-desktop-section {
+    scroll-margin-top: 72px;
+    min-height: clamp(540px, calc(100svh - 76px), 800px);
+    padding-top: clamp(1rem, 2.2vh, 2.5rem);
+    padding-bottom: clamp(1rem, 2.2vh, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .about-desktop-header {
+    margin-bottom: clamp(1rem, 2.4vh, 2rem);
+  }
+
+  .about-desktop-title {
+    font-size: clamp(1.95rem, min(3vw, 4.4vh), 2.85rem);
+    line-height: 1.05;
+  }
+
+  .about-desktop-portrait-wrap {
+    width: clamp(260px, min(25vw, 44vh), 370px);
+    height: clamp(260px, min(25vw, 44vh), 370px);
+  }
+
+  .about-desktop-card {
+    padding: clamp(1.25rem, min(2.1vw, 3vh), 2rem);
+  }
+
+  @keyframes about-orbit-rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes about-orbit-rotate-rev {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
+  }
+
+  .about-orbit-spin {
+    animation: about-orbit-rotate 36s linear infinite;
+    will-change: transform;
+  }
+
+  .about-orbit-spin-reverse {
+    animation: about-orbit-rotate-rev 52s linear infinite;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about-orbit-spin,
+    .about-orbit-spin-reverse {
+      animation: none !important;
+    }
+  }
+}
+
+
