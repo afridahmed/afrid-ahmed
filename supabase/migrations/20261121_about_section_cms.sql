@@ -119,24 +119,61 @@ ALTER TABLE public.about_interests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.about_highlights ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.about_drafts ENABLE ROW LEVEL SECURITY;
 
--- 6. Recreate clean RLS policies (public reads published only; admins manage all)
+-- Ensure private.is_admin() helper exists and public.admin_users remains locked
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon;
+GRANT USAGE ON SCHEMA private TO authenticated;
+
+CREATE OR REPLACE FUNCTION private.is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT CASE
+    WHEN auth.uid() IS NULL THEN false
+    ELSE EXISTS (
+      SELECT 1 FROM public.admin_users au WHERE au.user_id = auth.uid()
+    )
+  END;
+$$;
+
+REVOKE ALL ON FUNCTION private.is_admin() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
+
+-- Minimum table grants
+REVOKE ALL ON TABLE public.about_content FROM PUBLIC;
+GRANT SELECT ON TABLE public.about_content TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON TABLE public.about_content TO authenticated;
+
+REVOKE ALL ON TABLE public.about_interests FROM PUBLIC;
+GRANT SELECT ON TABLE public.about_interests TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON TABLE public.about_interests TO authenticated;
+
+REVOKE ALL ON TABLE public.about_highlights FROM PUBLIC;
+GRANT SELECT ON TABLE public.about_highlights TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON TABLE public.about_highlights TO authenticated;
+
+REVOKE ALL ON TABLE public.about_drafts FROM PUBLIC, anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.about_drafts TO authenticated;
+
+-- 6. Recreate clean RLS policies using private.is_admin()
 DROP POLICY IF EXISTS "Public can view published about_content" ON public.about_content;
 DROP POLICY IF EXISTS "Admins can manage about_content" ON public.about_content;
 
 CREATE POLICY "Public can view published about_content"
   ON public.about_content
   FOR SELECT
-  USING (is_published = true);
+  TO anon, authenticated
+  USING (COALESCE(is_published, true) = true);
 
 CREATE POLICY "Admins can manage about_content"
   ON public.about_content
   FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  );
+  TO authenticated
+  USING ((SELECT private.is_admin()))
+  WITH CHECK ((SELECT private.is_admin()));
 
 DROP POLICY IF EXISTS "Public can view published about_interests" ON public.about_interests;
 DROP POLICY IF EXISTS "Admins can manage about_interests" ON public.about_interests;
@@ -144,25 +181,23 @@ DROP POLICY IF EXISTS "Admins can manage about_interests" ON public.about_intere
 CREATE POLICY "Public can view published about_interests"
   ON public.about_interests
   FOR SELECT
+  TO anon, authenticated
   USING (
     is_published = true
     AND is_visible = true
     AND EXISTS (
       SELECT 1 FROM public.about_content
       WHERE about_content.id = about_interests.about_id
-        AND about_content.is_published = true
+        AND COALESCE(about_content.is_published, true) = true
     )
   );
 
 CREATE POLICY "Admins can manage about_interests"
   ON public.about_interests
   FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  );
+  TO authenticated
+  USING ((SELECT private.is_admin()))
+  WITH CHECK ((SELECT private.is_admin()));
 
 DROP POLICY IF EXISTS "Public can view published about_highlights" ON public.about_highlights;
 DROP POLICY IF EXISTS "Admins can manage about_highlights" ON public.about_highlights;
@@ -170,25 +205,23 @@ DROP POLICY IF EXISTS "Admins can manage about_highlights" ON public.about_highl
 CREATE POLICY "Public can view published about_highlights"
   ON public.about_highlights
   FOR SELECT
+  TO anon, authenticated
   USING (
     is_published = true
     AND is_visible = true
     AND EXISTS (
       SELECT 1 FROM public.about_content
       WHERE about_content.id = about_highlights.about_id
-        AND about_content.is_published = true
+        AND COALESCE(about_content.is_published, true) = true
     )
   );
 
 CREATE POLICY "Admins can manage about_highlights"
   ON public.about_highlights
   FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  );
+  TO authenticated
+  USING ((SELECT private.is_admin()))
+  WITH CHECK ((SELECT private.is_admin()));
 
 -- Strictly admin-only access for about_drafts (public has NO access)
 DROP POLICY IF EXISTS "Admins can manage about_drafts" ON public.about_drafts;
@@ -196,12 +229,9 @@ DROP POLICY IF EXISTS "Admins can manage about_drafts" ON public.about_drafts;
 CREATE POLICY "Admins can manage about_drafts"
   ON public.about_drafts
   FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-  );
+  TO authenticated
+  USING ((SELECT private.is_admin()))
+  WITH CHECK ((SELECT private.is_admin()));
 
 -- 7. Seed initial global about_content row if missing (non-destructive)
 INSERT INTO public.about_content (
@@ -284,38 +314,31 @@ ON CONFLICT (id) DO UPDATE SET public = true;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public read portfolio-media'
-  ) THEN
-    CREATE POLICY "Public read portfolio-media"
-      ON storage.objects FOR SELECT
-      USING (bucket_id = 'portfolio-media');
-  END IF;
+  DROP POLICY IF EXISTS "Public read portfolio-media" ON storage.objects;
+  CREATE POLICY "Public read portfolio-media"
+    ON storage.objects FOR SELECT TO anon, authenticated
+    USING (bucket_id = 'portfolio-media');
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Admins manage portfolio-media'
-  ) THEN
-    CREATE POLICY "Admins manage portfolio-media"
-      ON storage.objects FOR ALL
-      USING (
-        bucket_id = 'portfolio-media'
-        AND EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-      )
-      WITH CHECK (
-        bucket_id = 'portfolio-media'
-        AND EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid())
-      );
-  END IF;
+  DROP POLICY IF EXISTS "Admins manage portfolio-media" ON storage.objects;
+  CREATE POLICY "Admins manage portfolio-media"
+    ON storage.objects FOR ALL TO authenticated
+    USING (
+      bucket_id = 'portfolio-media'
+      AND (SELECT private.is_admin())
+    )
+    WITH CHECK (
+      bucket_id = 'portfolio-media'
+      AND (SELECT private.is_admin())
+    );
 END $$;
 
 -- 11. Public read bundle RPC (returns published data only; distinguishes unpublished vs unseeded cleanly)
 CREATE OR REPLACE FUNCTION public.get_public_about_bundle()
 RETURNS JSONB
 LANGUAGE plpgsql
+STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   v_about public.about_content%ROWTYPE;

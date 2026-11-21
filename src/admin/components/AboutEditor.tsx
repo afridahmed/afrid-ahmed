@@ -261,10 +261,16 @@ export const AboutEditor: React.FC = () => {
         setIsPublished(true);
         setHasUnpublishedDraft(false);
         setPublishedAt(now);
-        await loadState();
+        const { data: refreshed, error: refreshErr } = await getAdminAboutCmsState();
+        setDraft(refreshed.draft);
+        setPublishedSnapshot(refreshed.published);
+        setSavedSnapshot(JSON.stringify(refreshed.draft));
+        setSchemaNeedsMigration(refreshed.schemaNeedsMigration);
         setStatusMessage({
-          type: 'success',
-          text: 'About section published live to the portfolio.',
+          type: refreshErr ? 'info' : 'success',
+          text: refreshErr
+            ? `About section published live, though reloading refreshed metadata returned a warning: ${refreshErr}`
+            : 'About section published live cleanly in an atomic update.',
         });
       }
     } catch (err: any) {
@@ -2535,7 +2541,7 @@ export const AboutEditor: React.FC = () => {
 
             <div className="flex items-center justify-between pt-2">
               <span className="text-[11px] font-mono text-[#64748B]">
-                Full seed & storage policy migration is also saved in /supabase/migrations/20261121_about_section_cms.sql
+                Full permission repair &amp; atomic publishing migration is also saved in /supabase/migrations/20261121_repair_admin_auth_and_cms_permissions.sql
               </span>
               <div className="flex items-center gap-2">
                 <button

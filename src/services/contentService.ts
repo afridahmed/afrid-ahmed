@@ -25,6 +25,7 @@ export * from './mediaService';
 // Re-export About CMS services from aboutCmsService
 export * from './aboutCmsService';
 import { fetchPublicAboutCmsContent } from './aboutCmsService';
+import { classifySupabaseError, isSafeMediaOrLinkUrl, verifyAdminSession } from './cmsAuthService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACES (Mapped to Supabase schema)
@@ -602,6 +603,11 @@ export async function fetchPublicSiteSettings(): Promise<{
 
 export async function getAdminHeroContent(): Promise<{ data: DbHeroContent | null; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: null, error: auth.error };
+    }
+
     const { data, error } = await supabase
       .from('hero_content')
       .select('id, name, identity, tagline, description, rotating_phrases, hero_image_url, primary_cta_label, primary_cta_url, secondary_cta_label, secondary_cta_url, created_at, updated_at')
@@ -609,7 +615,8 @@ export async function getAdminHeroContent(): Promise<{ data: DbHeroContent | nul
       .maybeSingle();
 
     if (error) {
-      return { data: null, error: error.message };
+      const classified = classifySupabaseError(error, 'loading Hero content');
+      return { data: null, error: classified.message };
     }
     if (!data) {
       return { data: null };
@@ -635,13 +642,29 @@ export async function getAdminHeroContent(): Promise<{ data: DbHeroContent | nul
     };
 
     return { data: normalized };
-  } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to fetch Hero content' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading Hero content');
+    return { data: null, error: classified.message };
   }
 }
 
 export async function saveAdminHeroContent(payload: DbHeroContent): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    const heroUrl = (payload.hero_image_url || '').trim() || DEFAULT_DB_HERO.hero_image_url;
+    if (!isSafeMediaOrLinkUrl(heroUrl, false)) {
+      return { success: false, error: 'Hero image URL must be a valid HTTP(S) URL or local asset path.' };
+    }
+    const primaryCtaUrl = (payload.primary_cta_url || '').trim() || DEFAULT_DB_HERO.primary_cta_url;
+    const secondaryCtaUrl = (payload.secondary_cta_url || '').trim() || DEFAULT_DB_HERO.secondary_cta_url;
+    if (!isSafeMediaOrLinkUrl(primaryCtaUrl, true) || !isSafeMediaOrLinkUrl(secondaryCtaUrl, true)) {
+      return { success: false, error: 'CTA links must use safe HTTP(S), relative (/), or anchor (#) URLs.' };
+    }
+
     // Only send the exact, real database columns to Supabase
     const cleanPayload = {
       id: 'global',
@@ -652,11 +675,11 @@ export async function saveAdminHeroContent(payload: DbHeroContent): Promise<{ su
       rotating_phrases: Array.isArray(payload.rotating_phrases) && payload.rotating_phrases.length > 0
         ? payload.rotating_phrases.filter((s) => typeof s === 'string' && s.trim().length > 0)
         : DEFAULT_DB_HERO.rotating_phrases,
-      hero_image_url: (payload.hero_image_url || '').trim() || DEFAULT_DB_HERO.hero_image_url,
+      hero_image_url: heroUrl,
       primary_cta_label: (payload.primary_cta_label || '').trim() || DEFAULT_DB_HERO.primary_cta_label,
-      primary_cta_url: (payload.primary_cta_url || '').trim() || DEFAULT_DB_HERO.primary_cta_url,
+      primary_cta_url: primaryCtaUrl,
       secondary_cta_label: (payload.secondary_cta_label || '').trim() || DEFAULT_DB_HERO.secondary_cta_label,
-      secondary_cta_url: (payload.secondary_cta_url || '').trim() || DEFAULT_DB_HERO.secondary_cta_url,
+      secondary_cta_url: secondaryCtaUrl,
       updated_at: new Date().toISOString(),
     };
 
@@ -665,16 +688,23 @@ export async function saveAdminHeroContent(payload: DbHeroContent): Promise<{ su
       .upsert(cleanPayload, { onConflict: 'id' });
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'saving Hero content');
+      return { success: false, error: classified.message };
     }
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to save Hero content' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'saving Hero content');
+    return { success: false, error: classified.message };
   }
 }
 
 export async function getAdminAboutContent(): Promise<{ data: DbAboutContent | null; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: null, error: auth.error };
+    }
+
     const { data, error } = await supabase
       .from('about_content')
       .select('id, heading, statement, bio, about_image_url, skills, pillars, quote, badge, graduation_tag, photo_caption_role, created_at, updated_at')
@@ -682,7 +712,8 @@ export async function getAdminAboutContent(): Promise<{ data: DbAboutContent | n
       .maybeSingle();
 
     if (error) {
-      return { data: null, error: error.message };
+      const classified = classifySupabaseError(error, 'loading About content');
+      return { data: null, error: classified.message };
     }
     if (!data) {
       return { data: null };
@@ -710,14 +741,24 @@ export async function getAdminAboutContent(): Promise<{ data: DbAboutContent | n
     };
 
     return { data: normalized };
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Failed to fetch About content';
-    return { data: null, error: message };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading About content');
+    return { data: null, error: classified.message };
   }
 }
 
 export async function saveAdminAboutContent(payload: DbAboutContent): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    const aboutUrl = (payload.about_image_url || '').trim() || DEFAULT_DB_ABOUT.about_image_url;
+    if (!isSafeMediaOrLinkUrl(aboutUrl, false)) {
+      return { success: false, error: 'About image URL must be a valid HTTP(S) URL or local asset path.' };
+    }
+
     // Biography can be provided via payload.biography (standard) or payload.bio (alias)
     const sourceBio = payload.biography ?? payload.bio ?? [];
     const cleanBiography = sanitizeBiography(sourceBio);
@@ -730,7 +771,7 @@ export async function saveAdminAboutContent(payload: DbAboutContent): Promise<{ 
       heading: (payload.heading || '').trim() || DEFAULT_DB_ABOUT.heading,
       statement: (payload.statement || '').trim() || DEFAULT_DB_ABOUT.statement,
       bio: JSON.stringify(finalBiography),
-      about_image_url: (payload.about_image_url || '').trim() || DEFAULT_DB_ABOUT.about_image_url,
+      about_image_url: aboutUrl,
       skills: Array.isArray(payload.skills) && payload.skills.length > 0
         ? payload.skills
         : DEFAULT_DB_ABOUT.skills,
@@ -750,12 +791,13 @@ export async function saveAdminAboutContent(payload: DbAboutContent): Promise<{ 
       .upsert(cleanPayload, { onConflict: 'id' });
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'saving About content');
+      return { success: false, error: classified.message };
     }
     return { success: true };
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Failed to save About content';
-    return { success: false, error: message };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'saving About content');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -764,6 +806,11 @@ export async function saveAdminAboutContent(payload: DbAboutContent): Promise<{ 
  */
 export async function seedDefaultSiteSettingsIfEmpty(): Promise<{ seeded: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { seeded: false, error: auth.error };
+    }
+
     const { data, error } = await supabase
       .from('site_settings')
       .select('id')
@@ -771,7 +818,8 @@ export async function seedDefaultSiteSettingsIfEmpty(): Promise<{ seeded: boolea
       .maybeSingle();
 
     if (error) {
-      return { seeded: false, error: error.message };
+      const classified = classifySupabaseError(error, 'checking Site Settings');
+      return { seeded: false, error: classified.message };
     }
 
     if (!data) {
@@ -788,19 +836,26 @@ export async function seedDefaultSiteSettingsIfEmpty(): Promise<{ seeded: boolea
         });
 
       if (insertError) {
-        return { seeded: false, error: insertError.message };
+        const classified = classifySupabaseError(insertError, 'seeding Site Settings');
+        return { seeded: false, error: classified.message };
       }
       return { seeded: true };
     }
 
     return { seeded: false };
-  } catch (err: any) {
-    return { seeded: false, error: err.message };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'seeding Site Settings');
+    return { seeded: false, error: classified.message };
   }
 }
 
 export async function getAdminSiteSettings(): Promise<{ data: DbSiteSettings | null; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: DEFAULT_DB_SETTINGS, error: auth.error };
+    }
+
     // Check if table is empty and seed if needed
     await seedDefaultSiteSettingsIfEmpty();
 
@@ -811,7 +866,8 @@ export async function getAdminSiteSettings(): Promise<{ data: DbSiteSettings | n
       .maybeSingle();
 
     if (error || !data) {
-      return { data: DEFAULT_DB_SETTINGS };
+      const msg = error ? classifySupabaseError(error, 'loading Site Settings').message : undefined;
+      return { data: DEFAULT_DB_SETTINGS, error: msg };
     }
 
     const row = data as Record<string, any>;
@@ -833,32 +889,56 @@ export async function getAdminSiteSettings(): Promise<{ data: DbSiteSettings | n
     };
 
     return { data: merged };
-  } catch (err: any) {
-    return { data: DEFAULT_DB_SETTINGS, error: err.message || 'Failed to fetch Site Settings' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading Site Settings');
+    return { data: DEFAULT_DB_SETTINGS, error: classified.message };
   }
 }
 
 export async function saveAdminSiteSettings(payload: DbSiteSettings): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
     const emailVal = (payload.primary_email || payload.contact_email || 'afridaskar@gmail.com').trim();
+    const githubUrl = (payload.github_url || '').trim();
+    const linkedinUrl = (payload.linkedin_url || '').trim();
+    const youtubeUrl = (payload.youtube_url || '').trim();
+    const instagramUrl = (payload.instagram_url || '').trim();
+
+    if (
+      !isSafeMediaOrLinkUrl(githubUrl, true) ||
+      !isSafeMediaOrLinkUrl(linkedinUrl, true) ||
+      !isSafeMediaOrLinkUrl(youtubeUrl, true) ||
+      !isSafeMediaOrLinkUrl(instagramUrl, true)
+    ) {
+      return { success: false, error: 'Social links must use valid HTTPS/HTTP URLs.' };
+    }
 
     // 1. Send ONLY exact, existing database columns to public.site_settings
     const dbPayload: Record<string, any> = {
       id: 'global',
       contact_email: emailVal,
-      github_url: (payload.github_url || '').trim(),
-      linkedin_url: (payload.linkedin_url || '').trim(),
-      youtube_url: (payload.youtube_url || '').trim(),
-      instagram_url: (payload.instagram_url || '').trim(),
+      github_url: githubUrl,
+      linkedin_url: linkedinUrl,
+      youtube_url: youtubeUrl,
+      instagram_url: instagramUrl,
       updated_at: new Date().toISOString(),
     };
 
     // Check if row exists
-    const { data: existing } = await supabase
+    const { data: existing, error: lookupError } = await supabase
       .from('site_settings')
       .select('id')
       .eq('id', 'global')
       .maybeSingle();
+
+    if (lookupError) {
+      const classified = classifySupabaseError(lookupError, 'looking up Site Settings');
+      return { success: false, error: classified.message };
+    }
 
     let writeError: any = null;
     if (existing) {
@@ -882,12 +962,13 @@ export async function saveAdminSiteSettings(payload: DbSiteSettings): Promise<{ 
     }
 
     if (writeError) {
-      console.warn('Supabase site_settings save error:', writeError.message);
-      return { success: false, error: writeError.message };
+      const classified = classifySupabaseError(writeError, 'saving Site Settings');
+      return { success: false, error: classified.message };
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to save Site Settings' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'saving Site Settings');
+    return { success: false, error: classified.message };
   }
 }

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { ProjectMedia, ProjectMediaType } from '../types';
 import { STORAGE_BUCKET, ensureMediaBucketExists } from './mediaService';
+import { classifySupabaseError, isSafeMediaOrLinkUrl, verifyAdminSession } from './cmsAuthService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACE (public.project_media)
@@ -74,15 +75,16 @@ USING (
     )
 );
 
--- Admin full access: Authenticated administrators can manage all media
+-- Admin full access: Strict administrator verification via private.is_admin()
 CREATE POLICY "Admins have full access to project_media"
 ON public.project_media
 FOR ALL
+TO authenticated
 USING (
-    auth.role() = 'authenticated'
+    (SELECT private.is_admin())
 )
 WITH CHECK (
-    auth.role() = 'authenticated'
+    (SELECT private.is_admin())
 );
 `;
 
@@ -158,6 +160,11 @@ export async function uploadProjectMediaFile(
   projectIdOrSlug: string
 ): Promise<{ url: string; mediaType: ProjectMediaType; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { url: '', mediaType: 'image', error: auth.error || 'Administrator authorization required.' };
+    }
+
     const isVideo = file.type.startsWith('video/');
     const isImage = file.type.startsWith('image/');
 
@@ -193,7 +200,8 @@ export async function uploadProjectMediaFile(
       });
 
     if (uploadError) {
-      return { url: '', mediaType: isVideo ? 'video' : 'image', error: `Storage upload failed: ${uploadError.message}` };
+      const classified = classifySupabaseError(uploadError, 'uploading project media');
+      return { url: '', mediaType: isVideo ? 'video' : 'image', error: classified.message };
     }
 
     // 3. Obtain persistent Public Storage URL
@@ -211,11 +219,12 @@ export async function uploadProjectMediaFile(
       mediaType: isVideo ? 'video' : 'image',
       error: null,
     };
-  } catch (err: any) {
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'uploading project media');
     return {
       url: '',
       mediaType: 'image',
-      error: err.message || 'File upload failed',
+      error: classified.message,
     };
   }
 }
@@ -410,6 +419,11 @@ export async function fetchAllPublishedProjectMedia(): Promise<Record<string, Pr
  */
 export async function getAdminProjectMedia(projectIdOrSlug: string): Promise<{ data: ProjectMedia[]; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: [], error: auth.error };
+    }
+
     const { id: uuid, slug } = await resolveProjectIdentifiers(projectIdOrSlug);
 
     const { data, error } = await supabase
@@ -428,7 +442,14 @@ export async function getAdminProjectMedia(projectIdOrSlug: string): Promise<{ d
       return { data: mapped };
     }
 
-    // Fallback to local storage
+    if (error) {
+      const classified = classifySupabaseError(error, 'loading project media');
+      if (classified.category !== 'MISSING_SCHEMA') {
+        return { data: [], error: classified.message };
+      }
+    }
+
+    // Fallback to local storage ONLY if project_media table does not exist yet
     const local = getLocalMedia().filter((m) => m.project_id === uuid || m.project_id === slug);
     local.sort((a, b) => {
       if (a.is_featured && !b.is_featured) return -1;
@@ -437,8 +458,9 @@ export async function getAdminProjectMedia(projectIdOrSlug: string): Promise<{ d
     });
 
     return { data: local.map(mapDbToProjectMedia) };
-  } catch (err: any) {
-    return { data: [], error: err.message || 'Failed to fetch project media' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading project media');
+    return { data: [], error: classified.message };
   }
 }
 
@@ -450,8 +472,13 @@ export async function createAdminProjectMedia(
   payload: DbProjectMediaInsert
 ): Promise<{ data: ProjectMedia | null; error?: string }> {
   try {
-    if (!payload.media_url || payload.media_url.startsWith('blob:') || payload.media_url.startsWith('data:')) {
-      return { data: null, error: 'Cannot save a temporary local preview URL. File upload to persistent Supabase Storage is required.' };
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: null, error: auth.error };
+    }
+
+    if (!isSafeMediaOrLinkUrl(payload.media_url, false)) {
+      return { data: null, error: 'Cannot save an unsafe or temporary preview URL. Persistent HTTPS storage URL required.' };
     }
 
     const { id: projectUuid } = await resolveProjectIdentifiers(payload.project_id);
@@ -459,11 +486,17 @@ export async function createAdminProjectMedia(
 
     // If setting as featured, unset others for this project
     if (payload.is_featured) {
-      await supabase
+      const { error: resetErr } = await supabase
         .from('project_media')
         .update({ is_featured: false })
         .eq('project_id', resolvedProjectId)
         .eq('is_featured', true);
+      if (resetErr) {
+        const classified = classifySupabaseError(resetErr, 'updating featured project media');
+        if (classified.category !== 'MISSING_SCHEMA') {
+          return { data: null, error: classified.message };
+        }
+      }
     }
 
     const insertPayload = {
@@ -487,30 +520,15 @@ export async function createAdminProjectMedia(
       return { data: mapDbToProjectMedia(data as DbProjectMedia) };
     }
 
-    // Register metadata in public.media as well for cross-device query resilience
-    try {
-      await supabase.from('media').insert({
-        bucket: STORAGE_BUCKET,
-        file_path: payload.media_url.includes(STORAGE_BUCKET)
-          ? payload.media_url.split(`/${STORAGE_BUCKET}/`)[1]?.split('?')[0] || `projects/${resolvedProjectId}/${Date.now()}.jpg`
-          : `projects/${resolvedProjectId}/${Date.now()}.jpg`,
-        public_url: payload.media_url,
-        file_name: payload.caption || 'project_media',
-        media_type: payload.media_type === 'video' ? 'video/mp4' : 'image/jpeg',
-        file_size_bytes: 0,
-        alt_text: JSON.stringify({
-          project_id: resolvedProjectId,
-          caption: payload.caption,
-          display_order: payload.display_order,
-          is_featured: payload.is_featured,
-          is_published: payload.is_published,
-        }),
-      });
-    } catch {
-      // non-blocking
+    const classified = error
+      ? classifySupabaseError(error, 'creating project media')
+      : null;
+
+    if (classified && classified.category !== 'MISSING_SCHEMA') {
+      return { data: null, error: classified.message };
     }
 
-    // Fallback to local storage for offline resiliency
+    // Legacy unmigrated fallback ONLY when project_media table does not exist yet
     const local = getLocalMedia();
     if (payload.is_featured) {
       local.forEach((m) => {
@@ -538,8 +556,9 @@ export async function createAdminProjectMedia(
     saveLocalMedia(local);
 
     return { data: mapDbToProjectMedia(newRecord) };
-  } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to create project media' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'creating project media');
+    return { data: null, error: classified.message };
   }
 }
 
@@ -552,16 +571,31 @@ export async function updateAdminProjectMedia(
   payload: Partial<DbProjectMediaInsert>
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    if ('media_url' in payload && payload.media_url !== undefined && !isSafeMediaOrLinkUrl(payload.media_url, false)) {
+      return { success: false, error: 'Media URL must be a valid HTTP(S) address.' };
+    }
+
     const { id: projectUuid } = await resolveProjectIdentifiers(projectId);
     const resolvedProjectId = projectUuid || projectId;
 
     if (payload.is_featured) {
-      await supabase
+      const { error: resetErr } = await supabase
         .from('project_media')
         .update({ is_featured: false })
         .eq('project_id', resolvedProjectId)
         .neq('id', id)
         .eq('is_featured', true);
+      if (resetErr) {
+        const classified = classifySupabaseError(resetErr, 'clearing featured project media');
+        if (classified.category !== 'MISSING_SCHEMA') {
+          return { success: false, error: classified.message };
+        }
+      }
     }
 
     const { error } = await supabase
@@ -573,7 +607,12 @@ export async function updateAdminProjectMedia(
       return { success: true };
     }
 
-    // Fallback to local storage
+    const classified = classifySupabaseError(error, 'updating project media');
+    if (classified.category !== 'MISSING_SCHEMA') {
+      return { success: false, error: classified.message };
+    }
+
+    // Legacy local storage fallback ONLY if project_media table does not exist yet
     const local = getLocalMedia();
     const idx = local.findIndex((m) => m.id === id);
     if (idx !== -1) {
@@ -587,9 +626,10 @@ export async function updateAdminProjectMedia(
       return { success: true };
     }
 
-    return { success: false, error: error?.message || 'Media item not found' };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update project media' };
+    return { success: false, error: classified.message };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'updating project media');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -601,15 +641,26 @@ export async function setPrimaryAdminProjectMedia(
   projectId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
     const { id: projectUuid } = await resolveProjectIdentifiers(projectId);
     const resolvedProjectId = projectUuid || projectId;
 
     // 1. Unset all featured for this project
-    await supabase
+    const { error: resetErr } = await supabase
       .from('project_media')
       .update({ is_featured: false })
       .eq('project_id', resolvedProjectId)
       .eq('is_featured', true);
+    if (resetErr) {
+      const classified = classifySupabaseError(resetErr, 'clearing previous primary project media');
+      if (classified.category !== 'MISSING_SCHEMA') {
+        return { success: false, error: classified.message };
+      }
+    }
 
     // 2. Set this item as featured
     const { error } = await supabase
@@ -621,7 +672,11 @@ export async function setPrimaryAdminProjectMedia(
       return { success: true };
     }
 
-    // Local storage fallback
+    const classified = classifySupabaseError(error, 'setting primary project media');
+    if (classified.category !== 'MISSING_SCHEMA') {
+      return { success: false, error: classified.message };
+    }
+
     const local = getLocalMedia();
     local.forEach((m) => {
       if (m.project_id === resolvedProjectId || m.project_id === projectId) {
@@ -630,8 +685,9 @@ export async function setPrimaryAdminProjectMedia(
     });
     saveLocalMedia(local);
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to set primary media' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'setting primary project media');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -643,7 +699,28 @@ export async function deleteAdminProjectMedia(
   mediaUrl?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // 1. Attempt storage file cleanup if URL belongs to our bucket
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    // 1. Delete database record first so permission errors are surfaced immediately
+    const { error } = await supabase
+      .from('project_media')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      const classified = classifySupabaseError(error, 'deleting project media');
+      if (classified.category !== 'MISSING_SCHEMA') {
+        return { success: false, error: classified.message };
+      }
+      const local = getLocalMedia().filter((m) => m.id !== id);
+      saveLocalMedia(local);
+      return { success: true };
+    }
+
+    // 2. Attempt storage file cleanup if URL belongs to our bucket
     if (mediaUrl && mediaUrl.includes(STORAGE_BUCKET)) {
       try {
         const parts = mediaUrl.split(`/${STORAGE_BUCKET}/`);
@@ -656,22 +733,10 @@ export async function deleteAdminProjectMedia(
       }
     }
 
-    // 2. Delete database record
-    const { error } = await supabase
-      .from('project_media')
-      .delete()
-      .eq('id', id);
-
-    if (!error) {
-      return { success: true };
-    }
-
-    // Local fallback
-    const local = getLocalMedia().filter((m) => m.id !== id);
-    saveLocalMedia(local);
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to delete project media' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'deleting project media');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -682,25 +747,25 @@ export async function reorderAdminProjectMedia(
   orderedItems: { id: string; display_order: number }[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
     for (const item of orderedItems) {
-      await supabase
+      const { error } = await supabase
         .from('project_media')
         .update({ display_order: item.display_order })
         .eq('id', item.id);
+      if (error) {
+        const classified = classifySupabaseError(error, 'reordering project media');
+        return { success: false, error: classified.message };
+      }
     }
 
-    // Also update local storage
-    const local = getLocalMedia();
-    const map = new Map(orderedItems.map((o) => [o.id, o.display_order]));
-    local.forEach((m) => {
-      if (map.has(m.id)) {
-        m.display_order = map.get(m.id)!;
-      }
-    });
-    saveLocalMedia(local);
-
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to reorder project media' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'reordering project media');
+    return { success: false, error: classified.message };
   }
 }

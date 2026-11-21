@@ -8,6 +8,7 @@ import { ContactEditor } from './ContactEditor';
 import { ProjectsEditor } from './ProjectsEditor';
 import { JourneyEditor } from './JourneyEditor';
 import { MediaLibrary } from './MediaLibrary';
+import { SystemHealthPanel } from './SystemHealthPanel';
 import { 
   LayoutDashboard, 
   Sparkles, 
@@ -47,8 +48,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onNavigateHome }) => {
     // STORAGE category
     { id: 'media', label: 'Media Library', icon: ImageIcon, category: 'STORAGE' },
     
-    // SITE SETTINGS category
-    { id: 'settings', label: 'Site Settings', icon: SettingsIcon, category: 'SITE' },
+    // SYSTEM HEALTH & PERMISSIONS category
+    { id: 'settings', label: 'System & Health', icon: SettingsIcon, category: 'SYSTEM' },
   ];
 
   const handleGoHome = (e: React.MouseEvent) => {
@@ -281,7 +282,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onNavigateHome }) => {
           {activeSection === 'about' && <AboutEditor />}
           {activeSection === 'projects' && <ProjectsEditor />}
           {activeSection === 'journey' && <JourneyEditor />}
-          {(activeSection === 'contact' || activeSection === 'settings') && <ContactEditor />}
+          {activeSection === 'contact' && <ContactEditor />}
+          {activeSection === 'settings' && <SystemHealthPanel />}
           {activeSection === 'media' && <MediaLibrary />}
           {!['dashboard', 'hero', 'about', 'projects', 'journey', 'contact', 'settings', 'media'].includes(activeSection) && (
             <AdminSectionPlaceholder sectionId={activeSection} />

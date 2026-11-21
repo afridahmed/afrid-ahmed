@@ -8,6 +8,8 @@ import {
   AboutVisualSettings,
 } from '../types';
 import { ABOUT_CONTENT } from '../data/siteContent';
+import { classifySupabaseError, isSafeMediaOrLinkUrl, verifyAdminSession } from './cmsAuthService';
+import { CMS_REPAIR_SQL_MIGRATION } from './cmsRepairSql';
 
 // =============================================================================
 // CONSTANTS & AUTHORITATIVE DEFAULTS
@@ -182,117 +184,10 @@ export const DEFAULT_ABOUT_CMS_DRAFT: AboutCmsDraftPayload = {
 };
 
 // =============================================================================
-// SQL MIGRATION SCRIPT (Exposed to Admin UI when schema needs upgrade)
+// SQL MIGRATION SCRIPT (Exposed to Admin UI when schema/permissions need upgrade)
 // =============================================================================
 
-export const ABOUT_CMS_SQL_SCHEMA = `-- Run this idempotent migration in your Supabase SQL Editor
-ALTER TABLE IF EXISTS public.about_content
-  ADD COLUMN IF NOT EXISTS section_label TEXT DEFAULT 'THE PERSON BEHIND THE CODE',
-  ADD COLUMN IF NOT EXISTS heading_accent TEXT DEFAULT 'ME',
-  ADD COLUMN IF NOT EXISTS subtitle TEXT DEFAULT 'Curious by default. Building by choice.',
-  ADD COLUMN IF NOT EXISTS show_section_divider BOOLEAN NOT NULL DEFAULT false,
-  ADD COLUMN IF NOT EXISTS portrait_alt TEXT DEFAULT 'Afrid Ahmed',
-  ADD COLUMN IF NOT EXISTS portrait_focal_point TEXT DEFAULT '50% 15%',
-  ADD COLUMN IF NOT EXISTS portrait_fit TEXT DEFAULT 'cover',
-  ADD COLUMN IF NOT EXISTS portrait_scale NUMERIC(3,2) DEFAULT 1.00,
-  ADD COLUMN IF NOT EXISTS edu_institution TEXT DEFAULT 'SLIIT',
-  ADD COLUMN IF NOT EXISTS edu_program TEXT DEFAULT 'CS',
-  ADD COLUMN IF NOT EXISTS edu_graduation_year TEXT DEFAULT 'Class of 2030',
-  ADD COLUMN IF NOT EXISTS edu_icon TEXT DEFAULT 'GraduationCap',
-  ADD COLUMN IF NOT EXISTS edu_supporting_text TEXT DEFAULT '',
-  ADD COLUMN IF NOT EXISTS full_name TEXT DEFAULT 'Afrid',
-  ADD COLUMN IF NOT EXISTS name_accent TEXT DEFAULT 'Ahmed',
-  ADD COLUMN IF NOT EXISTS academic_role TEXT DEFAULT 'SLIIT Undergraduate',
-  ADD COLUMN IF NOT EXISTS degree_program TEXT DEFAULT 'BSc (Hons) in Computer Science',
-  ADD COLUMN IF NOT EXISTS institution TEXT DEFAULT 'SLIIT',
-  ADD COLUMN IF NOT EXISTS intro_text TEXT DEFAULT '',
-  ADD COLUMN IF NOT EXISTS signature_image_url TEXT DEFAULT '',
-  ADD COLUMN IF NOT EXISTS visual_settings JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT true,
-  ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ DEFAULT now();
-
-CREATE TABLE IF NOT EXISTS public.about_interests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  about_id TEXT NOT NULL DEFAULT 'global' REFERENCES public.about_content(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  icon_name TEXT NOT NULL DEFAULT 'BrainCircuit',
-  description TEXT DEFAULT '',
-  display_order INTEGER NOT NULL DEFAULT 0,
-  is_visible BOOLEAN NOT NULL DEFAULT true,
-  is_published BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS public.about_highlights (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  about_id TEXT NOT NULL DEFAULT 'global' REFERENCES public.about_content(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  supporting_text TEXT DEFAULT '',
-  icon_name TEXT NOT NULL DEFAULT 'Terminal',
-  description TEXT DEFAULT '',
-  display_order INTEGER NOT NULL DEFAULT 0,
-  is_visible BOOLEAN NOT NULL DEFAULT true,
-  is_published BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS public.about_drafts (
-  id TEXT PRIMARY KEY DEFAULT 'global',
-  draft_payload JSONB NOT NULL,
-  has_unpublished_changes BOOLEAN NOT NULL DEFAULT false,
-  updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.about_content ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.about_interests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.about_highlights ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.about_drafts ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Public can view published about_content" ON public.about_content;
-DROP POLICY IF EXISTS "Admins can manage about_content" ON public.about_content;
-CREATE POLICY "Public can view published about_content" ON public.about_content FOR SELECT USING (is_published = true);
-CREATE POLICY "Admins can manage about_content" ON public.about_content FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()))
-  WITH CHECK (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()));
-
-DROP POLICY IF EXISTS "Public can view published about_interests" ON public.about_interests;
-DROP POLICY IF EXISTS "Admins can manage about_interests" ON public.about_interests;
-CREATE POLICY "Public can view published about_interests" ON public.about_interests FOR SELECT
-  USING (is_published = true AND is_visible = true);
-CREATE POLICY "Admins can manage about_interests" ON public.about_interests FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()))
-  WITH CHECK (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()));
-
-DROP POLICY IF EXISTS "Public can view published about_highlights" ON public.about_highlights;
-DROP POLICY IF EXISTS "Admins can manage about_highlights" ON public.about_highlights;
-CREATE POLICY "Public can view published about_highlights" ON public.about_highlights FOR SELECT
-  USING (is_published = true AND is_visible = true);
-CREATE POLICY "Admins can manage about_highlights" ON public.about_highlights FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()))
-  WITH CHECK (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()));
-
-DROP POLICY IF EXISTS "Admins can manage about_drafts" ON public.about_drafts;
-CREATE POLICY "Admins can manage about_drafts" ON public.about_drafts FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()))
-  WITH CHECK (EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = auth.uid()));
-
-CREATE OR REPLACE FUNCTION public.get_public_about_bundle()
-RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE v_about public.about_content%ROWTYPE; v_interests JSONB; v_highlights JSONB;
-BEGIN
-  SELECT * INTO v_about FROM public.about_content WHERE id = 'global' LIMIT 1;
-  IF NOT FOUND THEN RETURN jsonb_build_object('seeded', false, 'is_published', true, 'about', null, 'interests', '[]'::jsonb, 'highlights', '[]'::jsonb); END IF;
-  IF COALESCE(v_about.is_published, true) = false THEN RETURN jsonb_build_object('seeded', true, 'is_published', false, 'about', null, 'interests', '[]'::jsonb, 'highlights', '[]'::jsonb); END IF;
-  SELECT COALESCE(jsonb_agg(jsonb_build_object('id', i.id, 'title', i.title, 'icon_name', i.icon_name, 'description', COALESCE(i.description, ''), 'display_order', i.display_order, 'is_visible', i.is_visible) ORDER BY i.display_order ASC), '[]'::jsonb) INTO v_interests FROM public.about_interests i WHERE i.about_id = 'global' AND i.is_published = true AND i.is_visible = true;
-  SELECT COALESCE(jsonb_agg(jsonb_build_object('id', h.id, 'title', h.title, 'supporting_text', COALESCE(h.supporting_text, ''), 'icon_name', h.icon_name, 'description', COALESCE(h.description, ''), 'display_order', h.display_order, 'is_visible', h.is_visible) ORDER BY h.display_order ASC), '[]'::jsonb) INTO v_highlights FROM public.about_highlights h WHERE h.about_id = 'global' AND h.is_published = true AND h.is_visible = true;
-  RETURN jsonb_build_object('seeded', true, 'is_published', true, 'about', to_jsonb(v_about), 'interests', v_interests, 'highlights', v_highlights);
-END; $$;
-REVOKE ALL ON FUNCTION public.get_public_about_bundle() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_public_about_bundle() TO anon, authenticated;`;
+export const ABOUT_CMS_SQL_SCHEMA = CMS_REPAIR_SQL_MIGRATION;
 
 // =============================================================================
 // HELPERS & SANITIZATION
@@ -770,44 +665,6 @@ export function convertDraftToAboutContent(
 }
 
 // =============================================================================
-// AUTHORIZATION GUARD
-// =============================================================================
-
-async function verifyAdminAccess(): Promise<{ authorized: boolean; userId?: string; error?: string }> {
-  try {
-    const { data: userRes, error: authErr } = await supabase.auth.getUser();
-    if (authErr || !userRes?.user) {
-      return { authorized: false, error: 'Authentication required. Please sign in to the Admin CMS.' };
-    }
-
-    const userId = userRes.user.id;
-    const { data: adminRecord, error: adminErr } = await supabase
-      .from('admin_users')
-      .select('user_id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (!adminErr && adminRecord?.user_id === userId) {
-      return { authorized: true, userId };
-    }
-
-    // Fallback check against RLS-protected site_settings (matches AdminAuthContext)
-    const { data: fallbackCheck, error: fallbackErr } = await supabase
-      .from('site_settings')
-      .select('id')
-      .limit(1);
-
-    if (!fallbackErr && Array.isArray(fallbackCheck)) {
-      return { authorized: true, userId };
-    }
-
-    return { authorized: false, error: 'Unauthorized: Account lacks administrator privileges.' };
-  } catch (err: any) {
-    return { authorized: false, error: err?.message || 'Admin authorization check failed.' };
-  }
-}
-
-// =============================================================================
 // ADMIN CMS CRUD & DRAFT/PUBLISH OPERATIONS
 // =============================================================================
 
@@ -833,16 +690,24 @@ export async function getAdminAboutCmsState(): Promise<{
       supabase.from('about_drafts').select('*').eq('id', 'global').maybeSingle(),
     ]);
 
+    const errorsToCheck = [aboutRes.error, interestsRes.error, highlightsRes.error, draftRes.error].filter(Boolean);
+    const classifiedErrors = errorsToCheck.map((e) => classifySupabaseError(e, 'loading About CMS data'));
+
     const schemaNeedsMigration =
+      classifiedErrors.some((c) => c.needsMigration) ||
       isMissingSchemaError(interestsRes.error) ||
       isMissingSchemaError(highlightsRes.error) ||
       isMissingSchemaError(draftRes.error) ||
       (aboutRes.data ? !('visual_settings' in aboutRes.data) : false);
 
-    if (aboutRes.error && !isMissingSchemaError(aboutRes.error)) {
+    const blockingError = classifiedErrors.find(
+      (c) => c.category !== 'MISSING_SCHEMA'
+    );
+
+    if (blockingError) {
       return {
         data: { ...defaultState, schemaNeedsMigration },
-        error: aboutRes.error.message,
+        error: blockingError.message,
       };
     }
 
@@ -872,10 +737,11 @@ export async function getAdminAboutCmsState(): Promise<{
         schemaNeedsMigration,
       },
     };
-  } catch (err: any) {
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading About CMS state');
     return {
       data: defaultState,
-      error: err?.message || 'Failed to load About CMS state.',
+      error: classified.message,
     };
   }
 }
@@ -884,9 +750,16 @@ export async function saveAboutDraft(
   draft: AboutCmsDraftPayload
 ): Promise<{ success: boolean; error?: string; schemaNeedsMigration?: boolean }> {
   try {
-    const auth = await verifyAdminAccess();
+    const auth = await verifyAdminSession();
     if (!auth.authorized) {
-      return { success: false, error: auth.error };
+      return { success: false, error: auth.error, schemaNeedsMigration: auth.needsMigration };
+    }
+
+    if (draft.portrait?.imageUrl && !isSafeMediaOrLinkUrl(draft.portrait.imageUrl, true)) {
+      return { success: false, error: 'Portrait image URL must be a valid HTTP(S) URL or local asset path.' };
+    }
+    if (draft.profileCard?.signatureImageUrl && !isSafeMediaOrLinkUrl(draft.profileCard.signatureImageUrl, true)) {
+      return { success: false, error: 'Signature image URL must be a valid HTTP(S) URL or local asset path.' };
     }
 
     const sanitizedDraft = normalizeDraftPayload(draft);
@@ -906,19 +779,18 @@ export async function saveAboutDraft(
       );
 
     if (error) {
-      if (isMissingSchemaError(error)) {
-        return {
-          success: false,
-          schemaNeedsMigration: true,
-          error: 'Database migration required: please run the About CMS SQL migration in Supabase SQL Editor to enable drafts.',
-        };
-      }
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'saving About draft');
+      return {
+        success: false,
+        schemaNeedsMigration: Boolean(classified.needsMigration || isMissingSchemaError(error)),
+        error: classified.message,
+      };
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to save draft.' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'saving About draft');
+    return { success: false, error: classified.message, schemaNeedsMigration: classified.needsMigration };
   }
 }
 
@@ -926,21 +798,55 @@ export async function publishAboutCms(
   draft: AboutCmsDraftPayload
 ): Promise<{ success: boolean; error?: string; schemaNeedsMigration?: boolean }> {
   try {
-    const auth = await verifyAdminAccess();
+    const auth = await verifyAdminSession();
     if (!auth.authorized) {
-      return { success: false, error: auth.error };
+      return { success: false, error: auth.error, schemaNeedsMigration: auth.needsMigration };
+    }
+
+    if (draft.portrait?.imageUrl && !isSafeMediaOrLinkUrl(draft.portrait.imageUrl, true)) {
+      return { success: false, error: 'Portrait image URL must be a valid HTTPS/HTTP URL or relative asset path.' };
+    }
+    if (draft.profileCard?.signatureImageUrl && !isSafeMediaOrLinkUrl(draft.profileCard.signatureImageUrl, true)) {
+      return { success: false, error: 'Signature image URL must be a valid HTTPS/HTTP URL or relative asset path.' };
     }
 
     const clean = normalizeDraftPayload(draft);
-    const nowIso = new Date().toISOString();
+    if (!clean.header.heading.trim() || !clean.profileCard.fullName.trim() || !clean.profileCard.introduction.trim()) {
+      return {
+        success: false,
+        error: 'Validation failed: Heading, Profile Full Name, and Introduction cannot be empty. Previously published state remains live.',
+      };
+    }
 
+    // 1. Primary path: Single atomic PostgreSQL transaction via SECURITY DEFINER RPC
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('publish_about_cms', {
+      p_draft: clean,
+    });
+
+    if (!rpcError && rpcResult && (rpcResult as Record<string, any>).success === true) {
+      return { success: true };
+    }
+
+    if (rpcError) {
+      const classified = classifySupabaseError(rpcError, 'publishing About settings');
+      // Only fall back to sequential writes if publish_about_cms RPC doesn't exist yet on remote DB
+      if (classified.category !== 'MISSING_SCHEMA') {
+        return {
+          success: false,
+          schemaNeedsMigration: classified.needsMigration,
+          error: classified.message,
+        };
+      }
+    }
+
+    // 2. Legacy compatibility fallback (only when publish_about_cms RPC has not been installed yet)
+    const nowIso = new Date().toISOString();
     const intro = clean.profileCard.introduction.trim();
     const bioParagraphs = [...(clean.legacyMeta?.biographyParagraphs || ABOUT_CONTENT.biography)];
     if (intro) {
       bioParagraphs[0] = intro;
     }
 
-    // 1. Upsert published about_content row (extended + legacy fields synchronized)
     const aboutUpsertPayload = {
       id: 'global',
       heading: clean.header.heading.trim() || 'ABOUT',
@@ -982,17 +888,14 @@ export async function publishAboutCms(
       .upsert(aboutUpsertPayload, { onConflict: 'id' });
 
     if (aboutError) {
-      if (isMissingSchemaError(aboutError)) {
-        return {
-          success: false,
-          schemaNeedsMigration: true,
-          error: 'Database columns missing: please run the About CMS SQL migration in Supabase SQL Editor before publishing.',
-        };
-      }
-      return { success: false, error: `Failed to publish About settings: ${aboutError.message}` };
+      const classified = classifySupabaseError(aboutError, 'publishing About main section');
+      return {
+        success: false,
+        schemaNeedsMigration: Boolean(classified.needsMigration || isMissingSchemaError(aboutError)),
+        error: classified.message,
+      };
     }
 
-    // 2. Sync normalized about_interests rows (upsert current + delete removed)
     const normalizedInterests = clean.interests.map((item, idx) => ({
       id: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)
         ? item.id
@@ -1007,10 +910,15 @@ export async function publishAboutCms(
       updated_at: nowIso,
     }));
 
-    const { data: existingInterests } = await supabase
+    const { data: existingInterests, error: fetchIntErr } = await supabase
       .from('about_interests')
       .select('id')
       .eq('about_id', 'global');
+
+    if (fetchIntErr) {
+      const classified = classifySupabaseError(fetchIntErr, 'reading existing About interests');
+      return { success: false, schemaNeedsMigration: classified.needsMigration, error: classified.message };
+    }
 
     const keepInterestIds = new Set(normalizedInterests.map((i) => i.id));
     const interestIdsToDelete = (existingInterests || [])
@@ -1023,7 +931,8 @@ export async function publishAboutCms(
         .delete()
         .in('id', interestIdsToDelete);
       if (delIntErr) {
-        return { success: false, error: `Failed updating interests: ${delIntErr.message}` };
+        const classified = classifySupabaseError(delIntErr, 'removing deleted About interests');
+        return { success: false, schemaNeedsMigration: classified.needsMigration, error: classified.message };
       }
     }
 
@@ -1032,11 +941,11 @@ export async function publishAboutCms(
         .from('about_interests')
         .upsert(normalizedInterests, { onConflict: 'id' });
       if (upsertIntErr) {
-        return { success: false, error: `Failed saving interests: ${upsertIntErr.message}` };
+        const classified = classifySupabaseError(upsertIntErr, 'saving About interests');
+        return { success: false, schemaNeedsMigration: classified.needsMigration, error: classified.message };
       }
     }
 
-    // 3. Sync normalized about_highlights rows
     const normalizedHighlights = clean.highlights.map((item, idx) => ({
       id: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)
         ? item.id
@@ -1052,10 +961,15 @@ export async function publishAboutCms(
       updated_at: nowIso,
     }));
 
-    const { data: existingHighlights } = await supabase
+    const { data: existingHighlights, error: fetchHighErr } = await supabase
       .from('about_highlights')
       .select('id')
       .eq('about_id', 'global');
+
+    if (fetchHighErr) {
+      const classified = classifySupabaseError(fetchHighErr, 'reading existing About highlights');
+      return { success: false, schemaNeedsMigration: classified.needsMigration, error: classified.message };
+    }
 
     const keepHighlightIds = new Set(normalizedHighlights.map((h) => h.id));
     const highlightIdsToDelete = (existingHighlights || [])
@@ -1068,7 +982,8 @@ export async function publishAboutCms(
         .delete()
         .in('id', highlightIdsToDelete);
       if (delHighErr) {
-        return { success: false, error: `Failed updating highlights: ${delHighErr.message}` };
+        const classified = classifySupabaseError(delHighErr, 'removing deleted About highlights');
+        return { success: false, schemaNeedsMigration: classified.needsMigration, error: classified.message };
       }
     }
 
@@ -1077,11 +992,11 @@ export async function publishAboutCms(
         .from('about_highlights')
         .upsert(normalizedHighlights, { onConflict: 'id' });
       if (upsertHighErr) {
-        return { success: false, error: `Failed saving highlights: ${upsertHighErr.message}` };
+        const classified = classifySupabaseError(upsertHighErr, 'saving About highlights');
+        return { success: false, schemaNeedsMigration: classified.needsMigration, error: classified.message };
       }
     }
 
-    // 4. Sync synced draft record with has_unpublished_changes = false
     const syncedDraft: AboutCmsDraftPayload = {
       ...clean,
       interests: normalizedInterests.map((i) => ({
@@ -1103,7 +1018,7 @@ export async function publishAboutCms(
       })),
     };
 
-    await supabase.from('about_drafts').upsert(
+    const { error: syncDraftErr } = await supabase.from('about_drafts').upsert(
       {
         id: 'global',
         draft_payload: syncedDraft,
@@ -1114,17 +1029,37 @@ export async function publishAboutCms(
       { onConflict: 'id' }
     );
 
+    if (syncDraftErr && !isMissingSchemaError(syncDraftErr)) {
+      const classified = classifySupabaseError(syncDraftErr, 'synchronizing published About draft status');
+      return { success: false, schemaNeedsMigration: classified.needsMigration, error: classified.message };
+    }
+
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Unexpected error while publishing About section.' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'publishing About settings');
+    return {
+      success: false,
+      schemaNeedsMigration: classified.needsMigration,
+      error: classified.message,
+    };
   }
 }
 
-export async function unpublishAboutSection(): Promise<{ success: boolean; error?: string }> {
+export async function unpublishAboutSection(): Promise<{ success: boolean; error?: string; schemaNeedsMigration?: boolean }> {
   try {
-    const auth = await verifyAdminAccess();
+    const auth = await verifyAdminSession();
     if (!auth.authorized) {
-      return { success: false, error: auth.error };
+      return { success: false, error: auth.error, schemaNeedsMigration: auth.needsMigration };
+    }
+
+    const { error: rpcError } = await supabase.rpc('unpublish_about_cms');
+    if (!rpcError) {
+      return { success: true };
+    }
+
+    const rpcClassified = classifySupabaseError(rpcError, 'unpublishing About section');
+    if (rpcClassified.category !== 'MISSING_SCHEMA') {
+      return { success: false, error: rpcClassified.message, schemaNeedsMigration: rpcClassified.needsMigration };
     }
 
     const { error } = await supabase
@@ -1133,22 +1068,24 @@ export async function unpublishAboutSection(): Promise<{ success: boolean; error
       .eq('id', 'global');
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'unpublishing About section');
+      return { success: false, error: classified.message, schemaNeedsMigration: classified.needsMigration };
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to unpublish About section.' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'unpublishing About section');
+    return { success: false, error: classified.message };
   }
 }
 
 export async function discardAboutDraft(
   publishedSnapshot: AboutCmsDraftPayload
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; schemaNeedsMigration?: boolean }> {
   try {
-    const auth = await verifyAdminAccess();
+    const auth = await verifyAdminSession();
     if (!auth.authorized) {
-      return { success: false, error: auth.error };
+      return { success: false, error: auth.error, schemaNeedsMigration: auth.needsMigration };
     }
 
     const clean = normalizeDraftPayload(publishedSnapshot);
@@ -1164,11 +1101,13 @@ export async function discardAboutDraft(
     );
 
     if (error && !isMissingSchemaError(error)) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'discarding About draft');
+      return { success: false, error: classified.message, schemaNeedsMigration: classified.needsMigration };
     }
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to discard draft.' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'discarding About draft');
+    return { success: false, error: classified.message };
   }
 }
 

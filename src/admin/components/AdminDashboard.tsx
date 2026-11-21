@@ -365,7 +365,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
             <span className="text-[#64748B] text-[10px] block">AUTHORIZATION LEVEL</span>
             <span className="text-emerald-400 flex items-center gap-1.5 font-medium">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Verified in admin_users
+              Verified via private.is_admin()
             </span>
           </div>
 

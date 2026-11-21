@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { ProjectItem } from '../types';
 import { PROJECTS } from '../data/siteContent';
+import { classifySupabaseError, isSafeMediaOrLinkUrl, verifyAdminSession } from './cmsAuthService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACE (public.projects)
@@ -134,18 +135,25 @@ export async function fetchPublicProjects(): Promise<ProjectItem[]> {
  */
 export async function getAdminProjects(): Promise<{ data: DbProject[]; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: [], error: auth.error };
+    }
+
     const { data, error } = await supabase
       .from('projects')
       .select('*')
       .order('display_order', { ascending: true });
 
     if (error) {
-      return { data: [], error: error.message };
+      const classified = classifySupabaseError(error, 'loading Projects');
+      return { data: [], error: classified.message };
     }
 
     return { data: (data as DbProject[]) || [] };
-  } catch (err: any) {
-    return { data: [], error: err.message || 'Failed to fetch projects' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading Projects');
+    return { data: [], error: classified.message };
   }
 }
 
@@ -155,6 +163,15 @@ export async function getAdminProjects(): Promise<{ data: DbProject[]; error?: s
  */
 export async function createAdminProject(payload: DbProjectInsert): Promise<{ data: DbProject | null; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: null, error: auth.error };
+    }
+
+    if (!isSafeMediaOrLinkUrl(payload.github_url, true) || !isSafeMediaOrLinkUrl(payload.live_url, true)) {
+      return { data: null, error: 'Project repository and live URLs must use valid HTTP(S) protocols.' };
+    }
+
     // 1. Slug uniqueness check
     const { data: existingSlug, error: slugCheckError } = await supabase
       .from('projects')
@@ -163,7 +180,8 @@ export async function createAdminProject(payload: DbProjectInsert): Promise<{ da
       .maybeSingle();
 
     if (slugCheckError) {
-      return { data: null, error: slugCheckError.message };
+      const classified = classifySupabaseError(slugCheckError, 'checking project slug uniqueness');
+      return { data: null, error: classified.message };
     }
     if (existingSlug) {
       return { data: null, error: `A project with the slug "${payload.slug}" already exists. Please choose a unique slug.` };
@@ -171,10 +189,14 @@ export async function createAdminProject(payload: DbProjectInsert): Promise<{ da
 
     // 2. If setting as flagship, unset all other flagships first
     if (payload.is_flagship) {
-      await supabase
+      const { error: resetErr } = await supabase
         .from('projects')
         .update({ is_flagship: false })
         .eq('is_flagship', true);
+      if (resetErr) {
+        const classified = classifySupabaseError(resetErr, 'updating previous flagship project');
+        return { data: null, error: classified.message };
+      }
     }
 
     // 3. Prepare payload strictly with valid public.projects columns
@@ -205,12 +227,14 @@ export async function createAdminProject(payload: DbProjectInsert): Promise<{ da
       .select();
 
     if (error) {
-      return { data: null, error: error.message };
+      const classified = classifySupabaseError(error, 'creating project');
+      return { data: null, error: classified.message };
     }
 
     return { data: (data?.[0] as DbProject) || null };
-  } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to create project' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'creating project');
+    return { data: null, error: classified.message };
   }
 }
 
@@ -220,6 +244,18 @@ export async function createAdminProject(payload: DbProjectInsert): Promise<{ da
  */
 export async function updateAdminProject(id: string, payload: DbProjectUpdate): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    if (
+      ('github_url' in payload && !isSafeMediaOrLinkUrl(payload.github_url, true)) ||
+      ('live_url' in payload && !isSafeMediaOrLinkUrl(payload.live_url, true))
+    ) {
+      return { success: false, error: 'Project repository and live URLs must use valid HTTP(S) protocols.' };
+    }
+
     // 1. If slug is being updated, verify uniqueness against other projects
     if (payload.slug) {
       const { data: existingSlug, error: slugCheckError } = await supabase
@@ -230,7 +266,8 @@ export async function updateAdminProject(id: string, payload: DbProjectUpdate): 
         .maybeSingle();
 
       if (slugCheckError) {
-        return { success: false, error: slugCheckError.message };
+        const classified = classifySupabaseError(slugCheckError, 'checking project slug uniqueness');
+        return { success: false, error: classified.message };
       }
       if (existingSlug) {
         return { success: false, error: `A project with the slug "${payload.slug}" already exists. Please choose a unique slug.` };
@@ -239,11 +276,15 @@ export async function updateAdminProject(id: string, payload: DbProjectUpdate): 
 
     // 2. If setting as flagship, unset all others
     if (payload.is_flagship) {
-      await supabase
+      const { error: resetErr } = await supabase
         .from('projects')
         .update({ is_flagship: false })
         .neq('id', id)
         .eq('is_flagship', true);
+      if (resetErr) {
+        const classified = classifySupabaseError(resetErr, 'updating previous flagship project');
+        return { success: false, error: classified.message };
+      }
     }
 
     // 3. Update record strictly with valid public.projects columns
@@ -265,12 +306,14 @@ export async function updateAdminProject(id: string, payload: DbProjectUpdate): 
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'updating project');
+      return { success: false, error: classified.message };
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update project' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'updating project');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -279,18 +322,25 @@ export async function updateAdminProject(id: string, payload: DbProjectUpdate): 
  */
 export async function deleteAdminProject(id: string): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
     const { error } = await supabase
       .from('projects')
       .delete()
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'deleting project');
+      return { success: false, error: classified.message };
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to delete project' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'deleting project');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -299,6 +349,11 @@ export async function deleteAdminProject(id: string): Promise<{ success: boolean
  */
 export async function togglePublishAdminProject(id: string, currentStatus: boolean): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
     const { error } = await supabase
       .from('projects')
       .update({ 
@@ -307,12 +362,14 @@ export async function togglePublishAdminProject(id: string, currentStatus: boole
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'toggling project publication');
+      return { success: false, error: classified.message };
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to toggle publication status' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'toggling project publication');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -321,12 +378,21 @@ export async function togglePublishAdminProject(id: string, currentStatus: boole
  */
 export async function setFlagshipAdminProject(id: string): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
     // 1. Unset all flagships
-    await supabase
+    const { error: resetErr } = await supabase
       .from('projects')
       .update({ is_flagship: false })
       .neq('id', id)
       .eq('is_flagship', true);
+    if (resetErr) {
+      const classified = classifySupabaseError(resetErr, 'clearing previous flagship project');
+      return { success: false, error: classified.message };
+    }
 
     // 2. Set this project as flagship
     const { error } = await supabase
@@ -337,12 +403,14 @@ export async function setFlagshipAdminProject(id: string): Promise<{ success: bo
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'setting flagship project');
+      return { success: false, error: classified.message };
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to set flagship project' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'setting flagship project');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -353,6 +421,11 @@ export async function reorderAdminProjects(
   orderedProjects: { id: string; display_order: number }[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
     for (const proj of orderedProjects) {
       const { error } = await supabase
         .from('projects')
@@ -360,13 +433,15 @@ export async function reorderAdminProjects(
         .eq('id', proj.id);
 
       if (error) {
-        return { success: false, error: error.message };
+        const classified = classifySupabaseError(error, 'reordering projects');
+        return { success: false, error: classified.message };
       }
     }
 
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to persist reordering' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'reordering projects');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -397,58 +472,21 @@ export async function importCanonicalProjects(): Promise<ImportProjectsResult> {
 
   try {
     // -------------------------------------------------------------------------
-    // STEP 2 & 3: EXPOSE DIAGNOSTICS & VERIFY ADMIN AUTHORIZATION
+    // STEP 2 & 3: VERIFY ADMIN AUTHORIZATION CENTRALIZED (NO admin_users CLIENT QUERY)
     // -------------------------------------------------------------------------
-    console.log('[Projects Import Diagnostic] Initiating canonical projects import...');
+    const auth = await verifyAdminSession();
+    const userId = auth.userId;
 
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError) {
-      console.error('[Projects Import Diagnostic] Session retrieval error:', sessionError.message);
-      return { success: false, count: 0, error: `Authentication error: ${sessionError.message}` };
-    }
-
-    const userId = session?.user?.id;
-    console.log('[Projects Import Diagnostic] Authenticated user ID:', userId || 'None (no session)');
-
-    if (!session?.user) {
-      const authErr = 'Administrator session not found. Please log in to the admin panel.';
-      console.error('[Projects Import Diagnostic]', authErr);
-      return { success: false, count: 0, error: authErr };
-    }
-
-    // Verify existing admin authorization logic (matches AdminAuthContext)
-    let isAdmin = false;
-
-    // Approach A: Query public.admin_users directly
-    const { data: adminRecord, error: adminQueryError } = await supabase
-      .from('admin_users')
-      .select('user_id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (!adminQueryError && adminRecord && adminRecord.user_id === userId) {
-      isAdmin = true;
-    } else {
-      // Approach B: Query site_settings (protected by RLS private.is_admin())
-      const { data: testData, error: testError } = await supabase
-        .from('site_settings')
-        .select('id')
-        .limit(1);
-
-      isAdmin = !testError && Array.isArray(testData);
-    }
-
-    console.log('[Projects Import Diagnostic] Admin authorization result:', isAdmin);
-    if (!isAdmin) {
-      const authDenied = `Access Denied: Authenticated user (${userId}) is not authorized as an administrator in admin_users or RLS policy.`;
-      console.error('[Projects Import Diagnostic]', authDenied);
+    if (!auth.authorized) {
       return {
         success: false,
         count: 0,
-        error: authDenied,
+        error: auth.error || 'Administrator privileges could not be verified.',
         diagnostics: { userId, isAdmin: false, preparedCount: 0, attemptedCount: 0, successfulCount: 0 },
       };
     }
+
+    const isAdmin = true;
 
     // -------------------------------------------------------------------------
     // STEP 4 & 5: MAP CANONICAL SOURCE TO STRICTLY ALLOWED COLUMNS

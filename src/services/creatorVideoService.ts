@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
-import { CreatorVideoItem, FEATURED_VIDEO, ADDITIONAL_VIDEOS } from '../data/creatorContent';
+import { FEATURED_VIDEO, ADDITIONAL_VIDEOS } from '../data/creatorContent';
+import { classifySupabaseError, isSafeMediaOrLinkUrl, verifyAdminSession } from './cmsAuthService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACE (public.creator_videos)
@@ -203,18 +204,25 @@ export async function fetchPublicCreatorVideos(): Promise<{
  */
 export async function getAdminCreatorVideos(): Promise<{ data: DbCreatorVideo[]; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: [], error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { data, error } = await supabase
       .from('creator_videos')
       .select('*')
       .order('display_order', { ascending: true });
 
     if (error) {
-      return { data: [], error: error.message };
+      const classified = classifySupabaseError(error, 'loading Creator videos');
+      return { data: [], error: classified.message };
     }
 
     return { data: (data as DbCreatorVideo[]) || [], error: null };
-  } catch (err: any) {
-    return { data: [], error: err.message || 'Failed to fetch admin creator videos' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading Creator videos');
+    return { data: [], error: classified.message };
   }
 }
 
@@ -226,12 +234,25 @@ export async function createAdminCreatorVideo(
   payload: DbCreatorVideoInsert
 ): Promise<{ data: DbCreatorVideo | null; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: null, error: auth.error || 'Administrator authorization required.' };
+    }
+
+    if (!isSafeMediaOrLinkUrl(payload.youtube_url, false) || !isSafeMediaOrLinkUrl(payload.thumbnail_url, true)) {
+      return { data: null, error: 'YouTube and thumbnail URLs must use valid HTTP(S) protocols.' };
+    }
+
     // If setting as featured, demote any currently featured video
     if (payload.is_featured) {
-      await supabase
+      const { error: demoteErr } = await supabase
         .from('creator_videos')
         .update({ is_featured: false, updated_at: new Date().toISOString() })
         .eq('is_featured', true);
+      if (demoteErr) {
+        const classified = classifySupabaseError(demoteErr, 'clearing previous featured video');
+        return { data: null, error: classified.message };
+      }
     }
 
     const { data, error } = await supabase
@@ -245,12 +266,14 @@ export async function createAdminCreatorVideo(
       .single();
 
     if (error) {
-      return { data: null, error: error.message };
+      const classified = classifySupabaseError(error, 'creating Creator video');
+      return { data: null, error: classified.message };
     }
 
     return { data: data as DbCreatorVideo, error: null };
-  } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to create creator video' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'creating Creator video');
+    return { data: null, error: classified.message };
   }
 }
 
@@ -263,13 +286,29 @@ export async function updateAdminCreatorVideo(
   payload: DbCreatorVideoUpdate
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
+    if (
+      ('youtube_url' in payload && !isSafeMediaOrLinkUrl(payload.youtube_url, true)) ||
+      ('thumbnail_url' in payload && !isSafeMediaOrLinkUrl(payload.thumbnail_url, true))
+    ) {
+      return { success: false, error: 'YouTube and thumbnail URLs must use valid HTTP(S) protocols.' };
+    }
+
     // If setting as featured, demote other videos
     if (payload.is_featured) {
-      await supabase
+      const { error: demoteErr } = await supabase
         .from('creator_videos')
         .update({ is_featured: false, updated_at: new Date().toISOString() })
         .neq('id', id)
         .eq('is_featured', true);
+      if (demoteErr) {
+        const classified = classifySupabaseError(demoteErr, 'clearing previous featured video');
+        return { success: false, error: classified.message };
+      }
     }
 
     const { error } = await supabase
@@ -281,12 +320,14 @@ export async function updateAdminCreatorVideo(
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'updating Creator video');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update creator video' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'updating Creator video');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -295,18 +336,25 @@ export async function updateAdminCreatorVideo(
  */
 export async function deleteAdminCreatorVideo(id: string): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('creator_videos')
       .delete()
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'deleting Creator video');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to delete creator video' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'deleting Creator video');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -318,6 +366,11 @@ export async function togglePublishAdminCreatorVideo(
   currentStatus: boolean
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('creator_videos')
       .update({
@@ -327,12 +380,14 @@ export async function togglePublishAdminCreatorVideo(
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'toggling Creator video publication');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to toggle publication status' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'toggling Creator video publication');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -343,12 +398,21 @@ export async function setFeaturedAdminCreatorVideo(
   id: string
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     // 1. Demote any other featured video
-    await supabase
+    const { error: demoteErr } = await supabase
       .from('creator_videos')
       .update({ is_featured: false, updated_at: new Date().toISOString() })
       .neq('id', id)
       .eq('is_featured', true);
+    if (demoteErr) {
+      const classified = classifySupabaseError(demoteErr, 'clearing previous featured video');
+      return { success: false, error: classified.message };
+    }
 
     // 2. Set this video as featured
     const { error } = await supabase
@@ -357,12 +421,14 @@ export async function setFeaturedAdminCreatorVideo(
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'setting featured Creator video');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to set featured creator video' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'setting featured Creator video');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -373,18 +439,25 @@ export async function removeFeaturedAdminCreatorVideo(
   id: string
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('creator_videos')
       .update({ is_featured: false, updated_at: new Date().toISOString() })
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'clearing featured Creator video');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to remove featured status' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'clearing featured Creator video');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -395,6 +468,11 @@ export async function reorderAdminCreatorVideos(
   orderedItems: { id: string; display_order: number }[]
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     for (const item of orderedItems) {
       const { error } = await supabase
         .from('creator_videos')
@@ -405,13 +483,15 @@ export async function reorderAdminCreatorVideos(
         .eq('id', item.id);
 
       if (error) {
-        return { success: false, error: error.message };
+        const classified = classifySupabaseError(error, 'reordering Creator videos');
+        return { success: false, error: classified.message };
       }
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to reorder creator videos' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'reordering Creator videos');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -420,29 +500,38 @@ export async function reorderAdminCreatorVideos(
  */
 export async function seedDefaultCreatorVideosIfEmpty(): Promise<boolean> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return false;
+    }
+
     const { count, error } = await supabase
       .from('creator_videos')
       .select('*', { count: 'exact', head: true });
 
     if (error) {
-      console.warn('Check creator_videos count note:', error.message);
+      classifySupabaseError(error, 'checking Creator videos count');
       return false;
     }
 
     if (count === 0) {
       for (const video of DEFAULT_DB_CREATOR_VIDEOS) {
-        await supabase.from('creator_videos').insert({
+        const { error: insertErr } = await supabase.from('creator_videos').insert({
           ...video,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
+        if (insertErr) {
+          classifySupabaseError(insertErr, 'seeding Creator video');
+          return false;
+        }
       }
       return true;
     }
 
     return false;
   } catch (err) {
-    console.warn('Seed creator_videos note:', err);
+    classifySupabaseError(err, 'seeding Creator videos');
     return false;
   }
 }

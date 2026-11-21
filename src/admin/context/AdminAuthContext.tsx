@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
+import { verifyAdminSession } from '../../services/cmsAuthService';
 
 interface AdminAuthContextType {
   user: User | null;
@@ -22,56 +23,12 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const checkAdminStatus = useCallback(async (userId: string): Promise<boolean> => {
-    try {
-      if (import.meta.env.DEV) {
-        console.log('[Admin Verification] Checking user ID:', userId);
-      }
-
-      // Approach A: Query public.admin_users table directly
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('user_id')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (import.meta.env.DEV) {
-        console.log('[Admin Verification] admin_users query data:', data, 'error:', error);
-      }
-
-      // If direct table query succeeded and returned a match
-      if (!error && data && data.user_id === userId) {
-        if (import.meta.env.DEV) {
-          console.log('[Admin Verification] Result (via admin_users query): true');
-        }
-        return true;
-      }
-
-      // Approach B: If admin_users has no SELECT policy for client-side queries
-      // or returns null / RLS restriction, verify admin privileges via authorized table query
-      // (where RLS evaluates (select private.is_admin()) = true for authenticated admins)
-      const { data: testData, error: testError } = await supabase
-        .from('site_settings')
-        .select('id')
-        .limit(1);
-
-      if (import.meta.env.DEV) {
-        console.log('[Admin Verification] Fallback test query data:', testData, 'error:', testError);
-      }
-
-      const verified = !testError && Array.isArray(testData);
-
-      if (import.meta.env.DEV) {
-        console.log('[Admin Verification] Final isAdmin result:', verified);
-      }
-
-      return verified;
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error('[Admin Verification] Unexpected error during verification:', err);
-      }
-      return false;
-    }
+  const checkAdminStatus = useCallback(async (_userId: string): Promise<{ authorized: boolean; error?: string }> => {
+    const verification = await verifyAdminSession();
+    return {
+      authorized: verification.authorized,
+      error: verification.error,
+    };
   }, []);
 
   const handleSession = useCallback(async (currentSession: Session | null) => {
@@ -81,10 +38,12 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     setUser(currentUser);
 
     if (currentUser) {
-      const adminVerified = await checkAdminStatus(currentUser.id);
-      setIsAdmin(adminVerified);
-      if (!adminVerified) {
-        setAuthError('Access Denied: This authenticated account is not authorized as an administrator.');
+      const verification = await checkAdminStatus(currentUser.id);
+      setIsAdmin(verification.authorized);
+      if (!verification.authorized) {
+        setAuthError(
+          verification.error || 'Access Denied: This authenticated account is not authorized as an administrator.'
+        );
       } else {
         setAuthError(null);
       }
@@ -133,9 +92,11 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data.user) {
-        const adminVerified = await checkAdminStatus(data.user.id);
-        if (!adminVerified) {
-          const unauthorizedMsg = 'Access Denied: This account is authenticated in Supabase but is not registered as an administrator in admin_users.';
+        const verification = await checkAdminStatus(data.user.id);
+        if (!verification.authorized) {
+          const unauthorizedMsg =
+            verification.error ||
+            'Access Denied: This account is authenticated in Supabase but is not registered as an administrator.';
           setAuthError(unauthorizedMsg);
           setIsAdmin(false);
           // Sign out unauthorized user to maintain clean state

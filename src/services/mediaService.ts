@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { classifySupabaseError, verifyAdminSession } from './cmsAuthService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACE (public.media)
@@ -79,18 +80,25 @@ export async function ensureMediaBucketExists(): Promise<{ success: boolean; err
  */
 export async function getAdminMediaItems(): Promise<{ data: DbMediaItem[]; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: [], error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { data, error } = await supabase
       .from('media')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      return { data: [], error: error.message };
+      const classified = classifySupabaseError(error, 'loading Media library');
+      return { data: [], error: classified.message };
     }
 
     return { data: (data as DbMediaItem[]) || [], error: null };
-  } catch (err: any) {
-    return { data: [], error: err.message || 'Failed to fetch media library items' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading Media library');
+    return { data: [], error: classified.message };
   }
 }
 
@@ -102,11 +110,19 @@ export async function uploadAdminMedia(
   options: MediaUploadOptions = {}
 ): Promise<{ data: DbMediaItem | null; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return {
+        data: null,
+        error: `${auth.error || 'Administrator authorization required.'} Your existing image has been preserved.`,
+      };
+    }
+
     // 1. Validation: File size
     if (file.size > MAX_FILE_SIZE_BYTES) {
       return {
         data: null,
-        error: `File size exceeds the 5MB limit (${(file.size / (1024 * 1024)).toFixed(2)}MB).`,
+        error: `File size exceeds the 5MB limit (${(file.size / (1024 * 1024)).toFixed(2)}MB). Your existing image has been preserved.`,
       };
     }
 
@@ -114,7 +130,7 @@ export async function uploadAdminMedia(
     if (!ACCEPTED_MIME_TYPES.includes(file.type.toLowerCase())) {
       return {
         data: null,
-        error: `Unsupported file format (${file.type || 'unknown'}). Please upload JPG, PNG, or WebP.`,
+        error: `Unsupported file format (${file.type || 'unknown'}). Please upload JPG, PNG, or WebP. Your existing image has been preserved.`,
       };
     }
 
@@ -144,7 +160,8 @@ export async function uploadAdminMedia(
       });
 
     if (uploadError) {
-      return { data: null, error: `Storage upload failed: ${uploadError.message}` };
+      const classified = classifySupabaseError(uploadError, 'uploading image to storage');
+      return { data: null, error: `${classified.message} Your existing image has been preserved.` };
     }
 
     // 6. Obtain Public URL
@@ -154,7 +171,7 @@ export async function uploadAdminMedia(
 
     const publicUrl = publicUrlData?.publicUrl || '';
     if (!publicUrl) {
-      return { data: null, error: 'Failed to generate public URL for uploaded media.' };
+      return { data: null, error: 'Failed to generate public URL for uploaded media. Your existing image has been preserved.' };
     }
 
     // 7. Derive sensible Alt Text if not provided
@@ -180,12 +197,14 @@ export async function uploadAdminMedia(
     if (dbError) {
       // Attempt storage rollback to keep state clean
       await supabase.storage.from(STORAGE_BUCKET).remove([storagePath]);
-      return { data: null, error: `Failed to save media metadata: ${dbError.message}` };
+      const classified = classifySupabaseError(dbError, 'saving media metadata');
+      return { data: null, error: `${classified.message} Your existing image has been preserved.` };
     }
 
     return { data: insertedData as DbMediaItem, error: null };
-  } catch (err: any) {
-    return { data: null, error: err.message || 'Unexpected error during media upload.' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'uploading image');
+    return { data: null, error: `${classified.message} Your existing image has been preserved.` };
   }
 }
 
@@ -259,6 +278,11 @@ export async function deleteAdminMedia(
   mediaItem: DbMediaItem
 ): Promise<{ success: boolean; error: string | null; isBlocked?: boolean }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     // 1. Safety verification: verify no active references in Hero or About
     const usage = await checkMediaReferences(mediaItem);
     if (usage.isReferenced) {
@@ -270,7 +294,18 @@ export async function deleteAdminMedia(
       };
     }
 
-    // 2. Delete object from Supabase Storage bucket
+    // 2. Delete database record in public.media first so permission errors abort before deleting storage blob
+    const { error: dbError } = await supabase
+      .from('media')
+      .delete()
+      .eq('id', mediaItem.id);
+
+    if (dbError) {
+      const classified = classifySupabaseError(dbError, 'removing media record');
+      return { success: false, error: classified.message };
+    }
+
+    // 3. Delete object from Supabase Storage bucket
     const { error: storageError } = await supabase.storage
       .from(mediaItem.bucket || STORAGE_BUCKET)
       .remove([mediaItem.file_path]);
@@ -279,19 +314,10 @@ export async function deleteAdminMedia(
       console.warn('Storage removal note:', storageError.message);
     }
 
-    // 3. Delete database record in public.media
-    const { error: dbError } = await supabase
-      .from('media')
-      .delete()
-      .eq('id', mediaItem.id);
-
-    if (dbError) {
-      return { success: false, error: `Failed to remove media record: ${dbError.message}` };
-    }
-
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to delete media item.' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'deleting media item');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -303,17 +329,24 @@ export async function updateAdminMediaAltText(
   altText: string
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('media')
       .update({ alt_text: altText })
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'updating media alt text');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update alt text.' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'updating media alt text');
+    return { success: false, error: classified.message };
   }
 }

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { JourneyMilestone } from '../types';
 import { JOURNEY } from '../data/siteContent';
+import { classifySupabaseError, verifyAdminSession } from './cmsAuthService';
 
 // =============================================================================
 // DATABASE RECORD INTERFACE (public.journey_milestones)
@@ -146,18 +147,25 @@ export async function getAdminJourneyMilestones(): Promise<{
   error: string | null;
 }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: [], error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { data, error } = await supabase
       .from('journey_milestones')
       .select('*')
       .order('display_order', { ascending: true });
 
     if (error) {
-      return { data: [], error: error.message };
+      const classified = classifySupabaseError(error, 'loading Journey milestones');
+      return { data: [], error: classified.message };
     }
 
     return { data: (data as DbJourneyMilestone[]) || [], error: null };
-  } catch (err: any) {
-    return { data: [], error: err.message || 'Failed to fetch admin journey milestones' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'loading Journey milestones');
+    return { data: [], error: classified.message };
   }
 }
 
@@ -169,12 +177,21 @@ export async function createAdminJourneyMilestone(
   payload: DbJourneyMilestoneInsert
 ): Promise<{ data: DbJourneyMilestone | null; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { data: null, error: auth.error || 'Administrator authorization required.' };
+    }
+
     // If setting as current, demote any currently active milestone
     if (payload.is_current) {
-      await supabase
+      const { error: demoteErr } = await supabase
         .from('journey_milestones')
         .update({ is_current: false })
         .eq('is_current', true);
+      if (demoteErr) {
+        const classified = classifySupabaseError(demoteErr, 'clearing previous current Journey milestone');
+        return { data: null, error: classified.message };
+      }
     }
 
     const milestoneId = ensureValidUuid(payload.id);
@@ -197,12 +214,14 @@ export async function createAdminJourneyMilestone(
       .single();
 
     if (error) {
-      return { data: null, error: error.message };
+      const classified = classifySupabaseError(error, 'creating Journey milestone');
+      return { data: null, error: classified.message };
     }
 
     return { data: data as DbJourneyMilestone, error: null };
-  } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to create journey milestone' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'creating Journey milestone');
+    return { data: null, error: classified.message };
   }
 }
 
@@ -215,13 +234,22 @@ export async function updateAdminJourneyMilestone(
   payload: DbJourneyMilestoneUpdate
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     // If setting as current, demote any other milestones
     if (payload.is_current) {
-      await supabase
+      const { error: demoteErr } = await supabase
         .from('journey_milestones')
         .update({ is_current: false })
         .neq('id', id)
         .eq('is_current', true);
+      if (demoteErr) {
+        const classified = classifySupabaseError(demoteErr, 'clearing previous current Journey milestone');
+        return { success: false, error: classified.message };
+      }
     }
 
     const allowedKeys: (keyof DbJourneyMilestoneInsert)[] = [
@@ -241,12 +269,14 @@ export async function updateAdminJourneyMilestone(
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'updating Journey milestone');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update journey milestone' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'updating Journey milestone');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -257,18 +287,25 @@ export async function deleteAdminJourneyMilestone(
   id: string
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('journey_milestones')
       .delete()
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'deleting Journey milestone');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to delete journey milestone' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'deleting Journey milestone');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -280,6 +317,11 @@ export async function togglePublishAdminJourneyMilestone(
   currentStatus: boolean
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('journey_milestones')
       .update({
@@ -288,12 +330,14 @@ export async function togglePublishAdminJourneyMilestone(
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'toggling Journey milestone publication');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to toggle publication status' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'toggling Journey milestone publication');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -304,12 +348,21 @@ export async function setCurrentAdminJourneyMilestone(
   id: string
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     // 1. Demote any other current milestone
-    await supabase
+    const { error: demoteErr } = await supabase
       .from('journey_milestones')
       .update({ is_current: false })
       .neq('id', id)
       .eq('is_current', true);
+    if (demoteErr) {
+      const classified = classifySupabaseError(demoteErr, 'clearing previous current Journey milestone');
+      return { success: false, error: classified.message };
+    }
 
     // 2. Set this milestone as current
     const { error } = await supabase
@@ -318,12 +371,14 @@ export async function setCurrentAdminJourneyMilestone(
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'setting current Journey milestone');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to set current milestone' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'setting current Journey milestone');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -334,18 +389,25 @@ export async function removeCurrentAdminJourneyMilestone(
   id: string
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('journey_milestones')
       .update({ is_current: false })
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'clearing current Journey milestone');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to remove current status' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'clearing current Journey milestone');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -357,18 +419,25 @@ export async function setHorizonAdminJourneyMilestone(
   isHorizon: boolean
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     const { error } = await supabase
       .from('journey_milestones')
       .update({ is_horizon: isHorizon })
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      const classified = classifySupabaseError(error, 'updating Journey horizon status');
+      return { success: false, error: classified.message };
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update horizon status' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'updating Journey horizon status');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -379,6 +448,11 @@ export async function reorderAdminJourneyMilestones(
   orderedItems: { id: string; display_order: number }[]
 ): Promise<{ success: boolean; error: string | null }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error || 'Administrator authorization required.' };
+    }
+
     for (const item of orderedItems) {
       const { error } = await supabase
         .from('journey_milestones')
@@ -388,13 +462,15 @@ export async function reorderAdminJourneyMilestones(
         .eq('id', item.id);
 
       if (error) {
-        return { success: false, error: error.message };
+        const classified = classifySupabaseError(error, 'reordering Journey milestones');
+        return { success: false, error: classified.message };
       }
     }
 
     return { success: true, error: null };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to reorder journey milestones' };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'reordering Journey milestones');
+    return { success: false, error: classified.message };
   }
 }
 
@@ -408,13 +484,18 @@ export async function seedDefaultJourneyMilestonesIfEmpty(): Promise<{
   error?: string;
 }> {
   try {
+    const auth = await verifyAdminSession();
+    if (!auth.authorized) {
+      return { seeded: false, count: 0, error: auth.error };
+    }
+
     const { count, error } = await supabase
       .from('journey_milestones')
       .select('*', { count: 'exact', head: true });
 
     if (error) {
-      console.warn('Check journey_milestones count note:', error.message);
-      return { seeded: false, count: 0, error: error.message };
+      const classified = classifySupabaseError(error, 'checking Journey milestones');
+      return { seeded: false, count: 0, error: classified.message };
     }
 
     if (count === 0) {
@@ -438,8 +519,8 @@ export async function seedDefaultJourneyMilestonesIfEmpty(): Promise<{
           .insert(payload);
 
         if (insertError) {
-          console.error(`Failed to seed milestone ${m.year}:`, insertError);
-          return { seeded: false, count: insertedCount, error: insertError.message };
+          const classified = classifySupabaseError(insertError, `seeding Journey milestone ${m.year}`);
+          return { seeded: false, count: insertedCount, error: classified.message };
         }
         insertedCount++;
       }
@@ -447,8 +528,8 @@ export async function seedDefaultJourneyMilestonesIfEmpty(): Promise<{
     }
 
     return { seeded: false, count: count || 0 };
-  } catch (err: any) {
-    console.warn('Seed journey_milestones note:', err);
-    return { seeded: false, count: 0, error: err.message };
+  } catch (err) {
+    const classified = classifySupabaseError(err, 'seeding Journey milestones');
+    return { seeded: false, count: 0, error: classified.message };
   }
 }
