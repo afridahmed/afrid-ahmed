@@ -53,10 +53,17 @@ export const MobileAbout: React.FC<MobileAboutProps> = ({
   reducedMotion = false,
 }) => {
   const [signatureError, setSignatureError] = useState(false);
+  const [activeInterestId, setActiveInterestId] = useState<string | null>(null);
 
   useEffect(() => {
     setSignatureError(false);
   }, [signatureUrl]);
+
+  useEffect(() => {
+    if (!activeInterestId) return;
+    const timer = window.setTimeout(() => setActiveInterestId(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [activeInterestId]);
 
   const cardOuterRadiusClass =
     visual.cardRadius === 'lg'
@@ -291,23 +298,91 @@ export const MobileAbout: React.FC<MobileAboutProps> = ({
                     </div>
                   )}
 
-                  {/* C. All Interest Tags in Neatly Wrapping Rows */}
+                  {/* C. Interest Tags: Compact Icons-Only Row on Mobile, Full Pills on Tablet */}
                   {visual.showInterestTags && interests.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-1.5 min-[390px]:gap-2">
-                      {interests.map((interest) => (
-                        <span
-                          key={interest.id}
-                          title={interest.description || undefined}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/90 px-3 py-1.5 text-[11.5px] font-medium text-[var(--text-primary)] whitespace-nowrap"
-                        >
-                          <AboutDynamicIcon
-                            name={interest.iconName}
-                            className="w-3.5 h-3.5 text-[var(--text-primary)] shrink-0"
-                          />
-                          <span>{interest.title}</span>
-                        </span>
-                      ))}
-                    </div>
+                    <>
+                      {/* Mobile (< md, or CMS Mobile Preview): Icons Only */}
+                      <div
+                        className={`${
+                          forceMobileLayout ? 'flex' : 'flex md:hidden'
+                        } flex-wrap items-center gap-2`}
+                        role="list"
+                        aria-label="Interests"
+                      >
+                        {interests.map((interest, idx) => {
+                          const isActive = activeInterestId === interest.id;
+                          const tooltipAlignClass =
+                            idx === 0
+                              ? 'left-0'
+                              : idx === interests.length - 1
+                              ? 'right-0'
+                              : 'left-1/2 -translate-x-1/2';
+
+                          return (
+                            <div
+                              key={interest.id}
+                              role="listitem"
+                              className="relative flex-1 min-w-[46px] max-w-[68px]"
+                            >
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActiveInterestId((prev) =>
+                                    prev === interest.id ? null : interest.id
+                                  )
+                                }
+                                aria-label={interest.title}
+                                aria-pressed={isActive}
+                                title={
+                                  interest.description
+                                    ? `${interest.title} — ${interest.description}`
+                                    : interest.title
+                                }
+                                className={`w-full h-10 rounded-xl border flex items-center justify-center transition-all duration-150 cursor-pointer select-none active:scale-[0.94] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#DCEBFF]/50 ${
+                                  isActive
+                                    ? 'border-[#DCEBFF]/45 bg-[#191C22] text-[#F5F5F5] shadow-[0_0_12px_rgba(210,230,255,0.14)]'
+                                    : 'border-[var(--border-subtle)] bg-[var(--bg-elevated)]/90 text-[var(--text-primary)] hover:border-[var(--border-strong)] active:border-[#DCEBFF]/40 active:bg-[#191C22]'
+                                }`}
+                              >
+                                <AboutDynamicIcon
+                                  name={interest.iconName}
+                                  className="w-4 h-4 shrink-0"
+                                />
+                                <span className="sr-only">{interest.title}</span>
+                              </button>
+
+                              {isActive && (
+                                <span
+                                  role="tooltip"
+                                  className={`pointer-events-none absolute -top-7 ${tooltipAlignClass} z-30 whitespace-nowrap rounded-md border border-[#DCEBFF]/25 bg-[#12141A]/95 px-2 py-0.5 text-[10px] font-mono text-[var(--text-primary)] shadow-lg backdrop-blur-md`}
+                                >
+                                  {interest.title}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Tablet (md to < lg): Preserved Icons + Labels */}
+                      {!forceMobileLayout && (
+                        <div className="hidden md:flex flex-wrap items-center gap-2">
+                          {interests.map((interest) => (
+                            <span
+                              key={interest.id}
+                              title={interest.description || undefined}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/90 px-3 py-1.5 text-[11.5px] font-medium text-[var(--text-primary)] whitespace-nowrap"
+                            >
+                              <AboutDynamicIcon
+                                name={interest.iconName}
+                                className="w-3.5 h-3.5 text-[var(--text-primary)] shrink-0"
+                              />
+                              <span>{interest.title}</span>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {/* D. Compact Highlights Panel */}
