@@ -26,6 +26,22 @@ export const MobileContact: React.FC<MobileContactProps> = ({
   primaryCtaLabel,
   channels,
 }) => {
+  const headlineLines = React.useMemo(() => {
+    const trimmed = (contactHeadline || "LET'S WORK.").trim();
+    if (trimmed.includes('\n')) {
+      return trimmed
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+    }
+    if (/^let['’]s\s+work\.?$/i.test(trimmed)) {
+      const parts = trimmed.split(/\s+/);
+      const secondLine = parts[1].endsWith('.') ? parts[1] : `${parts[1]}.`;
+      return [parts[0], secondLine];
+    }
+    return [trimmed];
+  }, [contactHeadline]);
+
   return (
     <div className="flex flex-col space-y-6 md:hidden relative z-10">
       {/* Editorial Section Header */}
@@ -34,8 +50,12 @@ export const MobileContact: React.FC<MobileContactProps> = ({
           04 / Contact
         </div>
 
-        <h2 className="font-display font-black text-[34px] min-[390px]:text-[38px] leading-[0.98] tracking-tight text-[var(--text-primary)] text-balance">
-          {contactHeadline}
+        <h2 className="font-display font-black text-[34px] min-[390px]:text-[38px] leading-[0.96] tracking-tight text-[var(--text-primary)] break-words">
+          {headlineLines.map((line, idx) => (
+            <span key={idx} className="block">
+              {line}
+            </span>
+          ))}
         </h2>
 
         <p className="text-[13.5px] text-[var(--text-secondary)] font-light leading-relaxed whitespace-pre-line">

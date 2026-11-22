@@ -72,6 +72,22 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     };
   });
 
+  const headlineLines = React.useMemo(() => {
+    const trimmed = (contactHeadline || "LET'S WORK.").trim();
+    if (trimmed.includes('\n')) {
+      return trimmed
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+    }
+    if (/^let['’]s\s+work\.?$/i.test(trimmed)) {
+      const parts = trimmed.split(/\s+/);
+      const secondLine = parts[1].endsWith('.') ? parts[1] : `${parts[1]}.`;
+      return [parts[0], secondLine];
+    }
+    return [trimmed];
+  }, [contactHeadline]);
+
   return (
     <section id="contact" className="relative w-full py-12 sm:py-16 md:py-20 px-4 sm:px-8 md:px-12 z-10 scroll-mt-20 sm:scroll-mt-24">
       <div className="max-w-6xl mx-auto">
@@ -97,15 +113,19 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
           {/* ========================================================================= */}
           <div className="hidden md:grid md:grid-cols-12 gap-8 md:gap-10 lg:gap-16 items-start relative z-10">
 
-            <div className="md:col-span-7 flex flex-col justify-between space-y-5 sm:space-y-6">
+            <div className="md:col-span-7 min-w-0 flex flex-col justify-between space-y-5 sm:space-y-6">
 
               <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase">
                 <Sparkles className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                 <span>COLLABORATION & INQUIRIES</span>
               </div>
 
-              <h2 className="text-2xl min-[360px]:text-3xl sm:text-4xl lg:text-[45px] font-display font-black text-[var(--text-primary)] tracking-tight leading-tight sm:leading-none break-words sm:whitespace-nowrap">
-                {contactHeadline}
+              <h2 className="text-3xl sm:text-4xl lg:text-[45px] font-display font-black text-[var(--text-primary)] tracking-tight leading-[0.96] break-words">
+                {headlineLines.map((line, idx) => (
+                  <span key={idx} className="block">
+                    {line}
+                  </span>
+                ))}
               </h2>
 
               <div className="text-xs min-[360px]:text-sm md:text-base text-[var(--text-secondary)] font-light leading-relaxed max-w-lg whitespace-pre-line">
@@ -125,7 +145,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
             </div>
 
-            <div className="md:col-span-5 space-y-2 pt-2 md:pt-0">
+            <div className="md:col-span-5 min-w-0 space-y-2 pt-2 md:pt-0">
 
               <div className="border-b border-[var(--border-subtle)] pb-3 flex items-center justify-between">
                 <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--text-muted)] font-medium">
