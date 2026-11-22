@@ -247,7 +247,7 @@ export const ContactEditor: React.FC = () => {
                 type="email"
                 value={formData.primary_email}
                 onChange={(e) => setFormData({ ...formData, primary_email: e.target.value })}
-                placeholder="afridaskar@gmail.com"
+                placeholder="imafridahmed@gmail.com"
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
               />

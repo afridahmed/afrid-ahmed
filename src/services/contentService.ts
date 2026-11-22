@@ -902,7 +902,7 @@ export async function saveAdminSiteSettings(payload: DbSiteSettings): Promise<{ 
       return { success: false, error: auth.error };
     }
 
-    const emailVal = (payload.primary_email || payload.contact_email || 'afridaskar@gmail.com').trim();
+    const emailVal = (payload.primary_email || payload.contact_email || SITE_INFO.email).trim();
     const githubUrl = (payload.github_url || '').trim();
     const linkedinUrl = (payload.linkedin_url || '').trim();
     const youtubeUrl = (payload.youtube_url || '').trim();

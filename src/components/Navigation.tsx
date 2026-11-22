@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, ArrowRight, Github, Linkedin, Youtube, Instagram, Mail, Globe } from 'lucide-react';
 import { SOCIAL_LINKS } from '../data/siteContent';
+import { SocialLink } from '../types';
 
 interface NavigationProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
   reducedMotion?: boolean;
   onToggleReducedMotion?: () => void;
+  socialLinks?: SocialLink[];
 }
 
 const NAV_ITEMS = [
@@ -19,7 +21,8 @@ const NAV_ITEMS = [
 
 export const Navigation: React.FC<NavigationProps> = ({
   activeSection,
-  onNavigate
+  onNavigate,
+  socialLinks = SOCIAL_LINKS
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -195,7 +198,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
               {/* Social Icons Row */}
               <div className="flex items-center gap-3 pt-1">
-                {SOCIAL_LINKS.map((link) => {
+                {(socialLinks || SOCIAL_LINKS).map((link) => {
                   const plat = link.platform.toLowerCase();
                   return (
                     <a

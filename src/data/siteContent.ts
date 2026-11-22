@@ -36,7 +36,7 @@ export const SITE_INFO: SiteInfo = {
   tagline: "BUILDING WHAT'S NEXT.",
   currentYear: '2026',
   graduationYear: '2030',
-  email: 'afridaskar@gmail.com',
+  email: 'imafridahmed@gmail.com',
   location: 'Earth Orbit · Global'
 };
 
@@ -293,8 +293,8 @@ export const SOCIAL_LINKS: SocialLink[] = [
   },
   {
     platform: 'Email',
-    label: 'afridaskar@gmail.com',
-    url: 'mailto:afridaskar@gmail.com',
+    label: 'imafridahmed@gmail.com',
+    url: 'mailto:imafridahmed@gmail.com',
     iconName: 'Mail'
   }
 ];

@@ -302,6 +302,7 @@ export default function App() {
         onNavigate={scrollToSection}
         reducedMotion={reducedMotion}
         onToggleReducedMotion={() => setReducedMotion(!reducedMotion)}
+        socialLinks={siteSettings.socialLinks}
       />
 
       {/* Main Content Sections: Exact Hierarchy: Hero → About → Work → Journey → Contact */}
