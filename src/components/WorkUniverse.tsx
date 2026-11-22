@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Github, 
@@ -15,6 +16,7 @@ import { PROJECTS } from '../data/siteContent';
 import { InteractiveRobot } from './InteractiveRobot';
 import { ProjectMediaStage } from './ProjectMediaStage';
 import { MobileWork } from './mobile/MobileWork';
+import { TabletWork } from './work/TabletWork';
 
 // ============================================================================
 // MEMOIZED DESKTOP EDITORIAL PROJECT DETAILS (Right Column)
@@ -199,6 +201,8 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   const [direction, setDirection] = useState<number>(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+  const [mediaIndexByProject, setMediaIndexByProject] = useState<Record<string, number>>({});
+  const detailHistoryActiveRef = useRef(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -207,6 +211,65 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
     mediaQuery.addEventListener('change', listener);
     return () => mediaQuery.removeEventListener('change', listener);
   }, []);
+
+  const openMobileDetail = useCallback(() => {
+    setIsMobileDetailOpen(true);
+    if (typeof window !== 'undefined' && !detailHistoryActiveRef.current) {
+      try {
+        window.history.pushState({ workSpecsDetailOpen: true }, '');
+        detailHistoryActiveRef.current = true;
+      } catch {
+        // Ignore history restrictions in embedded frames
+      }
+    }
+  }, []);
+
+  const closeMobileDetail = useCallback(() => {
+    setIsMobileDetailOpen(false);
+    if (typeof window !== 'undefined' && detailHistoryActiveRef.current) {
+      detailHistoryActiveRef.current = false;
+      try {
+        if (window.history.state?.workSpecsDetailOpen) {
+          window.history.back();
+        }
+      } catch {
+        // Ignore history restrictions
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileDetailOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeMobileDetail();
+      }
+    };
+
+    const onPopState = () => {
+      detailHistoryActiveRef.current = false;
+      setIsMobileDetailOpen(false);
+    };
+
+    const onResize = () => {
+      if (window.innerWidth >= 1024) {
+        closeMobileDetail();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('popstate', onPopState);
+    window.addEventListener('resize', onResize);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [isMobileDetailOpen, closeMobileDetail]);
 
   const activeIndex = useMemo(() => {
     if (visibleProjects.length === 0) return -1;
@@ -351,89 +414,68 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
   }, [handleNext, handlePrev, goToProject, visibleProjects.length]);
 
   return (
-    <section id="work" className="relative w-full py-14 sm:py-20 md:py-28 work-desktop-section px-4 sm:px-8 md:px-12 z-10 overflow-x-hidden scroll-mt-20 sm:scroll-mt-24">
-      
-      {/* Section Header */}
-      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 work-desktop-header-wrap">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--border-subtle)] pb-4 sm:pb-6 work-desktop-header">
-          {/* Mobile Header */}
-          <div className="lg:hidden flex items-baseline justify-between gap-3">
+    <section id="work" className="relative w-full py-6 sm:py-10 md:py-10 lg:py-0 work-desktop-section px-4 sm:px-6 md:px-8 lg:px-8 xl:px-12 z-10 overflow-x-hidden scroll-mt-[72px] sm:scroll-mt-20">
+      <div className="work-desktop-stage max-w-6xl mx-auto w-full">
+        {/* Desktop Section Header (lg+ only — Mobile & Tablet render compact inline headers) */}
+        <div className="hidden lg:block w-full mb-4 sm:mb-6 work-desktop-header-wrap">
+          <div className="flex items-end justify-between gap-4 border-b border-[var(--border-subtle)] pb-4 work-desktop-header">
             <div>
-              <div className="text-[11px] font-mono tracking-[0.2em] text-[var(--text-muted)] uppercase mb-1">
-                02 / Selected Work
+              <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase mb-1">
+                <span className="w-2 h-2 rounded-full bg-[var(--text-primary)]" />
+                <span>SINGULAR CONTINUOUS WORK UNIVERSE</span>
               </div>
-              <h2 className="text-3xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
-                Projects.
+              <h2 className="work-desktop-title font-display font-extrabold text-[var(--text-primary)] tracking-tight">
+                PROJECTS.
               </h2>
             </div>
-            {visibleProjects.length > 0 && (
-              <span className="font-mono text-xs text-[var(--text-secondary)] tabular-nums shrink-0">
-                {activeProject ? (activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)) : '--'} / {visibleProjects.length < 10 ? `0${visibleProjects.length}` : visibleProjects.length}
-              </span>
-            )}
-          </div>
 
-          {/* Desktop Header */}
-          <div className="hidden lg:block">
-            <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase mb-1">
-              <span className="w-2 h-2 rounded-full bg-[var(--text-primary)]" />
-              <span>SINGULAR CONTINUOUS WORK UNIVERSE</span>
-            </div>
-            <h2 className="work-desktop-title font-display font-extrabold text-[var(--text-primary)] tracking-tight">
-              PROJECTS.
-            </h2>
-          </div>
-
-          {/* Trajectory Counter — Desktop only */}
-          <div className="hidden lg:flex items-center gap-3">
-            <span className="text-xs font-mono text-[var(--text-secondary)] tracking-wider uppercase">
-              ACTIVE TRAJECTORY
-            </span>
-            <div className="px-3 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] font-mono text-xs tabular-nums">
-              <span className="text-[var(--text-primary)] font-bold">
-                {activeProject ? (activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)) : '--'}
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-mono text-[var(--text-secondary)] tracking-wider uppercase">
+                ACTIVE TRAJECTORY
               </span>
-              <span className="text-[var(--text-muted)] mx-1.5">/</span>
-              <span className="text-[var(--text-secondary)]">{visibleProjects.length < 10 ? `0${visibleProjects.length}` : visibleProjects.length}</span>
+              <div className="px-3 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] font-mono text-xs tabular-nums">
+                <span className="text-[var(--text-primary)] font-bold">
+                  {activeProject ? (activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)) : '--'}
+                </span>
+                <span className="text-[var(--text-muted)] mx-1.5">/</span>
+                <span className="text-[var(--text-secondary)]">{visibleProjects.length < 10 ? `0${visibleProjects.length}` : visibleProjects.length}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile pill rail replaced by MobileWork editorial tabs below */}
-
-      {/* ========================================================================= */}
-      {/* DESKTOP CONTEXTUAL CAROUSEL RAIL (lg+) — 100% PRESERVED                   */}
-      {/* ========================================================================= */}
-      <div className="hidden lg:block max-w-4xl sm:max-w-5xl mx-auto mb-6 sm:mb-10 work-desktop-rail-wrap">
-        <div 
-          className="relative flex items-center justify-between gap-2 sm:gap-4 w-full"
-          role="region"
-          aria-label="Project selection carousel"
-          onKeyDown={handleRailKeyDown}
-        >
-          {/* Previous Project Button */}
-          <button
-            type="button"
-            onClick={handlePrev}
-            disabled={activeIndex <= 0}
-            aria-label="Previous project"
-            className="shrink-0 p-2 sm:p-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface-blur)] backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-elevated)] active:scale-95 disabled:opacity-20 disabled:hover:border-[var(--border-subtle)] disabled:hover:bg-[var(--bg-surface-blur)] disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)] z-20 min-w-[40px] min-h-[40px] flex items-center justify-center"
-          >
-            <ChevronLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-          </button>
-
-          {/* Continuous Premium Carousel Viewport */}
+        {/* ======================================================================= */}
+        {/* DESKTOP CONTEXTUAL CAROUSEL RAIL (lg+)                                  */}
+        {/* ======================================================================= */}
+        <div className="hidden lg:block w-full max-w-6xl mx-auto mb-5 work-desktop-rail-wrap">
           <div 
-            ref={viewportRef}
-            role="tablist"
-            aria-label="Selected project carousel navigation"
-            className="relative flex-1 min-w-0 h-14 sm:h-16 overflow-hidden flex items-center touch-pan-y"
-            style={{
-              maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-            }}
+            className="relative flex items-center justify-between gap-3 w-full"
+            role="region"
+            aria-label="Project selection carousel"
+            onKeyDown={handleRailKeyDown}
           >
+            {/* Previous Project Button */}
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={activeIndex <= 0}
+              aria-label="Previous project"
+              className="shrink-0 p-2 sm:p-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface-blur)] backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-elevated)] active:scale-95 disabled:opacity-20 disabled:hover:border-[var(--border-subtle)] disabled:hover:bg-[var(--bg-surface-blur)] disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)] z-20 min-w-[40px] min-h-[40px] flex items-center justify-center"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+            </button>
+
+            {/* Continuous Premium Carousel Viewport */}
+            <div 
+              ref={viewportRef}
+              role="tablist"
+              aria-label="Selected project carousel navigation"
+              className="relative flex-1 min-w-0 h-[60px] py-1 overflow-hidden flex items-center touch-pan-y"
+              style={{
+                maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
+              }}
+            >
             <motion.div
               ref={trackRef}
               className="relative flex items-center gap-3 sm:gap-5 w-max select-none will-change-transform"
@@ -585,20 +627,44 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
           </div>
         ) : (
           <>
-            {/* 1. MOBILE EDITORIAL PROJECT SHOWCASE (< lg) */}
+            {/* 1. MOBILE ONE-SCREEN PROJECT SHOWCASE (< md) */}
             <MobileWork
               projects={visibleProjects}
               activeProject={activeProject}
               activeIndex={activeIndex}
               direction={direction}
               reducedMotion={reducedMotion}
+              activeMediaIndex={mediaIndexByProject[activeProject.id]}
+              onMediaIndexChange={(idx) =>
+                setMediaIndexByProject((prev) =>
+                  prev[activeProject.id] === idx ? prev : { ...prev, [activeProject.id]: idx }
+                )
+              }
               onSelectProject={goToProject}
               onPrev={handlePrev}
               onNext={handleNext}
-              onOpenDetail={() => setIsMobileDetailOpen(true)}
+              onOpenDetail={openMobileDetail}
             />
 
-            {/* 2. DESKTOP PROJECT PRESENTATION (lg+) */}
+            {/* 2. TABLET COMPACT SHOWCASE (md to < lg) */}
+            <TabletWork
+              projects={visibleProjects}
+              activeProject={activeProject}
+              activeIndex={activeIndex}
+              direction={direction}
+              reducedMotion={reducedMotion}
+              activeMediaIndex={mediaIndexByProject[activeProject.id]}
+              onMediaIndexChange={(idx) =>
+                setMediaIndexByProject((prev) =>
+                  prev[activeProject.id] === idx ? prev : { ...prev, [activeProject.id]: idx }
+                )
+              }
+              onSelectProject={goToProject}
+              onPrev={handlePrev}
+              onNext={handleNext}
+            />
+
+            {/* 3. DESKTOP PROJECT PRESENTATION (lg+) */}
             <div className="hidden lg:block">
               <div className="relative work-desktop-showcase rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-xl shadow-[var(--shadow-card)] overflow-hidden transition-colors duration-300">
                 {/* Restrained Monochrome Ambient Glow */}
@@ -668,134 +734,179 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
             </div>
           </>
         )}
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. MOBILE PROJECT DETAIL MODAL                                            */}
+      {/* 3. MOBILE / TABLET SPECS & DETAILS VIEW (Portaled above fixed header)     */}
       {/* ========================================================================= */}
-      <AnimatePresence>
-        {isMobileDetailOpen && activeProject && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-[65] bg-[var(--bg-canvas)]/98 backdrop-blur-2xl flex flex-col p-4 sm:p-6 overflow-y-auto lg:hidden"
-          >
-            {/* Top Bar */}
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)] mb-4 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsMobileDetailOpen(false)}
-                className="flex items-center gap-2 text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer min-h-[44px]"
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isMobileDetailOpen && activeProject && (
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reducedMotion ? undefined : { opacity: 0, y: 18 }}
+                transition={{ duration: 0.2 }}
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${activeProject.title} specifications and details`}
+                className="fixed inset-0 z-[65] h-[100dvh] w-screen bg-[var(--bg-canvas)]/98 backdrop-blur-2xl flex flex-col overflow-hidden lg:hidden"
               >
-                <ChevronLeft className="w-4 h-4 text-[var(--text-primary)]" />
-                <span>Back to projects</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsMobileDetailOpen(false)}
-                className="min-w-[40px] min-h-[40px] rounded-full bg-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Media Stage */}
-            <div className="w-full mb-4 shrink-0">
-              <ProjectMediaStage project={activeProject} />
-            </div>
-
-            {/* Details Content */}
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-secondary)]">
-                <span className="text-[var(--text-primary)] font-bold">{activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)}</span>
-                <span>/</span>
-                <span className="uppercase tracking-widest">{activeProject.category}</span>
-              </div>
-
-              <h2 className="text-2xl font-display font-black text-[var(--text-primary)]">
-                {activeProject.title}
-              </h2>
-
-              {activeProject.subtitle && (
-                <p className="text-sm font-mono text-[var(--text-secondary)]">
-                  {activeProject.subtitle}
-                </p>
-              )}
-
-              <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-light">
-                {activeProject.description}
-              </p>
-
-              {/* Technologies Stack */}
-              <div className="space-y-2 pt-2">
-                <div className="text-xs font-mono text-[var(--text-muted)] uppercase">Technologies</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {(activeProject.technologies || []).map((t) => (
-                    <span key={t} className="px-2.5 py-1 rounded text-xs font-mono bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Highlights */}
-              {activeProject.highlights && activeProject.highlights.length > 0 && (
-                <div className="space-y-2 pt-2 border-t border-[var(--border-subtle)]">
-                  <div className="text-xs font-mono text-[var(--text-muted)] uppercase">Engineering Highlights</div>
-                  <ul className="space-y-1.5 text-xs text-[var(--text-secondary)] font-mono">
-                    {activeProject.highlights.map((h, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-[var(--text-primary)] shrink-0 mt-0.5">›</span>
-                        <span>{h}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 pb-6">
-                {activeProject.liveUrl && activeProject.liveUrl !== '#' && (
-                  <a
-                    href={activeProject.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full min-h-[46px] rounded-full bg-[var(--accent-solid)] text-[var(--accent-contrast)] font-display font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm"
+                {/* Pinned Top Navigation Bar (Always Visible & Accessible Above Scroll Content) */}
+                <div className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 border-b border-[var(--border-subtle)] bg-[var(--bg-canvas)]/95 backdrop-blur-xl z-20">
+                  <button
+                    type="button"
+                    onClick={closeMobileDetail}
+                    className="flex items-center gap-2 text-xs font-mono text-[var(--text-primary)] hover:text-[var(--text-secondary)] cursor-pointer min-h-[44px] pr-3 active:scale-95 transition-all"
                   >
-                    <span>View live demo</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                )}
-                {activeProject.githubUrl && activeProject.githubUrl.toLowerCase() !== 'private' && activeProject.githubUrl !== '#private' && activeProject.githubUrl !== '#' && (
-                  <a
-                    href={activeProject.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full min-h-[46px] rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)] font-mono text-xs flex items-center justify-center gap-2 transition-all"
+                    <ChevronLeft className="w-4 h-4 shrink-0" />
+                    <span>Back to projects</span>
+                  </button>
+
+                  <span className="font-mono text-[11px] text-[var(--text-muted)] tabular-nums truncate">
+                    {activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)} / {visibleProjects.length < 10 ? `0${visibleProjects.length}` : visibleProjects.length}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={closeMobileDetail}
+                    aria-label="Close project details"
+                    className="min-w-[40px] min-h-[40px] rounded-full bg-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] cursor-pointer active:scale-95 transition-all shrink-0"
                   >
-                    <Github className="w-3.5 h-3.5 text-[var(--text-primary)]" />
-                    <span>View code</span>
-                  </a>
-                )}
-              </div>
-            </div>
-          </motion.div>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Independently Scrollable Details Content */}
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
+                  {/* Media Stage (Synced with Mobile Overview Image State) */}
+                  <div className="w-full mb-4">
+                    <ProjectMediaStage
+                      project={activeProject}
+                      controlledMediaIndex={mediaIndexByProject[activeProject.id]}
+                      onMediaIndexChange={(idx) =>
+                        setMediaIndexByProject((prev) =>
+                          prev[activeProject.id] === idx ? prev : { ...prev, [activeProject.id]: idx }
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Details Content */}
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[var(--text-secondary)]">
+                      <span className="text-[var(--text-primary)] font-bold">
+                        {activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)}
+                      </span>
+                      <span>·</span>
+                      <span className="uppercase tracking-widest">{activeProject.category}</span>
+                      {activeProject.isFlagship && (
+                        <>
+                          <span>·</span>
+                          <span className="text-[var(--text-primary)] uppercase tracking-wider font-semibold">
+                            Flagship
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <h2 className="text-2xl font-display font-black text-[var(--text-primary)] leading-tight">
+                      {activeProject.title}
+                    </h2>
+
+                    {activeProject.subtitle && (
+                      <p className="text-sm font-mono text-[var(--text-secondary)]">
+                        {activeProject.subtitle}
+                      </p>
+                    )}
+
+                    {activeProject.description && (
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-light">
+                        {activeProject.description}
+                      </p>
+                    )}
+
+                    {/* Technologies Stack */}
+                    {activeProject.technologies && activeProject.technologies.length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-[var(--border-subtle)]">
+                        <div className="text-xs font-mono text-[var(--text-muted)] uppercase">Technologies</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {activeProject.technologies.map((t) => (
+                            <span
+                              key={t}
+                              className="px-2.5 py-1 rounded text-xs font-mono bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Highlights */}
+                    {activeProject.highlights && activeProject.highlights.length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-[var(--border-subtle)]">
+                        <div className="text-xs font-mono text-[var(--text-muted)] uppercase">Engineering Highlights</div>
+                        <ul className="space-y-1.5 text-xs text-[var(--text-secondary)] font-mono">
+                          {activeProject.highlights.map((h, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-[var(--text-primary)] shrink-0 mt-0.5">›</span>
+                              <span>{h}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 pb-2">
+                      {activeProject.liveUrl && activeProject.liveUrl !== '#' && (
+                        <a
+                          href={activeProject.liveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full min-h-[44px] rounded-xl bg-[var(--accent-solid)] text-[var(--accent-contrast)] font-mono font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>LIVE SYSTEM</span>
+                        </a>
+                      )}
+                      {activeProject.githubUrl &&
+                        activeProject.githubUrl.toLowerCase() !== 'private' &&
+                        activeProject.githubUrl !== '#private' &&
+                        activeProject.githubUrl !== '#' && (
+                          <a
+                            href={activeProject.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full min-h-[44px] rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)] font-mono text-xs flex items-center justify-center gap-2 transition-all"
+                          >
+                            <Github className="w-3.5 h-3.5 text-[var(--text-primary)]" />
+                            <span>REPOSITORY</span>
+                          </a>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
 
-      {/* Concluding Work Collaboration Section — Desktop Only (mobile flows directly into Journey & Contact) */}
-      <div className="hidden lg:block max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-10">
+      {/* Concluding Work Collaboration Section — Responsive Across Desktop, Tablet & Mobile */}
+      <div className="max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-8">
         <div
-          className="group relative rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-xl px-5 py-5 sm:px-7 sm:py-5 lg:px-8 lg:py-5 transition-all duration-300 shadow-[var(--shadow-card)] overflow-hidden"
+          className="group relative rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-xl px-5 py-6 sm:px-7 sm:py-6 lg:px-10 lg:py-7 transition-all duration-300 shadow-[var(--shadow-card)] overflow-hidden"
         >
           {/* Ambient subtle light accent */}
           <div className="absolute top-0 right-0 w-72 h-72 bg-[#F5F5F5]/[0.04] rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 transition-all duration-500" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-center relative z-10">
-            {/* Left Column */}
-            <div className="lg:col-span-8 space-y-2.5 text-left min-w-0">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 lg:gap-8 items-center relative z-10">
+            {/* Text & CTA Column (First on Mobile, Left on Tablet/Desktop) */}
+            <div className="md:col-span-7 space-y-2.5 text-left min-w-0">
               <h3 className="text-2xl sm:text-3xl lg:text-[clamp(1.65rem,2.3vw,2.1rem)] font-display font-black text-[var(--text-primary)] tracking-tight leading-tight">
                 LET&apos;S WORK.
               </h3>
@@ -821,8 +932,8 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
               </div>
             </div>
 
-            {/* Right Column: Compact Interactive Robot Visual */}
-            <div className="lg:col-span-4 w-full flex items-center justify-center">
+            {/* Dedicated Spacious Visual Column (Centered Underneath on Mobile, Right on Tablet/Desktop) */}
+            <div className="md:col-span-5 w-full flex items-center justify-center min-h-[210px] sm:min-h-[230px] md:min-h-[236px]">
               <InteractiveRobot reducedMotion={reducedMotion} />
             </div>
           </div>

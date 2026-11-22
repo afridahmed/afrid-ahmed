@@ -17,18 +17,25 @@ import { fetchPublishedProjectMedia } from '../services/projectMediaService';
 interface ProjectMediaStageProps {
   project: ProjectItem;
   mediaList?: ProjectMedia[];
-  variant?: 'default' | 'desktop-compact';
+  variant?: 'default' | 'desktop-compact' | 'tablet-compact' | 'mobile-compact';
+  controlledMediaIndex?: number;
+  onMediaIndexChange?: (index: number) => void;
 }
 
 export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({ 
   project,
   mediaList: initialMediaList,
-  variant = 'default'
+  variant = 'default',
+  controlledMediaIndex,
+  onMediaIndexChange,
 }) => {
   const isDesktopCompact = variant === 'desktop-compact';
+  const isTabletCompact = variant === 'tablet-compact';
+  const isMobileCompact = variant === 'mobile-compact';
+  const isStageFill = isDesktopCompact || isTabletCompact;
   const [mediaItems, setMediaItems] = useState<ProjectMedia[]>(initialMediaList || []);
   const [isLoading, setIsLoading] = useState<boolean>(!initialMediaList);
-  const [activeMediaIndex, setActiveMediaIndex] = useState<number>(0);
+  const [internalMediaIndex, setInternalMediaIndex] = useState<number>(0);
   const [mediaDirection, setMediaDirection] = useState<number>(1);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [isMediaLoaded, setIsMediaLoaded] = useState<boolean>(false);
@@ -36,21 +43,44 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
 
   const touchStartXRef = useRef<number | null>(null);
 
+  const activeMediaIndex =
+    controlledMediaIndex !== undefined && mediaItems.length > 0
+      ? Math.min(Math.max(0, controlledMediaIndex), mediaItems.length - 1)
+      : internalMediaIndex;
+
+  const setActiveMediaIndex = useCallback(
+    (updater: number | ((prev: number) => number)) => {
+      setInternalMediaIndex((prevInternal) => {
+        const base =
+          controlledMediaIndex !== undefined ? controlledMediaIndex : prevInternal;
+        const next = typeof updater === 'function' ? updater(base) : updater;
+        onMediaIndexChange?.(next);
+        return next;
+      });
+    },
+    [controlledMediaIndex, onMediaIndexChange]
+  );
+
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
     setIsMediaLoaded(false);
     setMediaLoadError(false);
-    setActiveMediaIndex(0);
+    if (controlledMediaIndex === undefined) {
+      setInternalMediaIndex(0);
+    }
 
     const loadMedia = async () => {
       try {
         const items = await fetchPublishedProjectMedia(project.id);
         if (isMounted) {
           setMediaItems(items);
-          const primaryIdx = items.findIndex((m) => m.isFeatured);
-          if (primaryIdx > 0) {
-            setActiveMediaIndex(primaryIdx);
+          if (controlledMediaIndex === undefined) {
+            const primaryIdx = items.findIndex((m) => m.isFeatured);
+            if (primaryIdx > 0) {
+              setInternalMediaIndex(primaryIdx);
+              onMediaIndexChange?.(primaryIdx);
+            }
           }
           setIsLoading(false);
         }
@@ -150,6 +180,9 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartXRef.current = e.touches[0].clientX;
+    if (totalMedia > 1) {
+      e.stopPropagation();
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -157,27 +190,34 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
     const touchEndX = e.changedTouches[0].clientX;
     const diff = touchStartXRef.current - touchEndX;
 
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        handleNextMedia();
-      } else {
-        handlePrevMedia();
+    if (totalMedia > 1) {
+      e.stopPropagation();
+      if (Math.abs(diff) > 36) {
+        if (diff > 0) {
+          handleNextMedia();
+        } else {
+          handlePrevMedia();
+        }
       }
     }
     touchStartXRef.current = null;
   };
 
+  const stageContainerClass = isDesktopCompact
+    ? 'group relative w-full work-desktop-gallery rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] overflow-hidden transition-all duration-300 hover:border-[var(--border-strong)]'
+    : isTabletCompact
+    ? 'group relative w-full h-full min-h-[260px] max-h-[380px] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] overflow-hidden transition-all duration-300 hover:border-[var(--border-strong)]'
+    : isMobileCompact
+    ? 'group relative w-full h-[clamp(220px,38dvh,340px)] rounded-xl border border-[var(--border-subtle)] bg-[#0A0A0C] overflow-hidden transition-all duration-300'
+    : 'group relative w-full h-[260px] sm:h-[320px] md:h-[360px] lg:h-[380px] rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] backdrop-blur-xl overflow-hidden shadow-[var(--shadow-card)] transition-all duration-300 hover:border-[var(--border-strong)]';
+
   return (
-    <div className={isDesktopCompact ? 'w-full h-full' : 'w-full'}>
+    <div className={isStageFill ? 'w-full h-full' : 'w-full'}>
       <div 
         id={`project-media-stage-${project.id}`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={
-          isDesktopCompact
-            ? 'group relative w-full work-desktop-gallery rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] overflow-hidden transition-all duration-300 hover:border-[var(--border-strong)]'
-            : 'group relative w-full h-[260px] sm:h-[320px] md:h-[360px] lg:h-[380px] rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] backdrop-blur-xl overflow-hidden shadow-[var(--shadow-card)] transition-all duration-300 hover:border-[var(--border-strong)]'
-        }
+        className={stageContainerClass}
       >
         {/* Ambient Subtle Glow Layer */}
         <div className="absolute inset-0 bg-radial from-[#F5F5F5]/[0.04] via-transparent to-transparent pointer-events-none" />
@@ -228,7 +268,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
             <div 
               onClick={() => setIsLightboxOpen(true)}
               className={
-                isDesktopCompact
+                isStageFill
                   ? 'absolute inset-0 flex items-center justify-center cursor-pointer select-none'
                   : 'relative w-full h-full flex items-center justify-center cursor-pointer select-none'
               }
@@ -260,8 +300,10 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                   animate="center"
                   exit="exit"
                   className={
-                    isDesktopCompact
-                      ? 'w-full h-full flex items-center justify-center pt-11 pb-12 px-4'
+                    isStageFill
+                      ? 'w-full h-full flex items-center justify-center pt-10 pb-11 px-3'
+                      : isMobileCompact
+                      ? 'w-full h-full flex items-center justify-center p-1.5'
                       : 'w-full h-full flex items-center justify-center p-3 sm:p-5'
                   }
                 >
@@ -290,7 +332,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                             setIsMediaLoaded(true);
                             setMediaLoadError(true);
                           }}
-                          className={`max-w-full max-h-full object-contain rounded-xl shadow-lg transition-opacity duration-300 ${
+                          className={`${
+                            isMobileCompact
+                              ? 'w-full h-full object-contain rounded-lg'
+                              : 'max-w-full max-h-full object-contain rounded-xl shadow-lg'
+                          } transition-opacity duration-300 ${
                             isMediaLoaded ? 'opacity-100' : 'opacity-0'
                           }`}
                         />
@@ -309,7 +355,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                           setIsMediaLoaded(true);
                           setMediaLoadError(true);
                         }}
-                        className="max-w-full max-h-full object-contain rounded-xl shadow-lg"
+                        className={`${
+                          isMobileCompact
+                            ? 'w-full h-full object-contain rounded-lg'
+                            : 'max-w-full max-h-full object-contain rounded-xl shadow-lg'
+                        }`}
                       />
                       <div className="absolute top-3 right-3 p-1.5 rounded-lg bg-[var(--bg-surface-blur)] backdrop-blur-md border border-[var(--border-subtle)] text-[var(--text-primary)] pointer-events-none">
                         <VideoIcon className="w-3.5 h-3.5" />
@@ -320,7 +370,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
               </AnimatePresence>
 
               {/* Top Bar Overlay */}
-              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex items-center gap-2 pointer-events-none">
+              <div
+                className={`absolute ${
+                  isMobileCompact ? 'top-2 left-2' : 'top-3 left-3 sm:top-4 sm:left-4'
+                } z-20 flex items-center gap-2 pointer-events-none`}
+              >
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-surface-blur)] backdrop-blur-md border border-[var(--border-subtle)] text-[10px] font-mono font-medium text-[var(--text-primary)] tracking-wider uppercase">
                   {currentMedia.mediaType === 'video' ? (
                     <>
@@ -342,7 +396,13 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
               </div>
 
               {/* Bottom Bar */}
-              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-20 flex items-center justify-between pointer-events-none">
+              <div
+                className={`absolute ${
+                  isMobileCompact
+                    ? 'bottom-2 left-2 right-2'
+                    : 'bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4'
+                } z-20 flex items-center justify-between pointer-events-none`}
+              >
                 {/* Counter */}
                 <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-[var(--bg-surface-blur)] backdrop-blur-md border border-[var(--border-subtle)] pointer-events-auto">
                   <span className="font-mono text-xs font-semibold text-[var(--text-primary)] tracking-widest">
@@ -395,9 +455,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                     type="button"
                     onClick={handlePrevMedia}
                     aria-label="Previous project media"
-                    className={`absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
-                      isDesktopCompact
-                        ? 'opacity-75 group-hover:opacity-100'
+                    className={`absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 ${
+                      isMobileCompact ? 'min-w-[34px] min-h-[34px] p-1.5' : 'min-w-[40px] min-h-[40px] p-2'
+                    } rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
+                      isStageFill || isMobileCompact
+                        ? 'opacity-80 group-hover:opacity-100'
                         : 'opacity-85 sm:opacity-0 sm:group-hover:opacity-100'
                     }`}
                   >
@@ -408,9 +470,11 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                     type="button"
                     onClick={handleNextMedia}
                     aria-label="Next project media"
-                    className={`absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
-                      isDesktopCompact
-                        ? 'opacity-75 group-hover:opacity-100'
+                    className={`absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 ${
+                      isMobileCompact ? 'min-w-[34px] min-h-[34px] p-1.5' : 'min-w-[40px] min-h-[40px] p-2'
+                    } rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
+                      isStageFill || isMobileCompact
+                        ? 'opacity-80 group-hover:opacity-100'
                         : 'opacity-85 sm:opacity-0 sm:group-hover:opacity-100'
                     }`}
                   >

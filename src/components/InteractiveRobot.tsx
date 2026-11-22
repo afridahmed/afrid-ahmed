@@ -182,10 +182,10 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = React.memo(({
   }, [reducedMotion, dotLottie, playMarker, scheduleNextReaction, clearTimers]);
 
   return (
-    <div className={`flex items-center justify-center w-full select-none ${className}`}>
-      {/* Compact Interactive Robot Canvas */}
+    <div className={`flex items-center justify-center w-full shrink-0 select-none ${className}`}>
+      {/* Generously Sized Interactive Robot Canvas */}
       <div
-        className="relative w-[156px] sm:w-[176px] lg:w-[clamp(154px,19vh,202px)] aspect-square flex items-center justify-center cursor-pointer group"
+        className="relative w-[206px] min-[390px]:w-[224px] sm:w-[240px] md:w-[228px] lg:w-[clamp(230px,26vh,292px)] aspect-square shrink-0 flex items-center justify-center cursor-pointer group"
         onClick={handleRobotClick}
         onMouseEnter={handleMouseEnter}
         role="button"
@@ -198,21 +198,27 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = React.memo(({
         }}
         aria-label="Interactive AI Robot: Click or tap to trigger a reaction"
       >
-        {/* Soft monochrome glow behind robot */}
+        {/* Subtle silver & pale-blue stage halo behind robot */}
         <div
-          className="absolute inset-3 rounded-full bg-[#F5F5F5]/[0.08] blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700"
+          className="absolute inset-2 rounded-full pointer-events-none group-hover:scale-105 transition-transform duration-700"
+          style={{
+            background:
+              'radial-gradient(circle at 50% 52%, rgba(220, 236, 255, 0.11) 0%, rgba(245, 245, 245, 0.05) 45%, transparent 72%)',
+            filter: 'blur(22px)',
+          }}
           aria-hidden="true"
         />
 
-        {/* Lottie Canvas with 100% transparent background */}
+        {/* Lottie Canvas filling dedicated 1:1 visual stage */}
         <div className="w-full h-full relative z-10 flex items-center justify-center">
           <DotLottieReact
             src="/animations/robot.json"
             dotLottieRefCallback={setDotLottie}
             autoplay={!reducedMotion}
             loop={currentAction === 'idle' && !reducedMotion}
-            className="w-full h-full object-contain pointer-events-auto filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.45)]"
-            style={{ background: 'transparent' }}
+            renderConfig={{ autoResize: true }}
+            className="block w-full h-full pointer-events-auto filter drop-shadow-[0_14px_26px_rgba(0,0,0,0.5)]"
+            style={{ width: '100%', height: '100%', background: 'transparent' }}
           />
         </div>
       </div>

@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, Github, Lock } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Github,
+  Layers,
+} from 'lucide-react';
 import { ProjectItem } from '../../types';
 import { ProjectMediaStage } from '../ProjectMediaStage';
 
@@ -10,6 +16,8 @@ interface MobileWorkProps {
   activeIndex: number;
   direction: number;
   reducedMotion?: boolean;
+  activeMediaIndex?: number;
+  onMediaIndexChange?: (index: number) => void;
   onSelectProject: (index: number) => void;
   onPrev: () => void;
   onNext: () => void;
@@ -22,11 +30,101 @@ export const MobileWork: React.FC<MobileWorkProps> = ({
   activeIndex,
   direction,
   reducedMotion = false,
+  activeMediaIndex,
+  onMediaIndexChange,
   onSelectProject,
   onPrev,
   onNext,
   onOpenDetail,
 }) => {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const transitionLockRef = useRef<number>(0);
+
+  const [trackTranslateX, setTrackTranslateX] = useState<number>(0);
+  const [hasMounted, setHasMounted] = useState<boolean>(false);
+
+  const updateTrackPosition = useCallback(() => {
+    if (!viewportRef.current || !trackRef.current || !activeProject) return;
+    const activeItem = itemRefs.current.get(activeProject.id);
+    if (!activeItem) return;
+
+    const itemCenter = activeItem.offsetLeft + activeItem.offsetWidth / 2;
+    const viewportCenter = viewportRef.current.clientWidth / 2;
+    setTrackTranslateX(viewportCenter - itemCenter);
+  }, [activeProject]);
+
+  useLayoutEffect(() => {
+    updateTrackPosition();
+    const rafId = requestAnimationFrame(updateTrackPosition);
+    return () => cancelAnimationFrame(rafId);
+  }, [activeIndex, activeProject, projects, updateTrackPosition]);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!viewportRef.current) return;
+    const ro = new ResizeObserver(() => {
+      updateTrackPosition();
+    });
+    ro.observe(viewportRef.current);
+    if (trackRef.current) {
+      ro.observe(trackRef.current);
+    }
+    window.addEventListener('resize', updateTrackPosition);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateTrackPosition);
+    };
+  }, [updateTrackPosition]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!touchStartRef.current || projects.length <= 1) return;
+      const dx = touchStartRef.current.x - e.changedTouches[0].clientX;
+      const dy = touchStartRef.current.y - e.changedTouches[0].clientY;
+      touchStartRef.current = null;
+
+      const now = Date.now();
+      if (now - transitionLockRef.current < 200) return;
+
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+        transitionLockRef.current = now;
+        if (dx > 0) {
+          onNext();
+        } else {
+          onPrev();
+        }
+      }
+    },
+    [projects.length, onNext, onPrev]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (projects.length <= 1) return;
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        onNext();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        onPrev();
+      }
+    },
+    [projects.length, onNext, onPrev]
+  );
+
   if (!activeProject || projects.length === 0) {
     return null;
   }
@@ -40,46 +138,149 @@ export const MobileWork: React.FC<MobileWorkProps> = ({
   const isPrivateRepo = rawGithub.toLowerCase() === 'private' || rawGithub === '#private';
   const hasGithub = Boolean(rawGithub && rawGithub !== '#' && !isPrivateRepo);
   const hasLive = Boolean(rawLive && rawLive !== '#');
+  const actionCount = (hasLive ? 1 : 0) + (hasGithub ? 1 : 0) + 1;
+  const actionGridColsClass =
+    actionCount === 3 ? 'grid-cols-3' : actionCount === 2 ? 'grid-cols-2' : 'grid-cols-1';
 
   return (
-    <div className="lg:hidden space-y-4">
-      {/* Compact Editorial Index Tabs — Single-Line Scrollable Strip */}
-      <div
-        role="tablist"
-        aria-label="Select featured project"
-        className="flex items-center gap-1 overflow-x-auto no-scrollbar border-b border-[var(--border-subtle)] touch-pan-x -mx-1 px-1"
-      >
-        {projects.map((project, idx) => {
-          const isActive = project.id === activeProject.id;
-          const num = project.number || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`);
-          return (
-            <button
-              key={project.id || idx}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => onSelectProject(idx)}
-              className={`relative shrink-0 min-h-[44px] px-3.5 py-2.5 flex items-center gap-2 text-xs whitespace-nowrap transition-colors cursor-pointer ${
-                isActive
-                  ? 'text-[var(--text-primary)] font-semibold'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
-              }`}
-            >
-              <span className="font-mono text-[10.5px] tabular-nums opacity-75">{num}</span>
-              <span className="font-display tracking-tight">{project.title}</span>
-              {isActive && (
-                <motion.span
-                  layoutId="mobile-work-tab-indicator"
-                  className="absolute bottom-0 left-2 right-2 h-[2px] bg-[var(--text-primary)]"
-                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                />
-              )}
-            </button>
-          );
-        })}
+    <div className="md:hidden w-full flex flex-col gap-2.5">
+      {/* 1. Compact Projects Heading & Project Counter */}
+      <div className="flex items-baseline justify-between gap-2 pb-2 border-b border-[var(--border-subtle)]">
+        <div className="flex items-baseline gap-2 min-w-0">
+          <span className="font-mono text-[10px] tracking-[0.18em] text-[var(--text-muted)] uppercase shrink-0">
+            02 /
+          </span>
+          <h2 className="text-[22px] min-[390px]:text-2xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-none">
+            Projects.
+          </h2>
+        </div>
+
+        <span className="font-mono text-xs text-[var(--text-secondary)] tabular-nums shrink-0">
+          <span className="text-[var(--text-primary)] font-bold">{projectNumber}</span>
+          <span className="text-[var(--text-muted)]"> / {totalFormatted}</span>
+        </span>
       </div>
 
-      {/* Prominent Media-First Project Showcase Card */}
+      {/* 2. Centered Swipeable Project Selector (Prev/Next Partially Visible + Arrows) */}
+      <div
+        className="relative flex items-center justify-between gap-1.5 w-full"
+        role="region"
+        aria-label="Project selector"
+        onKeyDown={handleKeyDown}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <button
+          type="button"
+          onClick={onPrev}
+          disabled={activeIndex <= 0}
+          aria-label="Previous project"
+          className="shrink-0 w-9 h-9 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface-blur)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-25 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer active:scale-90 transition-all"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+
+        <div
+          ref={viewportRef}
+          role="tablist"
+          aria-label="Select project"
+          className="relative flex-1 min-w-0 h-10 overflow-hidden flex items-center touch-pan-y"
+          style={{
+            maskImage:
+              'linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
+          }}
+        >
+          <motion.div
+            ref={trackRef}
+            className="relative flex items-center gap-2 w-max select-none will-change-transform"
+            initial={false}
+            animate={{ x: trackTranslateX }}
+            transition={
+              !hasMounted
+                ? { duration: 0 }
+                : reducedMotion
+                ? { duration: 0.12 }
+                : { type: 'spring', stiffness: 390, damping: 36, mass: 0.7 }
+            }
+          >
+            {projects.map((project, idx) => {
+              const isActive = project.id === activeProject.id;
+              const isNeighbor = Math.abs(idx - activeIndex) === 1;
+              const num = project.number || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`);
+
+              return (
+                <motion.button
+                  key={project.id || idx}
+                  ref={(el) => {
+                    if (el) {
+                      itemRefs.current.set(project.id, el);
+                    } else {
+                      itemRefs.current.delete(project.id);
+                    }
+                  }}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => onSelectProject(idx)}
+                  animate={{
+                    opacity: isActive ? 1 : isNeighbor ? 0.52 : 0.2,
+                  }}
+                  transition={reducedMotion ? { duration: 0.1 } : { duration: 0.2 }}
+                  className={`relative shrink-0 px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer focus:outline-none ${
+                    isActive ? 'z-10' : 'z-0'
+                  }`}
+                >
+                  <div
+                    className={`absolute inset-0 z-0 rounded-lg transition-all duration-200 pointer-events-none ${
+                      isActive
+                        ? 'bg-[var(--bg-elevated)] border border-[var(--border-strong)] shadow-sm'
+                        : 'bg-transparent border border-transparent'
+                    }`}
+                  />
+                  <div
+                    className={`absolute bottom-0 left-1/2 -translate-x-1/2 z-0 w-3/4 h-[2px] bg-gradient-to-r from-transparent via-[var(--text-primary)] to-transparent rounded-full transition-opacity duration-200 pointer-events-none ${
+                      isActive ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                  <span
+                    className={`relative z-10 font-mono text-[10px] tabular-nums ${
+                      isActive
+                        ? 'text-[var(--text-primary)] font-bold'
+                        : 'text-[var(--text-muted)]'
+                    }`}
+                  >
+                    {num}
+                  </span>
+                  <span
+                    className={`relative z-10 font-display text-[13px] whitespace-nowrap max-w-[165px] truncate ${
+                      isActive
+                        ? 'font-semibold text-[var(--text-primary)]'
+                        : 'font-medium text-[var(--text-secondary)]'
+                    }`}
+                  >
+                    {project.title}
+                  </span>
+                </motion.button>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={activeIndex >= projects.length - 1}
+          aria-label="Next project"
+          className="shrink-0 w-9 h-9 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface-blur)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-25 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer active:scale-90 transition-all"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* 3. Image-Dominant Simplified One-Screen Project Showcase Card */}
       <AnimatePresence mode="wait" custom={direction} initial={false}>
         <motion.article
           key={activeProject.id}
@@ -87,140 +288,92 @@ export const MobileWork: React.FC<MobileWorkProps> = ({
           initial={reducedMotion ? false : { opacity: 0, x: direction >= 0 ? 14 : -14 }}
           animate={{ opacity: 1, x: 0 }}
           exit={reducedMotion ? undefined : { opacity: 0, x: direction >= 0 ? -14 : 14 }}
-          transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-          className="rounded-2xl border border-[var(--border-strong)] bg-[#101010] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.85)]"
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="rounded-2xl border border-[var(--border-strong)] bg-[#101010]/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-2.5 min-[390px]:p-3 space-y-2.5 touch-pan-y"
         >
-          {/* Top Large Visual Media Stage */}
-          <div className="p-2.5 pb-0">
-            <ProjectMediaStage project={activeProject} />
-          </div>
+          {/* A. Dominant Project Preview Image */}
+          <ProjectMediaStage
+            project={activeProject}
+            variant="mobile-compact"
+            controlledMediaIndex={activeMediaIndex}
+            onMediaIndexChange={onMediaIndexChange}
+          />
 
-          {/* Minimal Clean Architectural Metadata & Summary */}
-          <div className="p-4 pt-3.5 space-y-3">
-            {/* Unboxed Metadata Row */}
-            <div className="flex items-center justify-between gap-2 text-[11px] font-mono">
-              <div className="flex items-center gap-2 text-[var(--text-secondary)] min-w-0">
-                <span className="text-[var(--text-primary)] font-bold tabular-nums">
-                  {projectNumber}
-                </span>
-                <span className="text-[var(--text-muted)]">/ {totalFormatted}</span>
-                <span aria-hidden="true" className="text-[var(--text-muted)]">·</span>
-                <span className="uppercase tracking-wider truncate">
-                  {activeProject.category}
-                </span>
-              </div>
+          {/* B. Project Name & Compact Action Row */}
+          <div className="px-0.5 space-y-2.5">
+            <h3 className="font-display font-extrabold text-[19px] min-[390px]:text-[21px] leading-snug tracking-tight text-[var(--text-primary)] break-words">
+              {activeProject.title}
+            </h3>
 
-              {activeProject.isFlagship && (
-                <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-primary)] shrink-0">
-                  Flagship
-                </span>
+            <div className={`pt-2 border-t border-[var(--border-subtle)] grid ${actionGridColsClass} gap-2`}>
+              {hasLive && (
+                <a
+                  href={rawLive}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full min-w-0 h-10 px-2.5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-contrast)] border border-[var(--accent-solid)] font-mono font-bold text-[11px] tracking-wide flex items-center justify-center gap-1.5 hover:opacity-90 active:scale-[0.97] transition-all duration-150 shadow-sm whitespace-nowrap"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                  <span>LIVE</span>
+                </a>
               )}
-            </div>
 
-            {/* Title & Subtitle */}
-            <div>
-              <h3 className="font-display font-extrabold text-[22px] leading-tight tracking-tight text-[var(--text-primary)]">
-                {activeProject.title}
-              </h3>
-              {activeProject.subtitle && (
-                <p className="mt-1 font-mono text-xs text-[var(--text-secondary)] leading-snug">
-                  {activeProject.subtitle}
-                </p>
+              {hasGithub && (
+                <a
+                  href={rawGithub}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full min-w-0 h-10 px-2.5 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)] font-mono font-medium text-[11px] tracking-wide flex items-center justify-center gap-1.5 active:scale-[0.97] transition-all duration-150 whitespace-nowrap"
+                >
+                  <Github className="w-3.5 h-3.5 shrink-0" />
+                  <span>REPO</span>
+                </a>
               )}
-            </div>
 
-            {/* Concise 3-line Editorial Description */}
-            {activeProject.description && (
-              <p className="text-[13px] leading-relaxed text-[var(--text-secondary)] font-light line-clamp-3">
-                {activeProject.description}
-              </p>
-            )}
-
-            {/* Clean Typographic Tech Stack (Zero Pill Clutter) */}
-            {activeProject.technologies && activeProject.technologies.length > 0 && (
-              <div className="pt-2 border-t border-[var(--border-subtle)] text-[11px] font-mono text-[var(--text-muted)] leading-relaxed">
-                {activeProject.technologies.slice(0, 5).join(' · ')}
-              </div>
-            )}
-
-            {/* Action & Navigation Row */}
-            <div className="pt-2 flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={onOpenDetail}
-                className="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-contrast)] font-display font-bold text-xs tracking-wide flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+                aria-label="View project details"
+                className="w-full min-w-0 h-10 px-2.5 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-strong)] text-[var(--text-primary)] font-mono font-semibold text-[11px] tracking-wide flex items-center justify-center gap-1.5 active:scale-[0.97] transition-all duration-150 cursor-pointer whitespace-nowrap"
               >
-                <span>Inspect Case Study</span>
-                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                <Layers className="w-3.5 h-3.5 shrink-0 text-[var(--text-secondary)]" />
+                <span>DETAILS</span>
               </button>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                {hasLive && (
-                  <a
-                    href={rawLive}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Open live ${activeProject.title}`}
-                    className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] flex items-center justify-center active:scale-95 transition-all"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-
-                {hasGithub && (
-                  <a
-                    href={rawGithub}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Open ${activeProject.title} repository`}
-                    className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] flex items-center justify-center active:scale-95 transition-all"
-                  >
-                    <Github className="w-4 h-4" />
-                  </a>
-                )}
-
-                {!hasGithub && isPrivateRepo && !hasLive && (
-                  <span
-                    aria-label="Private repository"
-                    className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--border-subtle)] bg-[#141414] text-[var(--text-muted)] flex items-center justify-center"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                  </span>
-                )}
-              </div>
             </div>
           </div>
         </motion.article>
       </AnimatePresence>
 
-      {/* Thumb-Zone Prev / Next Switcher */}
+      {/* 4. Progress Indicator */}
       {projects.length > 1 && (
-        <div className="flex items-center justify-between pt-1">
-          <button
-            type="button"
-            onClick={onPrev}
-            disabled={activeIndex <= 0}
-            aria-label="Previous project"
-            className="min-h-[44px] px-3.5 rounded-xl border border-[var(--border-subtle)] bg-[#111111] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1.5 font-mono text-xs cursor-pointer active:scale-95 transition-all"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Prev</span>
-          </button>
-
-          <span className="font-mono text-[11px] text-[var(--text-muted)] tabular-nums">
-            {projectNumber} / {totalFormatted}
-          </span>
-
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={activeIndex >= projects.length - 1}
-            aria-label="Next project"
-            className="min-h-[44px] px-3.5 rounded-xl border border-[var(--border-subtle)] bg-[#111111] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1.5 font-mono text-xs cursor-pointer active:scale-95 transition-all"
-          >
-            <span>Next</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+        <div
+          className="flex items-center justify-center gap-1.5 pt-0.5"
+          role="navigation"
+          aria-label="Project progress"
+        >
+          {projects.map((project, idx) => {
+            const isActive = idx === activeIndex;
+            return (
+              <button
+                key={project.id || idx}
+                type="button"
+                onClick={() => onSelectProject(idx)}
+                aria-label={`Select project ${idx + 1}: ${project.title}`}
+                aria-current={isActive ? 'true' : undefined}
+                className="py-1.5 px-0.5 cursor-pointer flex items-center"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all duration-300 ${
+                    isActive
+                      ? 'w-6 bg-[var(--text-primary)]'
+                      : 'w-1.5 bg-[var(--border-strong)] opacity-60'
+                  }`}
+                />
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
