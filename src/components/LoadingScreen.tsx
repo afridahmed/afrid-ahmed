@@ -35,10 +35,10 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onLoaded }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, filter: 'blur(10px)' }}
           transition={{ duration: 0.6, ease: 'easeInOut' }}
-          className="fixed inset-0 z-50 bg-[var(--bg-canvas)] flex flex-col items-center justify-center p-6 select-none transition-colors duration-300"
+          className="fixed inset-0 z-50 bg-[var(--bg-canvas)] flex flex-col items-center justify-center p-6 select-none"
         >
           {/* Ambient center glow */}
-          <div className="absolute w-72 h-72 rounded-full bg-[#111111]/[0.05] dark:bg-[#F5F5F5]/[0.07] blur-3xl pointer-events-none" />
+          <div className="absolute w-72 h-72 rounded-full bg-[#F5F5F5]/[0.07] blur-3xl pointer-events-none" />
 
           {/* AFRID Wordmark with Passing Signal */}
           <div className="relative mb-6">

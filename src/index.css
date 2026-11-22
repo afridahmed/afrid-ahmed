@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-display: 'Syne', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -8,25 +7,6 @@
 }
 
 :root {
-  color-scheme: light;
-  --bg-canvas: #FAFAFA;
-  --bg-surface: #FFFFFF;
-  --bg-elevated: #F3F3F3;
-  --border-subtle: #E8E8E8;
-  --border-strong: rgba(17, 17, 17, 0.22);
-  --text-primary: #111111;
-  --text-secondary: #737373;
-  --text-muted: #A0A0A0;
-  --accent-solid: #111111;
-  --accent-contrast: #FFFFFF;
-  --bg-canvas-blur: rgba(250, 250, 250, 0.9);
-  --bg-surface-blur: rgba(255, 255, 255, 0.85);
-  --bg-elevated-blur: rgba(243, 243, 243, 0.9);
-  --glow-soft: rgba(17, 17, 17, 0.05);
-  --shadow-card: 0 18px 42px rgba(17, 17, 17, 0.07);
-}
-
-.dark {
   color-scheme: dark;
   --bg-canvas: #080808;
   --bg-surface: #121212;
@@ -48,7 +28,6 @@
 html {
   scroll-behavior: smooth;
   background-color: var(--bg-canvas);
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body {
@@ -58,7 +37,6 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 h1, h2, h3, .font-display {

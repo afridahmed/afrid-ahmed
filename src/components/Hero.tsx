@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { HERO_CONTENT } from '../data/siteContent';
 import { HeroContent } from '../types';
-import { useTheme } from '../context/ThemeContext';
 
 interface HeroProps {
   content?: HeroContent;
@@ -19,8 +18,6 @@ export const Hero: React.FC<HeroProps> = ({
   onExploreAbout,
   onConnect
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const [stage, setStage] = useState<number>(0);
   const [statementIndex, setStatementIndex] = useState<number>(0);
 
@@ -61,9 +58,8 @@ export const Hero: React.FC<HeroProps> = ({
       <div
         className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[300px] sm:w-[550px] md:w-[750px] h-[300px] sm:h-[550px] md:h-[750px] rounded-full pointer-events-none transition-opacity duration-1000 ease-out z-0"
         style={{
-          background: isDark
-            ? 'radial-gradient(circle, rgba(245, 245, 245, 0.08) 0%, rgba(27, 27, 27, 0.06) 40%, rgba(18, 18, 18, 0.02) 68%, transparent 75%)'
-            : 'radial-gradient(circle, rgba(17, 17, 17, 0.05) 0%, rgba(115, 115, 115, 0.04) 40%, rgba(232, 232, 232, 0.02) 68%, transparent 75%)',
+          background:
+            'radial-gradient(circle, rgba(245, 245, 245, 0.08) 0%, rgba(27, 27, 27, 0.06) 40%, rgba(18, 18, 18, 0.02) 68%, transparent 75%)',
           opacity: stage >= 1 ? 1 : 0,
           filter: 'blur(50px)'
         }}
@@ -106,9 +102,8 @@ export const Hero: React.FC<HeroProps> = ({
           <div 
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] min-[380px]:w-[280px] h-[240px] min-[380px]:h-[280px] rounded-full pointer-events-none"
             style={{
-              background: isDark
-                ? 'radial-gradient(circle at 50% 45%, rgba(245,245,245,0.16) 0%, rgba(160,160,160,0.08) 50%, transparent 75%)'
-                : 'radial-gradient(circle at 50% 45%, rgba(17,17,17,0.12) 0%, rgba(115,115,115,0.06) 50%, transparent 75%)',
+              background:
+                'radial-gradient(circle at 50% 45%, rgba(245,245,245,0.16) 0%, rgba(160,160,160,0.08) 50%, transparent 75%)',
               filter: 'blur(32px)'
             }}
           />
@@ -135,9 +130,8 @@ export const Hero: React.FC<HeroProps> = ({
             <div 
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: isDark
-                  ? 'linear-gradient(to bottom, transparent 65%, rgba(8,8,8,0.85) 92%, #080808 100%)'
-                  : 'linear-gradient(to bottom, transparent 65%, rgba(240,241,244,0.75) 92%, rgba(240,241,244,0.95) 100%)'
+                background:
+                  'linear-gradient(to bottom, transparent 65%, rgba(8,8,8,0.85) 92%, #080808 100%)'
               }}
             />
           </div>
@@ -183,7 +177,7 @@ export const Hero: React.FC<HeroProps> = ({
           <button
             id="mobile-hero-link-work"
             onClick={onExploreWork}
-            className="flex-1 min-h-[44px] px-5 py-2.5 rounded-full bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-display font-bold text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.14)] dark:shadow-[0_0_22px_rgba(245,245,245,0.16)] active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+            className="flex-1 min-h-[44px] px-5 py-2.5 rounded-full bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-display font-bold text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_22px_rgba(245,245,245,0.16)] active:scale-95 transition-all cursor-pointer whitespace-nowrap"
           >
             <span>Explore work</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -291,7 +285,7 @@ export const Hero: React.FC<HeroProps> = ({
             <button
               id="hero-link-work"
               onClick={onExploreWork}
-              className="px-6 py-2.5 rounded-full bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-bold flex items-center gap-2 shadow-[0_8px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_0_20px_rgba(245,245,245,0.14)] transition-all cursor-pointer active:scale-95"
+              className="px-6 py-2.5 rounded-full bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(245,245,245,0.14)] transition-all cursor-pointer active:scale-95"
             >
               <span>{content.primaryLinkText}</span>
               <ArrowRight className="w-4 h-4" />
@@ -325,9 +319,8 @@ export const Hero: React.FC<HeroProps> = ({
             <div 
               className="absolute inset-0 rounded-full pointer-events-none"
               style={{
-                background: isDark
-                  ? 'radial-gradient(circle at 50% 48%, rgba(245, 245, 245, 0.14) 0%, rgba(160, 160, 160, 0.08) 42%, transparent 72%)'
-                  : 'radial-gradient(circle at 50% 48%, rgba(17, 17, 17, 0.1) 0%, rgba(115, 115, 115, 0.06) 42%, transparent 72%)',
+                background:
+                  'radial-gradient(circle at 50% 48%, rgba(245, 245, 245, 0.14) 0%, rgba(160, 160, 160, 0.08) 42%, transparent 72%)',
                 filter: 'blur(30px)',
                 transform: 'scale(1.08)'
               }}
@@ -350,9 +343,8 @@ export const Hero: React.FC<HeroProps> = ({
               <div 
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: isDark
-                    ? 'radial-gradient(circle at 50% 45%, transparent 58%, rgba(8, 8, 8, 0.6) 82%, #080808 100%)'
-                    : 'radial-gradient(circle at 50% 45%, transparent 58%, rgba(240, 241, 244, 0.55) 82%, rgba(240, 241, 244, 0.92) 100%)'
+                  background:
+                    'radial-gradient(circle at 50% 45%, transparent 58%, rgba(8, 8, 8, 0.6) 82%, #080808 100%)'
                 }}
               />
             </div>

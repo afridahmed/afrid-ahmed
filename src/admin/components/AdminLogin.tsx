@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { ThemeToggle } from '../../context/ThemeContext';
 import { Lock, Mail, KeyRound, Eye, EyeOff, ShieldCheck, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 
 interface AdminLoginProps {
@@ -47,7 +46,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
 
   return (
     <div className="min-h-screen w-full bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col justify-between items-center p-4 sm:p-6 font-sans transition-colors duration-300">
-      {/* Top bar with back to public site and theme toggle */}
+      {/* Top bar with back to public site */}
       <header className="w-full max-w-5xl flex items-center justify-between py-4">
         <button
           onClick={handleGoHome}
@@ -57,12 +56,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
           <span>RETURN TO WEBSITE</span>
         </button>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-[var(--text-muted)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)] animate-pulse" />
-            <span>CMS GATEWAY SECURE</span>
-          </div>
-          <ThemeToggle size="sm" />
+        <div className="flex items-center gap-2 text-[11px] font-mono text-[var(--text-muted)]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)] animate-pulse" />
+          <span>CMS GATEWAY SECURE</span>
         </div>
       </header>
 

@@ -647,11 +647,11 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
               <div className="relative work-desktop-showcase rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-xl shadow-[var(--shadow-card)] overflow-hidden transition-colors duration-300">
                 {/* Restrained Monochrome Ambient Glow */}
                 <div
-                  className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[#111111]/[0.03] dark:bg-[#F5F5F5]/[0.04] blur-3xl pointer-events-none"
+                  className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[#F5F5F5]/[0.04] blur-3xl pointer-events-none"
                   aria-hidden="true"
                 />
                 <div
-                  className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#111111]/[0.03] dark:bg-[#F5F5F5]/[0.04] blur-3xl pointer-events-none"
+                  className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#F5F5F5]/[0.04] blur-3xl pointer-events-none"
                   aria-hidden="true"
                 />
 
@@ -835,7 +835,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
           className="group relative rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-xl px-5 py-5 sm:px-7 sm:py-5 lg:px-8 lg:py-5 transition-all duration-300 shadow-[var(--shadow-card)] overflow-hidden"
         >
           {/* Ambient subtle light accent */}
-          <div className="absolute top-0 right-0 w-72 h-72 bg-[#111111]/[0.03] dark:bg-[#F5F5F5]/[0.04] rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 transition-all duration-500" />
+          <div className="absolute top-0 right-0 w-72 h-72 bg-[#F5F5F5]/[0.04] rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 transition-all duration-500" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-center relative z-10">
             {/* Left Column */}

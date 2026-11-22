@@ -78,7 +78,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         {/* Main Balanced Two-Column Container */}
         <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-blur)] backdrop-blur-xl p-5 sm:p-8 md:p-10 lg:p-12 relative overflow-hidden shadow-[var(--shadow-card)] transition-colors duration-300">
           {/* Subtle monochrome ambient glow */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#111111]/[0.03] dark:bg-[#F5F5F5]/[0.04] rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#F5F5F5]/[0.04] rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
           {/* ========================================================================= */}
           {/* 1. MOBILE CONTACT COMPOSITION (< md)                                      */}

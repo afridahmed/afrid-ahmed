@@ -281,7 +281,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] selection:bg-[#111111]/15 dark:selection:bg-[#F5F5F5]/20 selection:text-[var(--text-primary)] overflow-x-hidden transition-colors duration-300">
+    <div className="relative min-h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] selection:bg-[#F5F5F5]/20 selection:text-[var(--text-primary)] overflow-x-hidden">
       {/* 1. Procedural Multi-layer Cosmic Canvas (Stationary fixed in background) */}
       <CosmicCanvas reducedMotion={reducedMotion} />
 

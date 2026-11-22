@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useTheme } from '../context/ThemeContext';
 
 interface AiBuilderScene3DProps {
   isHovered: boolean;
@@ -9,8 +8,6 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const [reducedMotion, setReducedMotion] = useState(false);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -26,11 +23,11 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const inkRgb = isDark ? '245, 245, 245' : '17, 17, 17';
-    const secondaryInkRgb = isDark ? '160, 160, 160' : '115, 115, 115';
-    const surfaceFillRgb = isDark ? '18, 18, 18' : '255, 255, 255';
-    const coreCenterHex = isDark ? '#F5F5F5' : '#111111';
-    const coreMidHex = isDark ? '#A0A0A0' : '#737373';
+    const inkRgb = '245, 245, 245';
+    const secondaryInkRgb = '160, 160, 160';
+    const surfaceFillRgb = '18, 18, 18';
+    const coreCenterHex = '#F5F5F5';
+    const coreMidHex = '#A0A0A0';
 
     let animationFrameId: number;
     let width = (canvas.width = canvas.parentElement?.clientWidth || 380);
@@ -308,7 +305,7 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
       parent?.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isHovered, reducedMotion, isDark]);
+  }, [isHovered, reducedMotion]);
 
   return (
     <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] flex items-center justify-center rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] overflow-hidden shadow-[var(--shadow-card)] group-hover:border-[var(--border-strong)] transition-all duration-500">

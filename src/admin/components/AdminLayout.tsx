@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { ThemeToggle } from '../../context/ThemeContext';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminSectionPlaceholder } from './AdminSectionPlaceholder';
 import { HeroEditor } from './HeroEditor';
@@ -100,8 +99,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onNavigateHome }) => {
             <Shield className="w-3.5 h-3.5 text-[var(--text-primary)]" />
             <span className="max-w-[180px] truncate text-[var(--text-primary)]">{user?.email}</span>
           </div>
-
-          <ThemeToggle size="sm" />
 
           <button
             onClick={handleGoHome}

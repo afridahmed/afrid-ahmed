@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { JourneyMilestone, JourneyContent } from '../types';
 import { JOURNEY } from '../data/siteContent';
-import { useTheme } from '../context/ThemeContext';
 
 interface JourneyTimelineProps {
   content?: JourneyContent;
@@ -152,8 +151,6 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
   content = JOURNEY,
   milestones,
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const milestoneList: JourneyMilestone[] = useMemo(() => {
     if (Array.isArray(milestones)) return milestones;
     if (Array.isArray((milestones as any)?.milestones)) return (milestones as any).milestones;
@@ -407,9 +404,9 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
   const trueCurrentMilestone = currentIndex !== -1 ? milestoneList[currentIndex] : null;
   const isViewingTrueCurrent = currentIndex === -1 || activeIdx === currentIndex;
 
-  const inkRgb = isDark ? '245, 245, 245' : '17, 17, 17';
-  const mutedInkRgb = isDark ? '160, 160, 160' : '115, 115, 115';
-  const starColor = isDark ? '#F5F5F5' : '#111111';
+  const inkRgb = '245, 245, 245';
+  const mutedInkRgb = '160, 160, 160';
+  const starColor = '#F5F5F5';
 
   return (
     <section
@@ -576,7 +573,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: `radial-gradient(ellipse 48% 66% at 50% 50%, rgba(${inkRgb}, ${isDark ? 0.06 : 0.04}) 0%, rgba(${mutedInkRgb}, 0.025) 50%, transparent 78%)`,
+                background: `radial-gradient(ellipse 48% 66% at 50% 50%, rgba(${inkRgb}, 0.06) 0%, rgba(${mutedInkRgb}, 0.025) 50%, transparent 78%)`,
               }}
               aria-hidden="true"
             />
@@ -587,7 +584,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
               style={{
                 width: `${desktopGeometry.activeWidth + 110}px`,
                 height: '300px',
-                background: `radial-gradient(circle at center, rgba(${inkRgb}, ${isDark ? 0.14 : 0.07}) 0%, rgba(${mutedInkRgb}, 0.04) 46%, transparent 72%)`,
+                background: `radial-gradient(circle at center, rgba(${inkRgb}, 0.14) 0%, rgba(${mutedInkRgb}, 0.04) 46%, transparent 72%)`,
                 filter: 'blur(28px)',
               }}
               aria-hidden="true"
@@ -602,7 +599,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 <div className="relative w-36 h-36">
                   <div className="absolute inset-0 rounded-full border border-[var(--border-subtle)]" />
                   <div className="absolute inset-5 rounded-full border border-dashed border-[var(--border-strong)]" />
-                  <div className="absolute inset-11 rounded-full bg-[#111111]/[0.05] dark:bg-[#F5F5F5]/[0.06] blur-md" />
+                  <div className="absolute inset-11 rounded-full bg-[#F5F5F5]/[0.06] blur-md" />
                 </div>
               </div>
             )}
@@ -615,7 +612,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 <div className="relative w-36 h-36">
                   <div className="absolute inset-0 rounded-full border border-[var(--border-subtle)]" />
                   <div className="absolute inset-5 rounded-full border border-dashed border-[var(--border-strong)]" />
-                  <div className="absolute inset-11 rounded-full bg-[#111111]/[0.05] dark:bg-[#F5F5F5]/[0.06] blur-md" />
+                  <div className="absolute inset-11 rounded-full bg-[#F5F5F5]/[0.06] blur-md" />
                 </div>
               </div>
             )}
@@ -668,7 +665,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                   cy={star.yPct * desktopGeometry.stageHeight}
                   r={star.r}
                   fill={starColor}
-                  opacity={isDark ? star.o : star.o * 0.65}
+                  opacity={star.o}
                 />
               ))}
 
@@ -778,7 +775,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                   <span
                     className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-200 ${
                       isTrueCurrent
-                        ? 'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)] shadow-md ring-4 ring-[#111111]/10 dark:ring-[#F5F5F5]/15 group-hover:scale-110'
+                        ? 'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)] shadow-md ring-4 ring-[#F5F5F5]/15 group-hover:scale-110'
                         : isCompleted
                         ? 'bg-[var(--bg-elevated)] border-[var(--border-strong)] text-[var(--text-primary)] shadow-sm group-hover:border-[var(--text-primary)] group-hover:scale-110'
                         : isHorizon
@@ -841,7 +838,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 
                     {/* Subtle corner sheen */}
                     <div
-                      className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-[#111111]/[0.04] dark:bg-[#F5F5F5]/[0.06] blur-2xl pointer-events-none"
+                      className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-[#F5F5F5]/[0.06] blur-2xl pointer-events-none"
                       aria-hidden="true"
                     />
 

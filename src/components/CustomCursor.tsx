@@ -91,8 +91,8 @@ export const CustomCursor: React.FC = () => {
           isHovered
             ? cursorText
               ? 'w-16 h-16 bg-[var(--bg-surface)]/80 border border-[var(--text-primary)] backdrop-blur-sm'
-              : 'w-8 h-8 bg-[#111111]/15 dark:bg-[#F5F5F5]/20 border border-[var(--text-primary)]'
-            : 'w-3.5 h-3.5 bg-[#111111]/55 dark:bg-[#F5F5F5]/65 border border-[var(--text-primary)]'
+              : 'w-8 h-8 bg-[#F5F5F5]/20 border border-[var(--text-primary)]'
+            : 'w-3.5 h-3.5 bg-[#F5F5F5]/65 border border-[var(--text-primary)]'
         }`}
       >
         {cursorText && (

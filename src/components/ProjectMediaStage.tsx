@@ -180,7 +180,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
         }
       >
         {/* Ambient Subtle Glow Layer */}
-        <div className="absolute inset-0 bg-radial from-[#111111]/[0.03] dark:from-[#F5F5F5]/[0.04] via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-radial from-[#F5F5F5]/[0.04] via-transparent to-transparent pointer-events-none" />
 
         {/* Loading State Skeleton */}
         {isLoading && (

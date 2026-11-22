@@ -318,7 +318,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">
       <div className="relative w-full max-w-4xl my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Modal Header */}
@@ -583,7 +583,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
       {/* ADD / EDIT MEDIA ITEM SUB-MODAL                                        */}
       {/* ===================================================================== */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
           <div className="relative w-full max-w-lg my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden flex flex-col">
             
             {/* Header */}
@@ -757,7 +757,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
       {/* DELETE CONFIRMATION MODAL                                              */}
       {/* ===================================================================== */}
       {deleteCandidate && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
           <div className="w-full max-w-md p-6 rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-[var(--text-primary)]">
               <div className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
@@ -794,7 +794,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
       {/* SQL SCHEMA MODAL (For Supabase SQL Editor)                             */}
       {/* ===================================================================== */}
       {isSqlModalOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
           <div className="relative w-full max-w-2xl p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)] shrink-0">
               <div className="flex items-center gap-2 text-[var(--text-primary)]">

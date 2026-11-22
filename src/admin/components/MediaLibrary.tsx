@@ -495,7 +495,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
       {/* 5. UPLOAD CONFIRMATION & PREVIEW MODAL                                    */}
       {/* ========================================================================= */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
           <div className="relative w-full max-w-lg my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden flex flex-col">
             
             {/* Modal Header */}
@@ -617,7 +617,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
       {/* 6. DELETE CONFIRMATION & SAFETY CHECK DIALOG                              */}
       {/* ========================================================================= */}
       {deleteCandidate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-6 shadow-2xl space-y-4">
             
             <div className="flex items-center gap-3 text-[var(--text-primary)]">
@@ -704,7 +704,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
       {/* 7. MEDIA DETAIL & INSPECT MODAL                                           */}
       {/* ========================================================================= */}
       {activeMediaDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 shadow-2xl space-y-4">
             
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">

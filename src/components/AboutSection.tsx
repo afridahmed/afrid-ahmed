@@ -4,7 +4,6 @@ import { User, GraduationCap } from 'lucide-react';
 import { ABOUT_CONTENT } from '../data/siteContent';
 import { AboutContent } from '../types';
 import { AboutDynamicIcon } from '../data/aboutIcons';
-import { useTheme } from '../context/ThemeContext';
 import {
   DEFAULT_ABOUT_HIGHLIGHTS,
   DEFAULT_ABOUT_INTERESTS,
@@ -52,8 +51,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
   isPreviewMode = false,
   previewDevice = 'auto',
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const [reducedMotion, setReducedMotion] = useState(false);
   const [portraitLoadError, setPortraitLoadError] = useState(false);
   const [signatureLoadError, setSignatureLoadError] = useState(false);
@@ -294,9 +291,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
               <div
                 className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full pointer-events-none opacity-35"
                 style={{
-                  background: isDark
-                    ? 'radial-gradient(circle at center, rgba(245,245,245,0.12) 0%, rgba(160,160,160,0.05) 50%, transparent 75%)'
-                    : 'radial-gradient(circle at center, rgba(17,17,17,0.08) 0%, rgba(115,115,115,0.04) 50%, transparent 75%)',
+                  background:
+                    'radial-gradient(circle at center, rgba(245,245,245,0.12) 0%, rgba(160,160,160,0.05) 50%, transparent 75%)',
                   filter: 'blur(20px)',
                 }}
                 aria-hidden="true"
@@ -375,9 +371,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                     <div
                       className={`absolute -inset-10 rounded-full pointer-events-none ${glowOpacityClass}`}
                       style={{
-                        background: isDark
-                          ? 'radial-gradient(circle at 50% 48%, rgba(245, 245, 245, 0.14) 0%, rgba(160, 160, 160, 0.06) 44%, transparent 72%)'
-                          : 'radial-gradient(circle at 50% 48%, rgba(17, 17, 17, 0.09) 0%, rgba(115, 115, 115, 0.05) 44%, transparent 72%)',
+                        background:
+                          'radial-gradient(circle at 50% 48%, rgba(245, 245, 245, 0.14) 0%, rgba(160, 160, 160, 0.06) 44%, transparent 72%)',
                         filter: 'blur(34px)',
                       }}
                       aria-hidden="true"
@@ -391,7 +386,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                         className="about-orbit-spin absolute -inset-6 rounded-full border border-dashed border-[var(--border-strong)] pointer-events-none"
                         aria-hidden="true"
                       >
-                        <span className="absolute top-[11%] right-[16%] w-2 h-2 rounded-full bg-[var(--text-primary)] shadow-[0_0_10px_rgba(0,0,0,0.2)] dark:shadow-[0_0_10px_rgba(245,245,245,0.45)]" />
+                        <span className="absolute top-[11%] right-[16%] w-2 h-2 rounded-full bg-[var(--text-primary)] shadow-[0_0_10px_rgba(245,245,245,0.45)]" />
                         <span className="absolute bottom-[14%] left-[14%] w-1.5 h-1.5 rounded-full bg-[var(--text-secondary)]" />
                       </div>
 
@@ -437,9 +432,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                     <div
                       className="absolute inset-0 pointer-events-none"
                       style={{
-                        background: isDark
-                          ? 'radial-gradient(circle at 50% 42%, transparent 56%, rgba(8, 8, 8, 0.52) 82%, rgba(8, 8, 8, 0.92) 100%)'
-                          : 'radial-gradient(circle at 50% 42%, transparent 56%, rgba(240, 241, 244, 0.48) 82%, rgba(240, 241, 244, 0.88) 100%)',
+                        background:
+                          'radial-gradient(circle at 50% 42%, transparent 56%, rgba(8, 8, 8, 0.52) 82%, rgba(8, 8, 8, 0.92) 100%)',
                       }}
                       aria-hidden="true"
                     />
@@ -493,9 +487,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                 <div
                   className={`absolute -inset-3 rounded-[28px] pointer-events-none ${glowOpacityClass}`}
                   style={{
-                    background: isDark
-                      ? 'radial-gradient(ellipse at 30% 20%, rgba(245, 245, 245, 0.06), transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(160, 160, 160, 0.05), transparent 55%)'
-                      : 'radial-gradient(ellipse at 30% 20%, rgba(17, 17, 17, 0.04), transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(115, 115, 115, 0.04), transparent 55%)',
+                    background:
+                      'radial-gradient(ellipse at 30% 20%, rgba(245, 245, 245, 0.06), transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(160, 160, 160, 0.05), transparent 55%)',
                     filter: 'blur(22px)',
                   }}
                   aria-hidden="true"
@@ -503,7 +496,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
                 {/* Monochrome Border Frame Wrapping Glass Surface */}
                 <div
-                  className={`relative ${cardOuterRadiusClass} p-[1px] bg-gradient-to-br from-[#111111]/20 via-[#E8E8E8] to-[#111111]/12 dark:from-[#F5F5F5]/25 dark:via-[#292929] dark:to-[#F5F5F5]/15 shadow-[var(--shadow-card)]`}
+                  className={`relative ${cardOuterRadiusClass} p-[1px] bg-gradient-to-br from-[#F5F5F5]/25 via-[#292929] to-[#F5F5F5]/15 shadow-[var(--shadow-card)]`}
                 >
                   <div
                     className={`${cardPaddingClass} relative overflow-hidden ${cardInnerRadiusClass} bg-[var(--bg-surface-blur)] backdrop-blur-xl`}
@@ -517,7 +510,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                     {/* Subtle Corner Atmospheric Highlight */}
                     {visual.showCosmicDecor && (
                       <div
-                        className="absolute -top-20 -right-20 w-52 h-52 rounded-full bg-[#111111]/[0.04] dark:bg-[#F5F5F5]/[0.05] blur-3xl pointer-events-none"
+                        className="absolute -top-20 -right-20 w-52 h-52 rounded-full bg-[#F5F5F5]/[0.05] blur-3xl pointer-events-none"
                         aria-hidden="true"
                       />
                     )}

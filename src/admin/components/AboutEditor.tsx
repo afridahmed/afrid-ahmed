@@ -2330,7 +2330,7 @@ export const AboutEditor: React.FC = () => {
       {/* 5. MEDIA LIBRARY PICKER MODAL                                       */}
       {/* =================================================================== */}
       {mediaPickerTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 shadow-2xl">
             <MediaLibrary
               isModalPicker={true}
@@ -2350,7 +2350,7 @@ export const AboutEditor: React.FC = () => {
       {/* 6. VISUAL ICON PICKER MODAL                                         */}
       {/* =================================================================== */}
       {iconPickerContext && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-xl rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <h3 className="text-base font-bold text-[var(--text-primary)]">Select Visual Icon</h3>
@@ -2422,7 +2422,7 @@ export const AboutEditor: React.FC = () => {
       {/* 7. DELETE / UNPUBLISH / DISCARD CONFIRMATION MODALS                 */}
       {/* =================================================================== */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-6 space-y-4">
             <h3 className="text-base font-bold text-[var(--text-primary)]">
               Remove {deleteTarget.type === 'interest' ? 'Interest Tag' : 'Highlight Card'}?
@@ -2451,7 +2451,7 @@ export const AboutEditor: React.FC = () => {
       )}
 
       {confirmUnpublishOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-6 space-y-4">
             <h3 className="text-base font-bold text-[var(--text-primary)]">Unpublish About Section?</h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
@@ -2479,7 +2479,7 @@ export const AboutEditor: React.FC = () => {
       )}
 
       {confirmDiscardOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-6 space-y-4">
             <h3 className="text-base font-bold text-[var(--text-primary)]">Discard Unpublished Draft?</h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
@@ -2510,7 +2510,7 @@ export const AboutEditor: React.FC = () => {
       {/* 8. SUPABASE MIGRATION SQL MODAL                                     */}
       {/* =================================================================== */}
       {sqlModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="w-full max-w-3xl rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>

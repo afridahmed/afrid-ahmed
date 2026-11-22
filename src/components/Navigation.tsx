@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, ArrowRight, Github, Linkedin, Youtube, Instagram, Mail, Globe } from 'lucide-react';
 import { SOCIAL_LINKS } from '../data/siteContent';
-import { ThemeToggle } from '../context/ThemeContext';
 
 interface NavigationProps {
   activeSection: string;
@@ -60,7 +59,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         <nav
           className={`pointer-events-auto flex items-center justify-between transition-all duration-300 rounded-full border ${
             isScrolled
-              ? 'px-4 sm:px-6 py-1.5 sm:py-2 bg-[var(--bg-canvas-blur)] backdrop-blur-xl border-[var(--border-subtle)] shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.85)] w-[92%] max-w-5xl'
+              ? 'px-4 sm:px-6 py-1.5 sm:py-2 bg-[var(--bg-canvas-blur)] backdrop-blur-xl border-[var(--border-subtle)] shadow-[0_8px_30px_rgba(0,0,0,0.85)] w-[92%] max-w-5xl'
               : 'px-4 sm:px-7 py-2 sm:py-2.5 bg-[var(--bg-surface-blur)] backdrop-blur-md border-[var(--border-subtle)] w-[94%] max-w-6xl'
           }`}
         >
@@ -104,22 +103,17 @@ export const Navigation: React.FC<NavigationProps> = ({
             })}
           </div>
 
-          {/* Right Controls: Compact Theme Toggle + Mobile Hamburger */}
-          <div className="flex items-center gap-2 shrink-0">
-            <ThemeToggle />
-
-            {/* Mobile Hamburger Toggle: Touch target min 44x44px */}
-            <div className="md:hidden flex items-center">
-              <button
-                id="nav-mobile-toggle"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="min-w-[44px] min-h-[44px] p-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--border-strong)] flex items-center justify-center cursor-pointer active:scale-95 transition-all"
-                aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
-                aria-expanded={mobileMenuOpen}
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
+          {/* Mobile Hamburger Toggle: Touch target min 44x44px */}
+          <div className="md:hidden flex items-center">
+            <button
+              id="nav-mobile-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="min-w-[44px] min-h-[44px] p-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--border-strong)] flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+              aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </nav>
       </header>
@@ -135,24 +129,21 @@ export const Navigation: React.FC<NavigationProps> = ({
             className="fixed inset-0 z-[60] bg-[var(--bg-canvas)]/98 backdrop-blur-2xl flex flex-col justify-between px-6 pt-6 pb-8 md:hidden overflow-y-auto"
           >
             {/* Ambient subtle monochrome glow */}
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full bg-[#111111]/[0.04] dark:bg-[#F5F5F5]/[0.05] blur-3xl pointer-events-none" />
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full bg-[#F5F5F5]/[0.05] blur-3xl pointer-events-none" />
 
-            {/* Top Bar inside Menu: Logo + Theme Toggle + Close Button */}
+            {/* Top Bar inside Menu: Logo + Close Button */}
             <div className="flex items-center justify-between w-full relative z-10 pb-4 border-b border-[var(--border-subtle)]">
               <span className="font-display font-black text-2xl tracking-tight text-[var(--text-primary)]">
                 Afrid<span className="text-[var(--text-muted)]">.</span>
               </span>
 
-              <div className="flex items-center gap-2">
-                <ThemeToggle size="md" />
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="min-w-[44px] min-h-[44px] rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[var(--border-strong)] flex items-center justify-center cursor-pointer active:scale-95 transition-all"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="min-w-[44px] min-h-[44px] rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[var(--border-strong)] flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Menu Items: Large vertical typography with arrow */}
@@ -225,7 +216,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
             {/* Subtle corner ambient glow */}
             <div 
-              className="absolute -right-16 -bottom-16 w-64 h-64 rounded-full pointer-events-none opacity-35 bg-[#111111]/10 dark:bg-[#F5F5F5]/10 blur-3xl"
+              className="absolute -right-16 -bottom-16 w-64 h-64 rounded-full pointer-events-none opacity-35 bg-[#F5F5F5]/10 blur-3xl"
             />
           </motion.div>
         )}

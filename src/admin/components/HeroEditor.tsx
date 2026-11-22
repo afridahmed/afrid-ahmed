@@ -549,7 +549,7 @@ export const HeroEditor: React.FC = () => {
 
       {/* Media Library Selector Modal */}
       {isMediaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
           <div className="relative w-full max-w-5xl my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 shadow-2xl overflow-hidden">
             <MediaLibrary
               isModalPicker={true}
