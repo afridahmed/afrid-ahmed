@@ -120,9 +120,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 <span>COLLABORATION & INQUIRIES</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-[45px] font-display font-black text-[var(--text-primary)] tracking-tight leading-[0.96] break-words">
+              <h2 className="text-3xl md:text-4xl lg:text-[clamp(2.1rem,3.3vw,2.8125rem)] font-display font-black text-[var(--text-primary)] tracking-tight leading-[0.96] lg:leading-none break-words lg:whitespace-nowrap">
                 {headlineLines.map((line, idx) => (
-                  <span key={idx} className="block">
+                  <span key={idx} className="block lg:inline">
+                    {idx > 0 && <span className="hidden lg:inline"> </span>}
                     {line}
                   </span>
                 ))}
