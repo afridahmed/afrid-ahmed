@@ -91,11 +91,11 @@ export const CosmicCanvas: React.FC<CosmicCanvasProps> = ({ reducedMotion = fals
       });
     }
 
-    // Monochrome volumetric clouds
+    // Deep monochrome & subtle midnight-blue volumetric clouds for seamless page continuity
     const nebulas: NebulaCloud[] = [
-      { xRatio: 0.2, yRatio: 0.3, radiusRatio: 0.45, color: 'rgba(27, 27, 27, 0.55)', speed: 0.0003, angle: 0 },
-      { xRatio: 0.8, yRatio: 0.65, radiusRatio: 0.5, color: 'rgba(18, 18, 18, 0.5)', speed: -0.00025, angle: 1.5 },
-      { xRatio: 0.5, yRatio: 0.85, radiusRatio: 0.4, color: 'rgba(245, 245, 245, 0.025)', speed: 0.0002, angle: 3.2 }
+      { xRatio: 0.2, yRatio: 0.3, radiusRatio: 0.5, color: 'rgba(20, 24, 32, 0.44)', speed: 0.00028, angle: 0 },
+      { xRatio: 0.8, yRatio: 0.65, radiusRatio: 0.55, color: 'rgba(15, 17, 22, 0.42)', speed: -0.00022, angle: 1.5 },
+      { xRatio: 0.5, yRatio: 0.85, radiusRatio: 0.48, color: 'rgba(168, 206, 255, 0.024)', speed: 0.00018, angle: 3.2 }
     ];
 
     const handleResize = () => {
@@ -117,21 +117,21 @@ export const CosmicCanvas: React.FC<CosmicCanvasProps> = ({ reducedMotion = fals
     };
 
     const handleScroll = () => {
-      if (isTouch || isMobile) return;
       const currentY = window.scrollY;
+      scrollRef.current.y = currentY;
+      if (isTouch || isMobile) return;
       const now = Date.now();
       const dt = Math.max(now - scrollRef.current.lastTime, 16);
       const dy = currentY - scrollRef.current.lastY;
       scrollRef.current.velocity = dy / dt;
-      scrollRef.current.y = currentY;
       scrollRef.current.lastY = currentY;
       scrollRef.current.lastTime = now;
     };
 
     window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     if (!isTouch && !isMobile) {
       window.addEventListener('mousemove', handleMouseMove, { passive: true });
-      window.addEventListener('scroll', handleScroll, { passive: true });
     }
 
     let time = 0;
@@ -152,6 +152,7 @@ export const CosmicCanvas: React.FC<CosmicCanvasProps> = ({ reducedMotion = fals
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
       const scrollV = Math.min(Math.max(scrollRef.current.velocity * 4, -8), 8);
+      const scrollDriftY = (scrollRef.current.y * 0.04) % (height * 0.6);
 
       // 1. Base Canvas Clear
       ctx.fillStyle = '#080808';
@@ -166,7 +167,7 @@ export const CosmicCanvas: React.FC<CosmicCanvasProps> = ({ reducedMotion = fals
 
         const grad = ctx.createRadialGradient(currentX, currentY, 0, currentX, currentY, radius);
         grad.addColorStop(0, neb.color);
-        grad.addColorStop(0.6, 'rgba(18, 18, 18, 0.22)');
+        grad.addColorStop(0.58, 'rgba(14, 16, 22, 0.16)');
         grad.addColorStop(1, 'transparent');
 
         ctx.fillStyle = grad;
@@ -175,10 +176,17 @@ export const CosmicCanvas: React.FC<CosmicCanvasProps> = ({ reducedMotion = fals
         ctx.fill();
       }
 
-      // Soft ambient light glow at top center
-      const ambientGrad = ctx.createRadialGradient(width * 0.5 + mx * 20, height * 0.15 + my * 15, 0, width * 0.5, height * 0.2, width * 0.7);
-      ambientGrad.addColorStop(0, 'rgba(245, 245, 245, 0.04)');
-      ambientGrad.addColorStop(0.5, 'rgba(18, 18, 18, 0.15)');
+      // Continuous soft ambient light glow harmonized with Hero white & pale-blue tones
+      const ambientGrad = ctx.createRadialGradient(
+        width * 0.5 + mx * 20,
+        height * 0.28 + my * 15 - scrollDriftY * 0.15,
+        0,
+        width * 0.5,
+        height * 0.32,
+        width * 0.78
+      );
+      ambientGrad.addColorStop(0, 'rgba(176, 210, 255, 0.032)');
+      ambientGrad.addColorStop(0.45, 'rgba(20, 23, 30, 0.12)');
       ambientGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = ambientGrad;
       ctx.fillRect(0, 0, width, height);

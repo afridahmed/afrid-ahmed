@@ -2,6 +2,7 @@ import React from 'react';
 import { Mail, Linkedin, Github, Youtube, Instagram, ArrowRight, ArrowUpRight, Sparkles, Globe } from 'lucide-react';
 import { SITE_INFO, SOCIAL_LINKS } from '../data/siteContent';
 import { SiteInfo, SocialLink } from '../types';
+import { MobileContact } from './mobile/MobileContact';
 
 interface ContactSectionProps {
   siteInfo?: SiteInfo;
@@ -83,93 +84,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
           {/* ========================================================================= */}
           {/* 1. MOBILE CONTACT COMPOSITION (< md)                                      */}
           {/* ========================================================================= */}
-          <div className="flex flex-col space-y-6 md:hidden">
-            <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
-              <span>04 / CONTACT</span>
-            </div>
-
-            <div>
-              <h2 className="text-3xl min-[360px]:text-4xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
-                Let's connect.
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed mt-2">
-                I'm always open to new opportunities, collaborations and interesting conversations.
-              </p>
-            </div>
-
-            <div>
-              <a
-                id="mobile-contact-talk-btn"
-                href={`mailto:${siteInfo.email}?subject=Project%20Collaboration%20with%20Afrid`}
-                className="w-full min-h-[48px] px-6 py-3 rounded-full bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-display font-bold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
-              >
-                <span>LET'S TALK</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-
-            <div className="space-y-2.5 pt-2">
-              {contactChannels.map((channel) => {
-                const Icon = channel.icon;
-                return (
-                  <a
-                    key={channel.id}
-                    id={`mobile-contact-channel-${channel.id}`}
-                    href={channel.href}
-                    target={channel.external ? '_blank' : undefined}
-                    rel={channel.external ? 'noopener noreferrer' : undefined}
-                    className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] flex items-center justify-between transition-all active:scale-[0.99]"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-[var(--bg-surface)] flex items-center justify-center border border-[var(--border-subtle)]">
-                        <Icon className={`w-4 h-4 ${channel.iconColor}`} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-display font-bold text-xs text-[var(--text-primary)]">
-                          {channel.label}
-                        </span>
-                        <span className="text-[11px] font-mono text-[var(--text-muted)] truncate max-w-[200px]">
-                          {channel.value}
-                        </span>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-[var(--text-muted)]" />
-                  </a>
-                );
-              })}
-            </div>
-
-            <div className="pt-2 flex items-center justify-center gap-3">
-              {socialLinks.map((link) => {
-                const plat = link.platform.toLowerCase();
-                return (
-                  <a
-                    key={link.platform}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] flex items-center justify-center active:scale-95 transition-all"
-                    aria-label={link.platform}
-                  >
-                    {plat === 'github' && <Github className="w-4 h-4" />}
-                    {plat === 'linkedin' && <Linkedin className="w-4 h-4" />}
-                    {plat === 'youtube' && <Youtube className="w-4 h-4" />}
-                    {plat === 'instagram' && <Instagram className="w-4 h-4" />}
-                    {plat === 'email' && <Mail className="w-4 h-4" />}
-                  </a>
-                );
-              })}
-            </div>
-
-            <div className="pt-4 border-t border-[var(--border-subtle)] flex flex-col items-center text-center gap-1">
-              <span className="text-xs font-mono text-[var(--text-secondary)]">
-                Made with <span className="text-[var(--text-primary)]">♥</span> by Afrid
-              </span>
-              <span className="text-[10px] font-mono text-[var(--text-muted)]">
-                © {new Date().getFullYear()} Afrid Ahmed
-              </span>
-            </div>
-          </div>
+          <MobileContact
+            email={siteInfo.email}
+            contactHeadline={contactHeadline}
+            contactSupportingText={contactSupportingText}
+            primaryCtaLabel={primaryCtaLabel}
+            channels={contactChannels}
+          />
 
           {/* ========================================================================= */}
           {/* 2. DESKTOP CONTACT COMPOSITION (md+)                                      */}

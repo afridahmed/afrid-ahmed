@@ -53,14 +53,14 @@ export const Navigation: React.FC<NavigationProps> = ({
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 pointer-events-none ${
-          isScrolled ? 'py-2 sm:py-3.5' : 'py-3 sm:py-5'
+          isScrolled ? 'py-2 sm:py-3.5' : 'py-2.5 sm:py-5'
         }`}
       >
         <nav
           className={`pointer-events-auto flex items-center justify-between transition-all duration-300 rounded-full border ${
             isScrolled
               ? 'px-4 sm:px-6 py-1.5 sm:py-2 bg-[var(--bg-canvas-blur)] backdrop-blur-xl border-[var(--border-subtle)] shadow-[0_8px_30px_rgba(0,0,0,0.85)] w-[92%] max-w-5xl'
-              : 'px-4 sm:px-7 py-2 sm:py-2.5 bg-[var(--bg-surface-blur)] backdrop-blur-md border-[var(--border-subtle)] w-[94%] max-w-6xl'
+              : 'px-4 sm:px-7 py-1.5 sm:py-2.5 bg-transparent border-transparent md:bg-[var(--bg-surface-blur)] md:backdrop-blur-md md:border-[var(--border-subtle)] w-[94%] max-w-6xl'
           }`}
         >
           {/* Brand Mark: Afrid. — Clean, bold */}
@@ -108,7 +108,11 @@ export const Navigation: React.FC<NavigationProps> = ({
             <button
               id="nav-mobile-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="min-w-[44px] min-h-[44px] p-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--border-strong)] flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+              className={`min-w-[44px] min-h-[44px] p-2.5 rounded-full border text-[var(--text-primary)] flex items-center justify-center cursor-pointer active:scale-95 transition-all ${
+                isScrolled
+                  ? 'border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)]'
+                  : 'border-white/10 bg-[#080808]/60 hover:border-white/25'
+              }`}
               aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
               aria-expanded={mobileMenuOpen}
             >

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { JourneyMilestone, JourneyContent } from '../types';
 import { JOURNEY } from '../data/siteContent';
+import { MobileJourney } from './mobile/MobileJourney';
 
 interface JourneyTimelineProps {
   content?: JourneyContent;
@@ -420,13 +421,18 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         <div className="journey-desktop-header border-b border-[var(--border-subtle)] pb-3.5 mb-5 md:mb-6 xl:mb-0 flex flex-col xl:flex-row xl:items-end justify-between gap-2 xl:gap-4">
           {/* Mobile & Tablet Header (< xl / < 1280px) */}
           <div className="xl:hidden space-y-1">
-            <div className="text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
-              03 / JOURNEY
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-mono tracking-[0.2em] text-[var(--text-muted)] uppercase">
+                03 / Trajectory
+              </span>
+              <span className="text-[11px] font-mono text-[var(--text-secondary)] tabular-nums">
+                {milestoneList[0]?.year ?? '2026'} — {milestoneList[milestoneList.length - 1]?.year ?? '2030'}
+              </span>
             </div>
             <h2 className="text-3xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
               The journey.
             </h2>
-            <p className="text-xs text-[var(--text-muted)] font-light leading-relaxed">
+            <p className="text-xs text-[var(--text-secondary)] font-light leading-relaxed">
               {content.subtitle}
             </p>
           </div>
@@ -469,86 +475,11 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         {/* ========================================================================= */}
         {/* 1. MOBILE & TABLET VERTICAL TIMELINE (< xl / < 1280px)                    */}
         {/* ========================================================================= */}
-        <div className="xl:hidden relative pl-6 space-y-3.5">
-          {/* Thin vertical connecting line */}
-          <div
-            className="absolute left-2.5 top-2 bottom-2 w-[1.5px] bg-gradient-to-b from-[var(--text-primary)] via-[var(--text-secondary)]/40 to-[var(--border-subtle)]"
-            aria-hidden="true"
-          />
-
-          {milestoneList.map((m, idx) => {
-            const yearStr = String(m.year ?? idx);
-            const stage = resolveStage(m, idx);
-            const visuals = getStageVisuals(stage);
-            const MilestoneIcon = getMilestoneIcon(m, idx, stage);
-
-            return (
-              <motion.article
-                key={yearStr}
-                initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ duration: 0.3, delay: Math.min(idx * 0.04, 0.16) }}
-                className="relative"
-              >
-                {/* Node on vertical line */}
-                <div
-                  className={`absolute -left-[19.5px] top-4 rounded-full z-10 ${
-                    stage === 'current'
-                      ? 'w-3.5 h-3.5 bg-[var(--accent-solid)] border-2 border-[var(--bg-canvas)] shadow-sm'
-                      : stage === 'completed'
-                      ? 'w-3 h-3 bg-[var(--text-secondary)] border-2 border-[var(--bg-canvas)]'
-                      : stage === 'horizon'
-                      ? 'w-3 h-3 bg-[var(--bg-surface)] border-2 border-[var(--text-secondary)]'
-                      : 'w-3 h-3 bg-[var(--bg-surface)] border-2 border-[var(--border-strong)]'
-                  }`}
-                  aria-hidden="true"
-                />
-
-                <div
-                  className={`relative overflow-hidden p-3.5 rounded-xl border backdrop-blur-md space-y-1.5 transition-colors ${visuals.cardClass}`}
-                >
-                  <div className={`absolute top-0 left-0 right-0 h-[2px] ${visuals.topAccentClass}`} />
-
-                  {/* Top Row: Icon + Year + Phase + Status */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 ${visuals.iconBoxClass}`}
-                      >
-                        <MilestoneIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                      </span>
-                      <span className={`font-display font-extrabold text-lg tabular-nums ${visuals.yearClass}`}>
-                        {yearStr}
-                      </span>
-                      <span className="text-[var(--text-muted)] text-xs" aria-hidden="true">·</span>
-                      <span className="font-mono text-[10.5px] uppercase tracking-wider text-[var(--text-muted)] truncate">
-                        {m.phase}
-                      </span>
-                    </div>
-
-                    <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider font-semibold shrink-0 ${visuals.statusClass}`}
-                    >
-                      <StageStatusIcon stage={stage} className="w-3 h-3" />
-                      <span>{visuals.statusLabel}</span>
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-display font-bold text-[15px] text-[var(--text-primary)] leading-snug">
-                    {m.title}
-                  </h3>
-
-                  {/* Concise readable description */}
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-light">
-                    {m.description}
-                  </p>
-                </div>
-              </motion.article>
-            );
-          })}
-        </div>
+        <MobileJourney
+          milestones={milestoneList}
+          currentIndex={currentIndex}
+          reducedMotion={reducedMotion}
+        />
 
         {/* ========================================================================= */}
         {/* 2. DESKTOP INTERACTIVE COSMIC ORBITAL TIMELINE (xl+ / >= 1280px)          */}

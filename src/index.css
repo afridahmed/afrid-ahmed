@@ -249,6 +249,42 @@ h1, h2, h3, .font-display {
   }
 }
 
+/* About Orbital Ring Rotation (Desktop, Tablet & Mobile) */
+@keyframes about-orbit-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes about-orbit-rotate-rev {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.about-orbit-spin {
+  animation: about-orbit-rotate 36s linear infinite;
+  will-change: transform;
+}
+
+.about-orbit-spin-reverse {
+  animation: about-orbit-rotate-rev 52s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-orbit-spin,
+  .about-orbit-spin-reverse {
+    animation: none !important;
+  }
+}
+
 /* Desktop/Laptop About Section Fluid Single-Viewport Fit (lg+ >= 1024px) */
 @media (min-width: 1024px) {
   .about-desktop-section {
@@ -277,41 +313,6 @@ h1, h2, h3, .font-display {
 
   .about-desktop-card {
     padding: clamp(1.25rem, min(2.1vw, 3vh), 2rem);
-  }
-
-  @keyframes about-orbit-rotate {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes about-orbit-rotate-rev {
-    from {
-      transform: rotate(360deg);
-    }
-    to {
-      transform: rotate(0deg);
-    }
-  }
-
-  .about-orbit-spin {
-    animation: about-orbit-rotate 36s linear infinite;
-    will-change: transform;
-  }
-
-  .about-orbit-spin-reverse {
-    animation: about-orbit-rotate-rev 52s linear infinite;
-    will-change: transform;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .about-orbit-spin,
-    .about-orbit-spin-reverse {
-      animation: none !important;
-    }
   }
 }
 

@@ -275,9 +275,14 @@ export default function App() {
 
   const scrollToSection = (id: string) => {
     const target = document.getElementById(id);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (!target) return;
+    const headerEl = document.querySelector('header');
+    const headerOffset = headerEl ? headerEl.getBoundingClientRect().height + 8 : 72;
+    const targetTop = Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerOffset);
+    window.scrollTo({
+      top: id === 'hero' ? 0 : targetTop,
+      behavior: reducedMotion ? 'auto' : 'smooth',
+    });
   };
 
   return (
@@ -301,12 +306,36 @@ export default function App() {
 
       {/* Main Content Sections: Exact Hierarchy: Hero → About → Work → Journey → Contact */}
       <main className="relative z-10 w-full overflow-x-hidden">
-        {/* 1. HERO: Personal brand first — AFRID AHMED */}
+        {/* Continuous soft atmospheric depth washes across section boundaries */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-[92svh] h-[600px] z-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 70% 55% at 50% 50%, rgba(168, 206, 255, 0.025) 0%, rgba(245, 245, 245, 0.012) 45%, transparent 78%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-[46%] h-[780px] z-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 68% 52% at 30% 50%, rgba(168, 206, 255, 0.02) 0%, rgba(18, 22, 30, 0.14) 48%, transparent 80%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-[8%] h-[720px] z-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 72% 55% at 65% 50%, rgba(168, 206, 255, 0.022) 0%, rgba(245, 245, 245, 0.01) 46%, transparent 78%)',
+          }}
+        />
+
+        {/* 1. HERO: Particle Typography Universe — AFRID AHMED */}
         <Hero
           content={heroData}
-          onExploreWork={() => scrollToSection('work')}
           onExploreAbout={() => scrollToSection('about')}
-          onConnect={() => scrollToSection('contact')}
         />
 
         {/* 2. ABOUT: Where you meet the builder & see personal editorial portrait */}

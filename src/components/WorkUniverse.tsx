@@ -14,6 +14,7 @@ import { ProjectItem } from '../types';
 import { PROJECTS } from '../data/siteContent';
 import { InteractiveRobot } from './InteractiveRobot';
 import { ProjectMediaStage } from './ProjectMediaStage';
+import { MobileWork } from './mobile/MobileWork';
 
 // ============================================================================
 // MEMOIZED DESKTOP EDITORIAL PROJECT DETAILS (Right Column)
@@ -356,13 +357,20 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
       <div className="max-w-6xl mx-auto mb-4 sm:mb-8 work-desktop-header-wrap">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--border-subtle)] pb-4 sm:pb-6 work-desktop-header">
           {/* Mobile Header */}
-          <div className="lg:hidden">
-            <div className="text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold mb-1">
-              02 / WORK
+          <div className="lg:hidden flex items-baseline justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-mono tracking-[0.2em] text-[var(--text-muted)] uppercase mb-1">
+                02 / Selected Work
+              </div>
+              <h2 className="text-3xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
+                Projects.
+              </h2>
             </div>
-            <h2 className="text-3xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
-              Selected Work.
-            </h2>
+            {visibleProjects.length > 0 && (
+              <span className="font-mono text-xs text-[var(--text-secondary)] tabular-nums shrink-0">
+                {activeProject ? (activeProject.number || (activeIndex < 9 ? `0${activeIndex + 1}` : `${activeIndex + 1}`)) : '--'} / {visibleProjects.length < 10 ? `0${visibleProjects.length}` : visibleProjects.length}
+              </span>
+            )}
           </div>
 
           {/* Desktop Header */}
@@ -392,28 +400,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* MOBILE HORIZONTAL PILL RAIL (< lg)                                        */}
-      {/* ========================================================================= */}
-      <div className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar py-1 mb-4 touch-pan-x -mx-1 px-1">
-        {visibleProjects.map((project, idx) => {
-          const isActive = project.id === activeProjectId;
-          return (
-            <button
-              key={project.id || idx}
-              type="button"
-              onClick={() => goToProject(idx)}
-              className={`px-4 py-2 rounded-full text-xs whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                isActive
-                  ? 'bg-[var(--accent-solid)] text-[var(--accent-contrast)] font-bold shadow-sm'
-                  : 'bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] font-medium'
-              }`}
-            >
-              {project.title}
-            </button>
-          );
-        })}
-      </div>
+      {/* Mobile pill rail replaced by MobileWork editorial tabs below */}
 
       {/* ========================================================================= */}
       {/* DESKTOP CONTEXTUAL CAROUSEL RAIL (lg+) — 100% PRESERVED                   */}
@@ -598,49 +585,18 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
           </div>
         ) : (
           <>
-            {/* 1. MOBILE PROJECT CARD (< lg) */}
-            <div className="lg:hidden flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-blur)] backdrop-blur-md overflow-hidden shadow-[var(--shadow-card)]">
-              <div className="w-full">
-                <ProjectMediaStage project={activeProject} />
-              </div>
-
-              <div className="p-4 sm:p-5 flex flex-col space-y-2.5">
-                <div>
-                  <h3 className="text-xl font-display font-extrabold text-[var(--text-primary)]">
-                    {activeProject.title}
-                  </h3>
-                  {activeProject.subtitle && (
-                    <p className="text-xs font-mono text-[var(--text-secondary)] mt-0.5">
-                      {activeProject.subtitle}
-                    </p>
-                  )}
-                </div>
-
-                {/* Tech stack tags */}
-                <div className="flex flex-wrap gap-1.5 pt-0.5">
-                  {(activeProject.technologies || []).slice(0, 4).map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-3 py-1 rounded-full text-[11px] font-mono bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-
-                {/* View project action link */}
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileDetailOpen(true)}
-                    className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer py-1"
-                  >
-                    <span>View project</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            {/* 1. MOBILE EDITORIAL PROJECT SHOWCASE (< lg) */}
+            <MobileWork
+              projects={visibleProjects}
+              activeProject={activeProject}
+              activeIndex={activeIndex}
+              direction={direction}
+              reducedMotion={reducedMotion}
+              onSelectProject={goToProject}
+              onPrev={handlePrev}
+              onNext={handleNext}
+              onOpenDetail={() => setIsMobileDetailOpen(true)}
+            />
 
             {/* 2. DESKTOP PROJECT PRESENTATION (lg+) */}
             <div className="hidden lg:block">
@@ -812,7 +768,7 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
-                {activeProject.githubUrl && (
+                {activeProject.githubUrl && activeProject.githubUrl.toLowerCase() !== 'private' && activeProject.githubUrl !== '#private' && activeProject.githubUrl !== '#' && (
                   <a
                     href={activeProject.githubUrl}
                     target="_blank"
@@ -829,8 +785,8 @@ export const WorkUniverse: React.FC<WorkUniverseProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Concluding Work Collaboration Section */}
-      <div className="max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-10">
+      {/* Concluding Work Collaboration Section — Desktop Only (mobile flows directly into Journey & Contact) */}
+      <div className="hidden lg:block max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-10">
         <div
           className="group relative rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-xl px-5 py-5 sm:px-7 sm:py-5 lg:px-8 lg:py-5 transition-all duration-300 shadow-[var(--shadow-card)] overflow-hidden"
         >

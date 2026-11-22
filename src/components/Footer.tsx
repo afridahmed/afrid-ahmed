@@ -17,8 +17,21 @@ export const Footer: React.FC<FooterProps> = ({
   };
 
   return (
-    <footer className="relative w-full py-12 sm:py-16 px-4 sm:px-8 md:px-12 z-10 border-t border-[var(--border-subtle)] bg-[var(--bg-canvas)]/90 backdrop-blur-md transition-colors duration-300">
-      <div className="max-w-6xl mx-auto flex flex-col items-center text-center space-y-5 sm:space-y-6 relative z-10">
+    <footer className="relative w-full py-6 md:py-16 px-4 sm:px-8 md:px-12 z-10 border-t border-white/[0.06] bg-gradient-to-b from-transparent via-[#080808]/65 to-[#080808]/95 backdrop-blur-md transition-colors duration-300">
+      {/* Ultra-Minimal Mobile Closing Bar (< md) */}
+      <div className="md:hidden max-w-6xl mx-auto flex items-center justify-between gap-4 text-[11px] font-mono text-[var(--text-muted)]">
+        <span>© {new Date().getFullYear()} Afrid Ahmed</span>
+        <button
+          onClick={scrollToTop}
+          className="min-h-[44px] px-2 flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+        >
+          <span>TOP</span>
+          <ArrowUp className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* Desktop Footer (md+) — 100% Preserved */}
+      <div className="hidden md:flex max-w-6xl mx-auto flex-col items-center text-center space-y-5 sm:space-y-6 relative z-10">
 
         {/* Brand Wordmark & Role */}
         <div className="space-y-1">
@@ -65,8 +78,8 @@ export const Footer: React.FC<FooterProps> = ({
           </button>
         </div>
 
-        {/* Copyright (Hidden on mobile since Contact Section displays it) */}
-        <div className="hidden md:block text-[10px] font-mono text-[var(--text-muted)]">
+        {/* Copyright */}
+        <div className="text-[10px] font-mono text-[var(--text-muted)]">
           © {new Date().getFullYear()} Afrid Ahmed. All rights reserved.
         </div>
 

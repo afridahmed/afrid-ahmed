@@ -10,6 +10,7 @@ import {
   DEFAULT_ABOUT_VISUAL_SETTINGS,
   sanitizeAboutUrl,
 } from '../services/aboutCmsService';
+import { MobileAbout } from './mobile/MobileAbout';
 
 interface AboutSectionProps {
   content?: AboutContent;
@@ -216,8 +217,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
   const mobileContainerClass = showDesktopOnly
     ? 'hidden'
     : showMobileOnly
-    ? 'relative flex flex-col space-y-5 overflow-hidden pb-6 max-w-2xl mx-auto'
-    : 'relative flex flex-col space-y-5 lg:hidden overflow-hidden pb-6 max-w-2xl mx-auto';
+    ? 'relative flex flex-col overflow-visible pb-4 max-w-md mx-auto'
+    : 'relative flex flex-col lg:hidden overflow-visible pb-4 max-w-md md:max-w-4xl mx-auto';
 
   const desktopContainerClass = showMobileOnly
     ? 'hidden'
@@ -232,73 +233,34 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
     <section
       id={isPreviewMode ? undefined : 'about'}
       className={`${
-        isPreviewMode ? 'py-6 px-4 sm:px-6' : 'about-desktop-section py-12 sm:py-16 lg:py-0 px-4 sm:px-8 md:px-12 lg:px-8 scroll-mt-20'
+        isPreviewMode ? 'py-6 px-4 sm:px-6' : 'about-desktop-section py-12 sm:py-16 lg:py-0 px-4 sm:px-6 md:px-6 min-[820px]:px-10 lg:px-8 scroll-mt-20'
       } relative w-full z-10`}
     >
       <div className="max-w-6xl xl:max-w-[1220px] mx-auto w-full">
         {/* ========================================================================= */}
-        {/* 1. MOBILE & TABLET ABOUT COMPOSITION (< lg) — PRESERVED & DYNAMIC         */}
+        {/* 1. MOBILE & TABLET ABOUT COMPOSITION (< lg) — ORBITAL + TRANSLUCENT CARD  */}
         {/* ========================================================================= */}
         <div className={mobileContainerClass}>
-          {/* Eyebrow Label: 01 / ABOUT */}
-          <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
-            <span>01 / ABOUT</span>
-          </div>
-
-          {/* Heading */}
-          <div>
-            <h3 className="text-2xl min-[360px]:text-3xl font-display font-black text-[var(--text-primary)] leading-tight">
-              Curious by nature.<br />
-              Building by <span className="text-[var(--text-secondary)]">practice.</span>
-            </h3>
-          </div>
-
-          {/* Authentic Biography Narrative */}
-          <div className="space-y-3 text-sm sm:text-[15px] text-[var(--text-secondary)] leading-relaxed font-light">
-            {introParagraph && <p>{introParagraph}</p>}
-            {bioList.slice(1).map((paragraph, idx) => (
-              <p key={idx}>{paragraph}</p>
-            ))}
-          </div>
-
-          {/* Dynamic Interest Pills on Mobile when enabled */}
-          {visual.showInterestTags && visibleInterests.length > 0 && (
-            <div className="pt-2">
-              <div className="flex flex-wrap gap-2.5">
-                {visibleInterests.map((interest) => (
-                  <span
-                    key={interest.id}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-sans text-[var(--text-primary)] bg-[var(--bg-surface)] border border-[var(--border-subtle)]"
-                  >
-                    <AboutDynamicIcon name={interest.iconName} className="w-3.5 h-3.5 text-[var(--text-primary)]" />
-                    <span>{interest.title}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Bottom Accent: INTERESTS & FOCUS */}
-          <div className="pt-6 relative">
-            <div className="flex flex-col">
-              <span className="text-[11px] font-mono tracking-widest text-[var(--text-secondary)] uppercase">
-                INTERESTS & FOCUS
-              </span>
-              <div className="w-8 h-[2px] bg-[var(--text-primary)] mt-1.5 rounded-full" />
-            </div>
-
-            {visual.showCosmicDecor && (
-              <div
-                className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full pointer-events-none opacity-35"
-                style={{
-                  background:
-                    'radial-gradient(circle at center, rgba(245,245,245,0.12) 0%, rgba(160,160,160,0.05) 50%, transparent 75%)',
-                  filter: 'blur(20px)',
-                }}
-                aria-hidden="true"
-              />
-            )}
-          </div>
+          <MobileAbout
+            sectionLabel={sectionLabel}
+            displayHeading={displayHeading}
+            displayHeadingAccent={displayHeadingAccent}
+            displaySubtitle={displaySubtitle}
+            firstName={firstName}
+            lastName={lastName}
+            fullNameAlt={fullNameAlt}
+            academicLine={academicLine}
+            introParagraph={introParagraph}
+            portraitUrl={sanitizedPortraitUrl}
+            signatureUrl={sanitizedSignatureUrl}
+            badge={badge}
+            interests={visibleInterests}
+            highlights={visibleHighlights}
+            visual={visual}
+            forceMobileLayout={showMobileOnly}
+            isPreviewMode={isPreviewMode}
+            reducedMotion={reducedMotion}
+          />
         </div>
 
         {/* ========================================================================= */}
