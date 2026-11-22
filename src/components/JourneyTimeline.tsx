@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { JourneyMilestone, JourneyContent } from '../types';
 import { JOURNEY } from '../data/siteContent';
+import { useTheme } from '../context/ThemeContext';
 
 interface JourneyTimelineProps {
   content?: JourneyContent;
@@ -43,11 +44,11 @@ function getStageVisuals(stage: DerivedStage): StageVisuals {
         stage,
         statusLabel: 'Completed',
         desktopStatusLabel: 'Completed',
-        cardClass: 'bg-[#050B18]/80 border-[#38BDF8]/25',
-        iconBoxClass: 'bg-[#38BDF8]/10 border-[#38BDF8]/25 text-[#7DD3FC]',
-        yearClass: 'text-white/90',
-        statusClass: 'text-[#7DD3FC]',
-        topAccentClass: 'bg-gradient-to-r from-[#38BDF8]/55 via-[#38BDF8]/15 to-transparent',
+        cardClass: 'bg-[var(--bg-surface-blur)] border-[var(--border-subtle)]',
+        iconBoxClass: 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)]',
+        yearClass: 'text-[var(--text-primary)]',
+        statusClass: 'text-[var(--text-secondary)]',
+        topAccentClass: 'bg-gradient-to-r from-[var(--text-secondary)]/45 via-[var(--text-muted)]/15 to-transparent',
       };
     case 'current':
       return {
@@ -55,23 +56,23 @@ function getStageVisuals(stage: DerivedStage): StageVisuals {
         statusLabel: 'Current',
         desktopStatusLabel: 'In Progress',
         cardClass:
-          'bg-[#071428]/95 border-[#38BDF8]/60 shadow-[0_0_28px_rgba(56,189,248,0.14)]',
+          'bg-[var(--bg-elevated)] border-[var(--border-strong)] shadow-[var(--shadow-card)]',
         iconBoxClass:
-          'bg-[#38BDF8]/15 border-[#38BDF8]/45 text-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.2)]',
-        yearClass: 'text-[#38BDF8]',
-        statusClass: 'text-[#38BDF8]',
-        topAccentClass: 'bg-gradient-to-r from-[#38BDF8] via-[#60A5FA] to-transparent',
+          'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)] shadow-sm',
+        yearClass: 'text-[var(--text-primary)]',
+        statusClass: 'text-[var(--text-primary)]',
+        topAccentClass: 'bg-gradient-to-r from-[var(--text-primary)] via-[var(--text-secondary)] to-transparent',
       };
     case 'horizon':
       return {
         stage,
         statusLabel: 'Horizon',
         desktopStatusLabel: 'Upcoming',
-        cardClass: 'bg-[#050816]/75 border-indigo-400/20 hover:border-indigo-400/35',
-        iconBoxClass: 'bg-indigo-400/10 border-indigo-400/25 text-[#A5B4FC]',
-        yearClass: 'text-[#C7D2FE]',
-        statusClass: 'text-[#A5B4FC]',
-        topAccentClass: 'bg-gradient-to-r from-indigo-400/45 via-transparent to-transparent',
+        cardClass: 'bg-[var(--bg-surface-blur)] border-[var(--border-subtle)] hover:border-[var(--border-strong)]',
+        iconBoxClass: 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-secondary)]',
+        yearClass: 'text-[var(--text-secondary)]',
+        statusClass: 'text-[var(--text-secondary)]',
+        topAccentClass: 'bg-gradient-to-r from-[var(--text-muted)]/35 via-transparent to-transparent',
       };
     case 'upcoming':
     default:
@@ -79,11 +80,11 @@ function getStageVisuals(stage: DerivedStage): StageVisuals {
         stage: 'upcoming',
         statusLabel: 'Planned',
         desktopStatusLabel: 'Upcoming',
-        cardClass: 'bg-[#050816]/72 border-white/10 hover:border-white/20',
-        iconBoxClass: 'bg-white/[0.04] border-white/10 text-[#94A3B8]',
-        yearClass: 'text-white/90',
-        statusClass: 'text-[#94A3B8]',
-        topAccentClass: 'bg-gradient-to-r from-white/15 via-transparent to-transparent',
+        cardClass: 'bg-[var(--bg-surface-blur)] border-[var(--border-subtle)] hover:border-[var(--border-strong)]',
+        iconBoxClass: 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)]',
+        yearClass: 'text-[var(--text-secondary)]',
+        statusClass: 'text-[var(--text-muted)]',
+        topAccentClass: 'bg-gradient-to-r from-[var(--border-strong)] via-transparent to-transparent',
       };
   }
 }
@@ -151,6 +152,8 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
   content = JOURNEY,
   milestones,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const milestoneList: JourneyMilestone[] = useMemo(() => {
     if (Array.isArray(milestones)) return milestones;
     if (Array.isArray((milestones as any)?.milestones)) return (milestones as any).milestones;
@@ -367,26 +370,26 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         className="journey-desktop-section relative w-full py-12 md:py-16 px-4 sm:px-6 md:px-10 xl:px-8 z-10 scroll-mt-20"
       >
         <div className="max-w-4xl xl:max-w-[1600px] mx-auto w-full">
-          <div className="border-b border-white/10 pb-4 mb-6 flex flex-col xl:flex-row xl:items-end justify-between gap-3">
+          <div className="border-b border-[var(--border-subtle)] pb-4 mb-6 flex flex-col xl:flex-row xl:items-end justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase mb-1">
-                <Milestone className="w-3.5 h-3.5" aria-hidden="true" />
+              <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase mb-1">
+                <Milestone className="w-3.5 h-3.5 text-[var(--text-primary)]" aria-hidden="true" />
                 <span>{content.badge}</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl xl:text-5xl font-display font-extrabold text-white tracking-tight">
+              <h2 className="text-3xl sm:text-4xl xl:text-5xl font-display font-extrabold text-[var(--text-primary)] tracking-tight">
                 {content.title}
               </h2>
-              <p className="text-xs sm:text-sm text-[#94A3B8] mt-1 font-light">
+              <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1 font-light">
                 {content.subtitle}
               </p>
             </div>
           </div>
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-white/10 rounded-xl bg-[#050816]/75 backdrop-blur-md">
-            <Compass className="w-5 h-5 text-[#38BDF8] mb-2.5" aria-hidden="true" />
-            <p className="text-white font-display font-semibold text-base mb-1">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-[var(--border-subtle)] rounded-xl bg-[var(--bg-surface-blur)] backdrop-blur-md">
+            <Compass className="w-5 h-5 text-[var(--text-primary)] mb-2.5" aria-hidden="true" />
+            <p className="text-[var(--text-primary)] font-display font-semibold text-base mb-1">
               Trajectory Roadmaps Updating
             </p>
-            <p className="text-xs font-mono text-[#94A3B8] max-w-md">
+            <p className="text-xs font-mono text-[var(--text-muted)] max-w-md">
               Milestones from 2026 to 2030 are currently being refreshed. Check back shortly.
             </p>
           </div>
@@ -404,6 +407,10 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
   const trueCurrentMilestone = currentIndex !== -1 ? milestoneList[currentIndex] : null;
   const isViewingTrueCurrent = currentIndex === -1 || activeIdx === currentIndex;
 
+  const inkRgb = isDark ? '245, 245, 245' : '17, 17, 17';
+  const mutedInkRgb = isDark ? '160, 160, 160' : '115, 115, 115';
+  const starColor = isDark ? '#F5F5F5' : '#111111';
+
   return (
     <section
       id="journey"
@@ -413,62 +420,62 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
         {/* ========================================================================= */}
         {/* COMPACT HEADER                                                            */}
         {/* ========================================================================= */}
-        <div className="journey-desktop-header border-b border-white/10 pb-3.5 mb-5 md:mb-6 xl:mb-0 flex flex-col xl:flex-row xl:items-end justify-between gap-2 xl:gap-4">
-          {/* Mobile & Tablet Header (< xl / < 1280px) — UNCHANGED */}
+        <div className="journey-desktop-header border-b border-[var(--border-subtle)] pb-3.5 mb-5 md:mb-6 xl:mb-0 flex flex-col xl:flex-row xl:items-end justify-between gap-2 xl:gap-4">
+          {/* Mobile & Tablet Header (< xl / < 1280px) */}
           <div className="xl:hidden space-y-1">
-            <div className="text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
+            <div className="text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
               03 / JOURNEY
             </div>
-            <h2 className="text-3xl font-display font-extrabold text-white tracking-tight leading-tight">
+            <h2 className="text-3xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
               The journey.
             </h2>
-            <p className="text-xs text-[#94A3B8] font-light leading-relaxed">
+            <p className="text-xs text-[var(--text-muted)] font-light leading-relaxed">
               {content.subtitle}
             </p>
           </div>
 
           {/* Desktop/Laptop Header (xl+ / >= 1280px) */}
           <div className="hidden xl:block min-w-0">
-            <div className="flex items-center gap-2 text-[11px] font-mono tracking-widest text-[#38BDF8] uppercase mb-0.5">
-              <Milestone className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-2 text-[11px] font-mono tracking-widest text-[var(--text-secondary)] uppercase mb-0.5">
+              <Milestone className="w-3.5 h-3.5 shrink-0 text-[var(--text-primary)]" aria-hidden="true" />
               <span>{content.badge}</span>
             </div>
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-0.5">
-              <h2 className="journey-desktop-title text-3xl xl:text-4xl font-display font-extrabold text-white tracking-tight">
+              <h2 className="journey-desktop-title text-3xl xl:text-4xl font-display font-extrabold text-[var(--text-primary)] tracking-tight">
                 {content.title}
               </h2>
-              <p className="journey-desktop-subtitle text-xs xl:text-sm text-[#94A3B8] font-light">
+              <p className="journey-desktop-subtitle text-xs xl:text-sm text-[var(--text-muted)] font-light">
                 {content.subtitle}
               </p>
             </div>
           </div>
 
           {/* Desktop Horizon & Quick Reset */}
-          <div className="hidden xl:flex items-center gap-4 shrink-0 text-[11px] font-mono text-[#CBD5E1]">
+          <div className="hidden xl:flex items-center gap-4 shrink-0 text-[11px] font-mono text-[var(--text-secondary)]">
             {!isViewingTrueCurrent && trueCurrentMilestone && (
               <button
                 type="button"
                 onClick={() => selectByIndex(currentIndex)}
-                className="inline-flex items-center gap-1.5 text-[#38BDF8] hover:text-[#7DD3FC] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] rounded px-1.5 py-0.5"
+                className="inline-flex items-center gap-1.5 text-[var(--text-primary)] hover:opacity-75 transition-opacity cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)] rounded px-1.5 py-0.5"
               >
                 <RotateCcw className="w-3 h-3" aria-hidden="true" />
                 <span>Return to Current ({String(trueCurrentMilestone.year)})</span>
               </button>
             )}
             <span className="inline-flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" aria-hidden="true" />
+              <Compass className="w-3.5 h-3.5 text-[var(--text-primary)] shrink-0" aria-hidden="true" />
               <span className="whitespace-nowrap">{content.horizonAnchor}</span>
             </span>
           </div>
         </div>
 
         {/* ========================================================================= */}
-        {/* 1. MOBILE & TABLET VERTICAL TIMELINE (< xl / < 1280px) — UNCHANGED        */}
+        {/* 1. MOBILE & TABLET VERTICAL TIMELINE (< xl / < 1280px)                    */}
         {/* ========================================================================= */}
         <div className="xl:hidden relative pl-6 space-y-3.5">
           {/* Thin vertical connecting line */}
           <div
-            className="absolute left-2.5 top-2 bottom-2 w-[1.5px] bg-gradient-to-b from-[#38BDF8] via-[#60A5FA]/40 to-indigo-400/20"
+            className="absolute left-2.5 top-2 bottom-2 w-[1.5px] bg-gradient-to-b from-[var(--text-primary)] via-[var(--text-secondary)]/40 to-[var(--border-subtle)]"
             aria-hidden="true"
           />
 
@@ -491,12 +498,12 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 <div
                   className={`absolute -left-[19.5px] top-4 rounded-full z-10 ${
                     stage === 'current'
-                      ? 'w-3.5 h-3.5 bg-[#38BDF8] border-2 border-[#03050B] shadow-[0_0_10px_rgba(56,189,248,0.75)]'
+                      ? 'w-3.5 h-3.5 bg-[var(--accent-solid)] border-2 border-[var(--bg-canvas)] shadow-sm'
                       : stage === 'completed'
-                      ? 'w-3 h-3 bg-[#38BDF8]/80 border-2 border-[#03050B]'
+                      ? 'w-3 h-3 bg-[var(--text-secondary)] border-2 border-[var(--bg-canvas)]'
                       : stage === 'horizon'
-                      ? 'w-3 h-3 bg-[#050816] border-2 border-indigo-400/65'
-                      : 'w-3 h-3 bg-[#050816] border-2 border-white/30'
+                      ? 'w-3 h-3 bg-[var(--bg-surface)] border-2 border-[var(--text-secondary)]'
+                      : 'w-3 h-3 bg-[var(--bg-surface)] border-2 border-[var(--border-strong)]'
                   }`}
                   aria-hidden="true"
                 />
@@ -517,8 +524,8 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                       <span className={`font-display font-extrabold text-lg tabular-nums ${visuals.yearClass}`}>
                         {yearStr}
                       </span>
-                      <span className="text-white/20 text-xs" aria-hidden="true">·</span>
-                      <span className="font-mono text-[10.5px] uppercase tracking-wider text-[#94A3B8] truncate">
+                      <span className="text-[var(--text-muted)] text-xs" aria-hidden="true">·</span>
+                      <span className="font-mono text-[10.5px] uppercase tracking-wider text-[var(--text-muted)] truncate">
                         {m.phase}
                       </span>
                     </div>
@@ -532,12 +539,12 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-display font-bold text-[15px] text-white leading-snug">
+                  <h3 className="font-display font-bold text-[15px] text-[var(--text-primary)] leading-snug">
                     {m.title}
                   </h3>
 
                   {/* Concise readable description */}
-                  <p className="text-xs text-[#CBD5E1] leading-relaxed font-light">
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-light">
                     {m.description}
                   </p>
                 </div>
@@ -565,12 +572,11 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
             role="region"
             aria-label="Interactive 2026 to 2030 journey explorer"
           >
-            {/* Atmospheric Deep-Space Nebula Backdrop */}
+            {/* Atmospheric Monochrome Backdrop */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background:
-                  'radial-gradient(ellipse 48% 66% at 50% 50%, rgba(56, 189, 248, 0.09) 0%, rgba(30, 58, 138, 0.045) 50%, transparent 78%)',
+                background: `radial-gradient(ellipse 48% 66% at 50% 50%, rgba(${inkRgb}, ${isDark ? 0.06 : 0.04}) 0%, rgba(${mutedInkRgb}, 0.025) 50%, transparent 78%)`,
               }}
               aria-hidden="true"
             />
@@ -581,23 +587,22 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
               style={{
                 width: `${desktopGeometry.activeWidth + 110}px`,
                 height: '300px',
-                background:
-                  'radial-gradient(circle at center, rgba(56, 189, 248, 0.22) 0%, rgba(96, 165, 250, 0.08) 46%, transparent 72%)',
+                background: `radial-gradient(circle at center, rgba(${inkRgb}, ${isDark ? 0.14 : 0.07}) 0%, rgba(${mutedInkRgb}, 0.04) 46%, transparent 72%)`,
                 filter: 'blur(28px)',
               }}
               aria-hidden="true"
             />
 
-            {/* Subtle Orbital Horizon Echoes on Open Cosmic Side when First or Last Year Centered */}
+            {/* Subtle Orbital Horizon Echoes on Open Side when First or Last Year Centered */}
             {desktopGeometry.leftCount === 0 && (
               <div
                 className="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none opacity-55"
                 aria-hidden="true"
               >
                 <div className="relative w-36 h-36">
-                  <div className="absolute inset-0 rounded-full border border-[#38BDF8]/12" />
-                  <div className="absolute inset-5 rounded-full border border-dashed border-[#38BDF8]/15" />
-                  <div className="absolute inset-11 rounded-full bg-[#38BDF8]/6 blur-md" />
+                  <div className="absolute inset-0 rounded-full border border-[var(--border-subtle)]" />
+                  <div className="absolute inset-5 rounded-full border border-dashed border-[var(--border-strong)]" />
+                  <div className="absolute inset-11 rounded-full bg-[#111111]/[0.05] dark:bg-[#F5F5F5]/[0.06] blur-md" />
                 </div>
               </div>
             )}
@@ -608,9 +613,9 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 aria-hidden="true"
               >
                 <div className="relative w-36 h-36">
-                  <div className="absolute inset-0 rounded-full border border-indigo-400/12" />
-                  <div className="absolute inset-5 rounded-full border border-dashed border-[#38BDF8]/15" />
-                  <div className="absolute inset-11 rounded-full bg-indigo-400/8 blur-md" />
+                  <div className="absolute inset-0 rounded-full border border-[var(--border-subtle)]" />
+                  <div className="absolute inset-5 rounded-full border border-dashed border-[var(--border-strong)]" />
+                  <div className="absolute inset-11 rounded-full bg-[#111111]/[0.05] dark:bg-[#F5F5F5]/[0.06] blur-md" />
                 </div>
               </div>
             )}
@@ -624,17 +629,17 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
             >
               <defs>
                 <linearGradient id="journey-orbit-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="rgba(56, 189, 248, 0.04)" />
-                  <stop offset="22%" stopColor="rgba(96, 165, 250, 0.25)" />
-                  <stop offset="50%" stopColor="rgba(56, 189, 248, 0.72)" />
-                  <stop offset="78%" stopColor="rgba(96, 165, 250, 0.25)" />
-                  <stop offset="100%" stopColor="rgba(129, 140, 248, 0.05)" />
+                  <stop offset="0%" stopColor={`rgba(${inkRgb}, 0.05)`} />
+                  <stop offset="22%" stopColor={`rgba(${mutedInkRgb}, 0.25)`} />
+                  <stop offset="50%" stopColor={`rgba(${inkRgb}, 0.65)`} />
+                  <stop offset="78%" stopColor={`rgba(${mutedInkRgb}, 0.25)`} />
+                  <stop offset="100%" stopColor={`rgba(${inkRgb}, 0.05)`} />
                 </linearGradient>
 
                 <linearGradient id="journey-active-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="rgba(56, 189, 248, 0.08)" />
-                  <stop offset="55%" stopColor="rgba(56, 189, 248, 0.85)" />
-                  <stop offset="100%" stopColor="rgba(125, 211, 252, 0.95)" />
+                  <stop offset="0%" stopColor={`rgba(${inkRgb}, 0.1)`} />
+                  <stop offset="55%" stopColor={`rgba(${inkRgb}, 0.72)`} />
+                  <stop offset="100%" stopColor={`rgba(${inkRgb}, 0.92)`} />
                 </linearGradient>
 
                 <filter id="journey-node-glow" x="-60%" y="-60%" width="220%" height="220%">
@@ -662,8 +667,8 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                   cx={star.xPct * desktopGeometry.safeW}
                   cy={star.yPct * desktopGeometry.stageHeight}
                   r={star.r}
-                  fill="#BAE6FD"
-                  opacity={star.o}
+                  fill={starColor}
+                  opacity={isDark ? star.o : star.o * 0.65}
                 />
               ))}
 
@@ -672,13 +677,13 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 <circle
                   r={desktopGeometry.activeWidth * 0.48}
                   fill="none"
-                  stroke="rgba(56, 189, 248, 0.12)"
+                  stroke={`rgba(${inkRgb}, 0.1)`}
                   strokeWidth="1"
                 />
                 <circle
                   r={desktopGeometry.activeWidth * 0.62}
                   fill="none"
-                  stroke="rgba(96, 165, 250, 0.14)"
+                  stroke={`rgba(${mutedInkRgb}, 0.16)`}
                   strokeWidth="1"
                   strokeDasharray="4 9"
                   className="journey-orbit-ring-spin"
@@ -691,7 +696,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                   desktopGeometry.stageHeight * 0.12
                 } ${desktopGeometry.safeW} ${desktopGeometry.stageHeight * 0.64}`}
                 fill="none"
-                stroke="rgba(56, 189, 248, 0.06)"
+                stroke={`rgba(${inkRgb}, 0.07)`}
                 strokeWidth="1"
                 strokeDasharray="3 10"
               />
@@ -705,7 +710,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 strokeWidth="1.75"
               />
 
-              {/* Illuminated Cyan Trajectory Reaching Center Active Milestone */}
+              {/* Illuminated Monochrome Trajectory Reaching Center Active Milestone */}
               <path
                 d={desktopGeometry.orbitArcPath}
                 clipPath="url(#journey-illuminated-clip)"
@@ -717,12 +722,12 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
               {/* Delicate Light Particles Gliding Along Orbital Curve */}
               {!reducedMotion && (
                 <>
-                  <circle r="2.6" fill="#7DD3FC" filter="url(#journey-node-glow)" opacity="0.85">
+                  <circle r="2.6" fill={starColor} filter="url(#journey-node-glow)" opacity="0.85">
                     <animateMotion dur="9s" repeatCount="indefinite" rotate="auto">
                       <mpath href="#journey-desktop-orbit-path" />
                     </animateMotion>
                   </circle>
-                  <circle r="1.8" fill="#38BDF8" opacity="0.58">
+                  <circle r="1.8" fill={starColor} opacity="0.52">
                     <animateMotion dur="9s" begin="-4.5s" repeatCount="indefinite" rotate="auto">
                       <mpath href="#journey-desktop-orbit-path" />
                     </animateMotion>
@@ -767,28 +772,28 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                   aria-hidden={isSelected}
                   tabIndex={isSelected ? -1 : 0}
                   aria-label={`Select ${yearStr} milestone: ${m.title}`}
-                  className="absolute -translate-x-1/2 -translate-y-[14px] z-20 group flex flex-col items-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] rounded-xl px-2.5 py-1.5"
+                  className="absolute -translate-x-1/2 -translate-y-[14px] z-20 group flex flex-col items-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)] rounded-xl px-2.5 py-1.5"
                 >
                   {/* Minimal Orbital Node Indicator */}
                   <span
                     className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-200 ${
                       isTrueCurrent
-                        ? 'bg-[#0B223D] border-[#38BDF8] text-[#38BDF8] shadow-[0_0_16px_rgba(56,189,248,0.55)] ring-4 ring-[#38BDF8]/15 group-hover:scale-110'
+                        ? 'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)] shadow-md ring-4 ring-[#111111]/10 dark:ring-[#F5F5F5]/15 group-hover:scale-110'
                         : isCompleted
-                        ? 'bg-[#091C32] border-[#38BDF8]/65 text-[#7DD3FC] shadow-[0_0_12px_rgba(56,189,248,0.22)] group-hover:border-[#38BDF8] group-hover:scale-110'
+                        ? 'bg-[var(--bg-elevated)] border-[var(--border-strong)] text-[var(--text-primary)] shadow-sm group-hover:border-[var(--text-primary)] group-hover:scale-110'
                         : isHorizon
-                        ? 'bg-[#06091A] border-indigo-400/55 text-[#A5B4FC] group-hover:border-[#38BDF8]/70 group-hover:text-[#7DD3FC] group-hover:scale-110'
-                        : 'bg-[#060B18] border-white/25 text-[#94A3B8] group-hover:border-[#38BDF8]/65 group-hover:text-[#7DD3FC] group-hover:scale-110'
+                        ? 'bg-[var(--bg-surface)] border-[var(--border-strong)] text-[var(--text-secondary)] group-hover:border-[var(--text-primary)] group-hover:text-[var(--text-primary)] group-hover:scale-110'
+                        : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-muted)] group-hover:border-[var(--border-strong)] group-hover:text-[var(--text-primary)] group-hover:scale-110'
                     }`}
                   >
                     {isTrueCurrent ? (
-                      <span className="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8]" />
+                      <span className="w-2 h-2 rounded-full bg-[var(--accent-contrast)]" />
                     ) : isCompleted ? (
                       <Check className="w-3.5 h-3.5" aria-hidden="true" />
                     ) : isHorizon ? (
                       <Compass className="w-3 h-3" aria-hidden="true" />
                     ) : (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#64748B] group-hover:bg-[#38BDF8] transition-colors" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] group-hover:bg-[var(--text-primary)] transition-colors" />
                     )}
                   </span>
 
@@ -796,10 +801,10 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                   <span
                     className={`mt-2 font-display font-bold text-sm tracking-wide tabular-nums transition-colors duration-200 ${
                       isTrueCurrent
-                        ? 'text-[#38BDF8]'
+                        ? 'text-[var(--text-primary)]'
                         : isCompleted
-                        ? 'text-[#CBD5E1] group-hover:text-[#7DD3FC]'
-                        : 'text-[#94A3B8] group-hover:text-white'
+                        ? 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                        : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                     }`}
                   >
                     {yearStr}
@@ -808,7 +813,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
               );
             })}
 
-            {/* ONE Central Detailed Holographic Feature Card (Always Mathematically Centered) */}
+            {/* ONE Central Detailed Feature Card (Always Mathematically Centered) */}
             <div
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30"
               style={{ width: `${desktopGeometry.activeWidth}px` }}
@@ -826,17 +831,17 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                       duration: reducedMotion ? 0 : 0.46,
                       ease: [0.16, 1, 0.3, 1],
                     }}
-                    className="relative overflow-hidden rounded-2xl border border-[#38BDF8]/65 bg-[#07152B]/92 backdrop-blur-xl p-5 min-[1440px]:p-6 shadow-[0_0_44px_rgba(56,189,248,0.2),inset_0_1px_0_rgba(125,211,252,0.25)]"
+                    className="relative overflow-hidden rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-xl p-5 min-[1440px]:p-6 shadow-[var(--shadow-card)]"
                   >
-                    {/* Top holographic cyan light beam */}
+                    {/* Top monochrome light beam */}
                     <div
-                      className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent"
+                      className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--text-primary)] to-transparent opacity-60"
                       aria-hidden="true"
                     />
 
-                    {/* Subtle corner holographic sheen */}
+                    {/* Subtle corner sheen */}
                     <div
-                      className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-[#38BDF8]/10 blur-2xl pointer-events-none"
+                      className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-[#111111]/[0.04] dark:bg-[#F5F5F5]/[0.06] blur-2xl pointer-events-none"
                       aria-hidden="true"
                     />
 
@@ -849,14 +854,14 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                         className="flex items-center justify-between gap-3"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-11 h-11 min-[1440px]:w-12 min-[1440px]:h-12 rounded-xl border border-[#38BDF8]/45 bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.25)] shrink-0">
+                          <span className="w-11 h-11 min-[1440px]:w-12 min-[1440px]:h-12 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] flex items-center justify-center shadow-sm shrink-0">
                             <ActiveIcon className="w-5 h-5 min-[1440px]:w-6 min-[1440px]:h-6" aria-hidden="true" />
                           </span>
                           <div className="min-w-0">
-                            <div className="font-display font-extrabold text-3xl min-[1440px]:text-[34px] leading-none text-[#38BDF8] tabular-nums">
+                            <div className="font-display font-extrabold text-3xl min-[1440px]:text-[34px] leading-none text-[var(--text-primary)] tabular-nums">
                               {String(activeMilestone.year)}
                             </div>
-                            <div className="font-mono text-[10px] uppercase tracking-widest text-[#94A3B8] mt-1 truncate">
+                            <div className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mt-1 truncate">
                               {activeMilestone.phase}
                             </div>
                           </div>
@@ -865,10 +870,10 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                         <span
                           className={`inline-flex items-center gap-1.5 text-[10.5px] font-mono uppercase tracking-wider font-semibold px-2.5 py-1 rounded-md border whitespace-nowrap shrink-0 ${
                             activeStage === 'current'
-                              ? 'bg-[#38BDF8]/15 text-[#7DD3FC] border-[#38BDF8]/45 shadow-[0_0_12px_rgba(56,189,248,0.2)]'
+                              ? 'bg-[var(--accent-solid)] text-[var(--accent-contrast)] border-[var(--accent-solid)] shadow-sm'
                               : activeStage === 'completed'
-                              ? 'bg-[#38BDF8]/10 text-[#7DD3FC] border-[#38BDF8]/30'
-                              : 'bg-white/[0.06] text-[#CBD5E1] border-white/15'
+                              ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border-strong)]'
+                              : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-subtle)]'
                           }`}
                         >
                           <StageStatusIcon stage={activeStage} className="w-3 h-3" />
@@ -881,7 +886,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                         initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.32, delay: reducedMotion ? 0 : 0.1 }}
-                        className="font-display font-bold text-lg min-[1440px]:text-xl text-white leading-snug"
+                        className="font-display font-bold text-lg min-[1440px]:text-xl text-[var(--text-primary)] leading-snug"
                       >
                         {activeMilestone.title}
                       </motion.h3>
@@ -891,7 +896,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                         initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.34, delay: reducedMotion ? 0 : 0.14 }}
-                        className="text-xs min-[1440px]:text-[13.5px] text-[#E2E8F0] leading-relaxed font-light"
+                        className="text-xs min-[1440px]:text-[13.5px] text-[var(--text-secondary)] leading-relaxed font-light"
                       >
                         {activeMilestone.description}
                       </motion.p>
@@ -902,10 +907,10 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                           initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.34, delay: reducedMotion ? 0 : 0.18 }}
-                          className="pt-2.5 border-t border-white/10 text-[11px] font-mono text-[#94A3B8] leading-relaxed"
+                          className="pt-2.5 border-t border-[var(--border-subtle)] text-[11px] font-mono text-[var(--text-muted)] leading-relaxed"
                         >
-                          <span className="text-[#38BDF8]">Key Milestones: </span>
-                          <span className="text-[#CBD5E1]">{activePillars.slice(0, 3).join(' · ')}</span>
+                          <span className="text-[var(--text-primary)] font-semibold">Key Milestones: </span>
+                          <span className="text-[var(--text-secondary)]">{activePillars.slice(0, 3).join(' · ')}</span>
                         </motion.div>
                       )}
                     </div>
@@ -917,7 +922,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
 
           {/* Subtle Bottom Step Controls */}
           <div className="mt-2 flex items-center justify-between px-1">
-            <div className="text-[11px] font-mono text-[#64748B]">
+            <div className="text-[11px] font-mono text-[var(--text-muted)]">
               Select any year marker along the trajectory to bring it into focus
             </div>
 
@@ -927,11 +932,11 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 onClick={() => selectByIndex(activeIdx - 1)}
                 disabled={activeIdx <= 0}
                 aria-label="Previous milestone"
-                className="w-8 h-8 rounded-full border border-white/10 bg-[#050816]/80 text-[#CBD5E1] hover:text-[#38BDF8] hover:border-[#38BDF8]/40 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+                className="w-8 h-8 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)]"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="font-mono text-[11px] text-[#94A3B8] tabular-nums px-1.5">
+              <span className="font-mono text-[11px] text-[var(--text-muted)] tabular-nums px-1.5">
                 {activeIdx + 1} / {milestoneList.length}
               </span>
               <button
@@ -939,7 +944,7 @@ export const JourneyTimeline: React.FC<JourneyTimelineProps> = ({
                 onClick={() => selectByIndex(activeIdx + 1)}
                 disabled={activeIdx >= milestoneList.length - 1}
                 aria-label="Next milestone"
-                className="w-8 h-8 rounded-full border border-white/10 bg-[#050816]/80 text-[#CBD5E1] hover:text-[#38BDF8] hover:border-[#38BDF8]/40 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
+                className="w-8 h-8 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)]"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

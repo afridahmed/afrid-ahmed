@@ -4,6 +4,7 @@ import { User, GraduationCap } from 'lucide-react';
 import { ABOUT_CONTENT } from '../data/siteContent';
 import { AboutContent } from '../types';
 import { AboutDynamicIcon } from '../data/aboutIcons';
+import { useTheme } from '../context/ThemeContext';
 import {
   DEFAULT_ABOUT_HIGHLIGHTS,
   DEFAULT_ABOUT_INTERESTS,
@@ -51,6 +52,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
   isPreviewMode = false,
   previewDevice = 'auto',
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [reducedMotion, setReducedMotion] = useState(false);
   const [portraitLoadError, setPortraitLoadError] = useState(false);
   const [signatureLoadError, setSignatureLoadError] = useState(false);
@@ -64,7 +67,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
     return () => mq.removeEventListener('change', listener);
   }, []);
 
-  // Reset image error flags when source URLs change
   const sanitizedPortraitUrl = sanitizeAboutUrl(content.photo);
   const sanitizedSignatureUrl = sanitizeAboutUrl(content.profileCard?.signatureImageUrl);
 
@@ -84,7 +86,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
     [content.visualSettings]
   );
 
-  // If explicitly unpublished on live site, hide cleanly
   if (!isPreviewMode && content.isPublished === false) {
     return null;
   }
@@ -110,7 +111,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
     [firstName, lastName].filter(Boolean).join(' ') ||
     'Afrid Ahmed';
 
-  // Academic line
   const academicRole = content.profileCard?.academicRole?.trim() || 'SLIIT Undergraduate';
   const degreeProgram =
     content.profileCard?.degreeProgram?.trim() || 'BSc (Hons) in Computer Science';
@@ -125,7 +125,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
   }
   const academicLine = academicLineParts.filter(Boolean).join(' · ');
 
-  // Header fields
   const sectionLabel = content.sectionLabel ?? content.badge ?? ABOUT_CONTENT.badge;
   const rawHeading = (content.heading ?? content.title ?? '').trim();
   const isLegacyDefaultTitle =
@@ -147,7 +146,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
       ? content.subtitle
       : formatSubtitleSentence(content.statement);
 
-  // Education Badge fields
   const badge = {
     institution: content.educationBadge?.institution ?? 'SLIIT',
     program: content.educationBadge?.program ?? 'CS',
@@ -156,7 +154,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
     supportingText: content.educationBadge?.supportingText ?? '',
   };
 
-  // Dynamic Interest Tags (no hardcoded UI fallback when array is explicitly empty)
   const visibleInterests = useMemo(() => {
     const source =
       content.interests !== undefined ? content.interests : DEFAULT_ABOUT_INTERESTS;
@@ -165,7 +162,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
       .sort((a, b) => a.displayOrder - b.displayOrder);
   }, [content.interests]);
 
-  // Dynamic Highlights Panel
   const visibleHighlights = useMemo(() => {
     const source =
       content.highlights !== undefined ? content.highlights : DEFAULT_ABOUT_HIGHLIGHTS;
@@ -183,7 +179,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
       ? 'grid-cols-3'
       : 'grid-cols-2 sm:grid-cols-4';
 
-  // Safe visual settings mappings
   const cardOuterRadiusClass =
     visual.cardRadius === 'lg'
       ? 'rounded-2xl'
@@ -249,20 +244,20 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
         {/* ========================================================================= */}
         <div className={mobileContainerClass}>
           {/* Eyebrow Label: 01 / ABOUT */}
-          <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
+          <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
             <span>01 / ABOUT</span>
           </div>
 
           {/* Heading */}
           <div>
-            <h3 className="text-2xl min-[360px]:text-3xl font-display font-black text-white leading-tight">
+            <h3 className="text-2xl min-[360px]:text-3xl font-display font-black text-[var(--text-primary)] leading-tight">
               Curious by nature.<br />
-              Building by <span className="text-[#38BDF8]">practice.</span>
+              Building by <span className="text-[var(--text-secondary)]">practice.</span>
             </h3>
           </div>
 
           {/* Authentic Biography Narrative */}
-          <div className="space-y-3 text-sm sm:text-[15px] text-[#CBD5E1] leading-relaxed font-light">
+          <div className="space-y-3 text-sm sm:text-[15px] text-[var(--text-secondary)] leading-relaxed font-light">
             {introParagraph && <p>{introParagraph}</p>}
             {bioList.slice(1).map((paragraph, idx) => (
               <p key={idx}>{paragraph}</p>
@@ -276,9 +271,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                 {visibleInterests.map((interest) => (
                   <span
                     key={interest.id}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-sans text-white/90 bg-white/5 border border-white/15"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-sans text-[var(--text-primary)] bg-[var(--bg-surface)] border border-[var(--border-subtle)]"
                   >
-                    <AboutDynamicIcon name={interest.iconName} className="w-3.5 h-3.5 text-[#38BDF8]" />
+                    <AboutDynamicIcon name={interest.iconName} className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                     <span>{interest.title}</span>
                   </span>
                 ))}
@@ -286,21 +281,22 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
             </div>
           )}
 
-          {/* Bottom Accent: INTERESTS & FOCUS with cyan line and curved cosmic glow */}
+          {/* Bottom Accent: INTERESTS & FOCUS */}
           <div className="pt-6 relative">
             <div className="flex flex-col">
-              <span className="text-[11px] font-mono tracking-widest text-[#94A3B8] uppercase">
+              <span className="text-[11px] font-mono tracking-widest text-[var(--text-secondary)] uppercase">
                 INTERESTS & FOCUS
               </span>
-              <div className="w-8 h-[2px] bg-[#38BDF8] mt-1.5 rounded-full" />
+              <div className="w-8 h-[2px] bg-[var(--text-primary)] mt-1.5 rounded-full" />
             </div>
 
             {visual.showCosmicDecor && (
               <div
-                className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full pointer-events-none opacity-40"
+                className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full pointer-events-none opacity-35"
                 style={{
-                  background:
-                    'radial-gradient(circle at center, rgba(56,189,248,0.3) 0%, rgba(30,58,138,0.15) 50%, transparent 75%)',
+                  background: isDark
+                    ? 'radial-gradient(circle at center, rgba(245,245,245,0.12) 0%, rgba(160,160,160,0.05) 50%, transparent 75%)'
+                    : 'radial-gradient(circle at center, rgba(17,17,17,0.08) 0%, rgba(115,115,115,0.04) 50%, transparent 75%)',
                   filter: 'blur(20px)',
                 }}
                 aria-hidden="true"
@@ -322,18 +318,18 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
             className="about-desktop-header text-center max-w-2xl mx-auto mb-5"
           >
             {sectionLabel && (
-              <div className="inline-flex items-center justify-center gap-2 text-[11px] font-mono tracking-[0.2em] text-[#38BDF8] uppercase mb-1.5">
+              <div className="inline-flex items-center justify-center gap-2 text-[11px] font-mono tracking-[0.2em] text-[var(--text-secondary)] uppercase mb-1.5">
                 <User className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>{sectionLabel}</span>
               </div>
             )}
 
-            <h2 className="about-desktop-title font-display font-extrabold text-white tracking-tight">
+            <h2 className="about-desktop-title font-display font-extrabold text-[var(--text-primary)] tracking-tight">
               {displayHeading}
               {displayHeadingAccent && (
                 <>
                   {' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] via-[#60A5FA] to-[#93C5FD]">
+                  <span className="text-[var(--text-secondary)]">
                     {displayHeadingAccent}
                   </span>
                 </>
@@ -341,20 +337,20 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
             </h2>
 
             {displaySubtitle && (
-              <p className="mt-1.5 text-xs xl:text-sm text-[#94A3B8] font-light tracking-wide">
+              <p className="mt-1.5 text-xs xl:text-sm text-[var(--text-secondary)] font-light tracking-wide">
                 {displaySubtitle}
               </p>
             )}
 
             {visual.showSectionDivider && (
               <div
-                className="w-24 h-[1px] mx-auto mt-3 bg-gradient-to-r from-transparent via-[#38BDF8]/65 to-transparent"
+                className="w-24 h-[1px] mx-auto mt-3 bg-gradient-to-r from-transparent via-[var(--text-primary)]/40 to-transparent"
                 aria-hidden="true"
               />
             )}
           </motion.header>
 
-          {/* Balanced Two-Column Composition (gracefully centers if one column hidden) */}
+          {/* Balanced Two-Column Composition */}
           <div
             className={
               hasPortraitColumn && hasCardColumn
@@ -362,7 +358,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                 : 'flex justify-center items-center'
             }
           >
-            {/* LEFT COLUMN — Prominent Cosmic Portrait + Blue Orbital Rings + Floating Badge */}
+            {/* LEFT COLUMN — Prominent Portrait + Monochrome Orbital Rings + Floating Badge */}
             {hasPortraitColumn && (
               <motion.div
                 initial={reducedMotion || isPreviewMode ? false : { opacity: 0, scale: 0.96 }}
@@ -374,35 +370,33 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                 } flex flex-col items-center justify-center relative py-2`}
               >
                 <div className="about-desktop-portrait-wrap relative flex items-center justify-center">
-                  {/* Atmospheric Deep-Space Blue Aura Behind Portrait */}
+                  {/* Atmospheric Monochrome Aura Behind Portrait */}
                   {visual.showCosmicDecor && (
                     <div
                       className={`absolute -inset-10 rounded-full pointer-events-none ${glowOpacityClass}`}
                       style={{
-                        background:
-                          'radial-gradient(circle at 50% 48%, rgba(56, 189, 248, 0.24) 0%, rgba(37, 99, 235, 0.14) 44%, transparent 72%)',
+                        background: isDark
+                          ? 'radial-gradient(circle at 50% 48%, rgba(245, 245, 245, 0.14) 0%, rgba(160, 160, 160, 0.06) 44%, transparent 72%)'
+                          : 'radial-gradient(circle at 50% 48%, rgba(17, 17, 17, 0.09) 0%, rgba(115, 115, 115, 0.05) 44%, transparent 72%)',
                         filter: 'blur(34px)',
                       }}
                       aria-hidden="true"
                     />
                   )}
 
-                  {/* Outer Rotating Orbital Track + Glowing Accent Nodes */}
+                  {/* Outer Rotating Orbital Track + Subtle Accent Nodes */}
                   {visual.showCosmicDecor && (
                     <>
                       <div
-                        className="about-orbit-spin absolute -inset-6 rounded-full border border-dashed border-[#38BDF8]/25 pointer-events-none"
+                        className="about-orbit-spin absolute -inset-6 rounded-full border border-dashed border-[var(--border-strong)] pointer-events-none"
                         aria-hidden="true"
                       >
-                        <span className="absolute top-[11%] right-[16%] w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_12px_#38BDF8]" />
-                        <span className="absolute bottom-[14%] left-[14%] w-1.5 h-1.5 rounded-full bg-[#60A5FA] shadow-[0_0_10px_#60A5FA]" />
+                        <span className="absolute top-[11%] right-[16%] w-2 h-2 rounded-full bg-[var(--text-primary)] shadow-[0_0_10px_rgba(0,0,0,0.2)] dark:shadow-[0_0_10px_rgba(245,245,245,0.45)]" />
+                        <span className="absolute bottom-[14%] left-[14%] w-1.5 h-1.5 rounded-full bg-[var(--text-secondary)]" />
                       </div>
 
                       <div
-                        className="about-orbit-spin-reverse absolute -inset-3 rounded-full border border-[#60A5FA]/20 pointer-events-none"
-                        style={{
-                          boxShadow: 'inset 0 0 24px rgba(56, 189, 248, 0.08)',
-                        }}
+                        className="about-orbit-spin-reverse absolute -inset-3 rounded-full border border-[var(--border-subtle)] pointer-events-none"
                         aria-hidden="true"
                       />
                     </>
@@ -410,12 +404,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
                   {/* Subtle Static Precision Halo Ring */}
                   <div
-                    className="absolute -inset-1 rounded-full border border-[#38BDF8]/30 pointer-events-none"
+                    className="absolute -inset-1 rounded-full border border-[var(--border-strong)] pointer-events-none"
                     aria-hidden="true"
                   />
 
-                  {/* Profile Portrait Container Blended Seamlessly Into Cosmic Backdrop */}
-                  <div className="relative w-full h-full rounded-full overflow-hidden border border-[#38BDF8]/40 bg-[#040918] shadow-[0_0_50px_rgba(56,189,248,0.16),inset_0_0_24px_rgba(3,5,11,0.85)]">
+                  {/* Profile Portrait Container */}
+                  <div className="relative w-full h-full rounded-full overflow-hidden border border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[var(--shadow-card)]">
                     {sanitizedPortraitUrl && !portraitLoadError ? (
                       <img
                         src={sanitizedPortraitUrl}
@@ -431,20 +425,21 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                         onError={() => setPortraitLoadError(true)}
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#07152B] via-[#050C1D] to-[#03050B] text-[#38BDF8]/75">
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--bg-elevated)] text-[var(--text-secondary)]">
                         <User className="w-16 h-16 mb-2 stroke-[1.25]" aria-hidden="true" />
-                        <span className="font-display text-xs tracking-widest uppercase text-[#94A3B8]">
+                        <span className="font-display text-xs tracking-widest uppercase text-[var(--text-secondary)]">
                           {fullNameAlt}
                         </span>
                       </div>
                     )}
 
-                    {/* Soft Edge & Bottom Atmospheric Vignette Blending Photo Into Space */}
+                    {/* Soft Edge & Bottom Atmospheric Vignette Blending Photo Into Backdrop */}
                     <div
                       className="absolute inset-0 pointer-events-none"
                       style={{
-                        background:
-                          'radial-gradient(circle at 50% 42%, transparent 56%, rgba(5, 10, 24, 0.52) 82%, rgba(3, 5, 11, 0.92) 100%)',
+                        background: isDark
+                          ? 'radial-gradient(circle at 50% 42%, transparent 56%, rgba(8, 8, 8, 0.52) 82%, rgba(8, 8, 8, 0.92) 100%)'
+                          : 'radial-gradient(circle at 50% 42%, transparent 56%, rgba(240, 241, 244, 0.48) 82%, rgba(240, 241, 244, 0.88) 100%)',
                       }}
                       aria-hidden="true"
                     />
@@ -454,28 +449,28 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                   {visual.showEducationBadge &&
                     (badge.institution || badge.program || badge.graduationYear) && (
                       <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
-                        <div className="flex items-center gap-2 rounded-full border border-[#38BDF8]/45 bg-[#061226]/92 backdrop-blur-md px-4 py-1.5 shadow-[0_10px_28px_rgba(3,5,11,0.85),0_0_22px_rgba(56,189,248,0.2)] whitespace-nowrap">
+                        <div className="flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--bg-surface-blur)] backdrop-blur-md px-4 py-1.5 shadow-[var(--shadow-card)] whitespace-nowrap">
                           <AboutDynamicIcon
                             name={badge.iconName}
                             fallback={GraduationCap}
-                            className="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
+                            className="w-3.5 h-3.5 text-[var(--text-primary)] shrink-0"
                           />
-                          <span className="font-display font-bold text-xs text-white tracking-wide">
+                          <span className="font-display font-bold text-xs text-[var(--text-primary)] tracking-wide">
                             {[badge.institution, badge.program].filter(Boolean).join(' ')}
                           </span>
                           {badge.graduationYear && (
                             <>
-                              <span className="text-white/25 text-xs" aria-hidden="true">
+                              <span className="text-[var(--text-muted)] text-xs" aria-hidden="true">
                                 /
                               </span>
-                              <span className="font-mono text-[11px] font-medium text-[#7DD3FC]">
+                              <span className="font-mono text-[11px] font-medium text-[var(--text-secondary)]">
                                 {badge.graduationYear}
                               </span>
                             </>
                           )}
                         </div>
                         {badge.supportingText && (
-                          <span className="mt-1 px-2 py-0.5 rounded bg-[#03050B]/85 text-[10px] font-mono text-[#94A3B8] whitespace-nowrap border border-white/5">
+                          <span className="mt-1 px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[10px] font-mono text-[var(--text-secondary)] whitespace-nowrap border border-[var(--border-subtle)]">
                             {badge.supportingText}
                           </span>
                         )}
@@ -494,61 +489,62 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                 transition={{ duration: 0.55, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
                 className={`${hasPortraitColumn ? 'col-span-7' : 'w-full max-w-3xl'} relative`}
               >
-                {/* Soft Ambient Cosmic Glow Around Card Edges */}
+                {/* Soft Ambient Glow Around Card Edges */}
                 <div
                   className={`absolute -inset-3 rounded-[28px] pointer-events-none ${glowOpacityClass}`}
                   style={{
-                    background:
-                      'radial-gradient(ellipse at 30% 20%, rgba(56, 189, 248, 0.14), transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(37, 99, 235, 0.14), transparent 55%)',
+                    background: isDark
+                      ? 'radial-gradient(ellipse at 30% 20%, rgba(245, 245, 245, 0.06), transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(160, 160, 160, 0.05), transparent 55%)'
+                      : 'radial-gradient(ellipse at 30% 20%, rgba(17, 17, 17, 0.04), transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(115, 115, 115, 0.04), transparent 55%)',
                     filter: 'blur(22px)',
                   }}
                   aria-hidden="true"
                 />
 
-                {/* Gradient Cyan/Blue Border Frame Wrapping Glass Surface */}
+                {/* Monochrome Border Frame Wrapping Glass Surface */}
                 <div
-                  className={`relative ${cardOuterRadiusClass} p-[1px] bg-gradient-to-br from-[#38BDF8]/45 via-[#60A5FA]/18 to-[#38BDF8]/30 shadow-[0_20px_50px_rgba(3,5,11,0.72),0_0_40px_rgba(56,189,248,0.09)]`}
+                  className={`relative ${cardOuterRadiusClass} p-[1px] bg-gradient-to-br from-[#111111]/20 via-[#E8E8E8] to-[#111111]/12 dark:from-[#F5F5F5]/25 dark:via-[#292929] dark:to-[#F5F5F5]/15 shadow-[var(--shadow-card)]`}
                 >
                   <div
-                    className={`${cardPaddingClass} relative overflow-hidden ${cardInnerRadiusClass} bg-[#060E20]/82 backdrop-blur-xl`}
+                    className={`${cardPaddingClass} relative overflow-hidden ${cardInnerRadiusClass} bg-[var(--bg-surface-blur)] backdrop-blur-xl`}
                   >
                     {/* Subtle Top Specular Light Rim */}
                     <div
-                      className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-[#7DD3FC]/55 to-transparent pointer-events-none"
+                      className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-[var(--text-primary)]/30 to-transparent pointer-events-none"
                       aria-hidden="true"
                     />
 
                     {/* Subtle Corner Atmospheric Highlight */}
                     {visual.showCosmicDecor && (
                       <div
-                        className="absolute -top-20 -right-20 w-52 h-52 rounded-full bg-[#38BDF8]/8 blur-3xl pointer-events-none"
+                        className="absolute -top-20 -right-20 w-52 h-52 rounded-full bg-[#111111]/[0.04] dark:bg-[#F5F5F5]/[0.05] blur-3xl pointer-events-none"
                         aria-hidden="true"
                       />
                     )}
 
                     <div className={`relative z-10 flex flex-col ${cardGapClass}`}>
                       {/* 1. TOP AREA: Name + Academic Info + Optional Signature */}
-                      <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-3.5 xl:pb-4">
+                      <div className="flex items-start justify-between gap-4 border-b border-[var(--border-subtle)] pb-3.5 xl:pb-4">
                         <div className="min-w-0">
-                          <h3 className="font-display font-extrabold text-2xl xl:text-[32px] leading-tight tracking-tight text-white">
+                          <h3 className="font-display font-extrabold text-2xl xl:text-[32px] leading-tight tracking-tight text-[var(--text-primary)]">
                             {firstName}
                             {lastName && (
                               <>
                                 {' '}
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] via-[#60A5FA] to-[#93C5FD]">
+                                <span className="text-[var(--text-secondary)]">
                                   {lastName}
                                 </span>
                               </>
                             )}
                           </h3>
                           {academicLine && (
-                            <p className="mt-1 text-xs xl:text-sm font-mono text-[#7DD3FC]/90 tracking-wide">
+                            <p className="mt-1 text-xs xl:text-sm font-mono text-[var(--text-secondary)] tracking-wide">
                               {academicLine}
                             </p>
                           )}
                         </div>
 
-                        {/* Upper-Right Signature Graphic (gracefully hidden if absent or disabled) */}
+                        {/* Upper-Right Signature Graphic */}
                         {visual.showSignature && sanitizedSignatureUrl && !signatureLoadError && (
                           <div className="shrink-0 flex items-center justify-end pl-2">
                             <img
@@ -562,25 +558,25 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                         )}
                       </div>
 
-                      {/* 2. INTRODUCTION: Concise Authentic Narrative */}
+                      {/* 2. INTRODUCTION */}
                       {introParagraph && (
-                        <p className="text-sm xl:text-[15px] text-[#CBD5E1] leading-relaxed font-light max-w-[65ch]">
+                        <p className="text-sm xl:text-[15px] text-[var(--text-secondary)] leading-relaxed font-light max-w-[65ch]">
                           {introParagraph}
                         </p>
                       )}
 
-                      {/* 3. INTEREST TAGS: Dynamic Pill Elements with Cyan Icons */}
+                      {/* 3. INTEREST TAGS */}
                       {visual.showInterestTags && visibleInterests.length > 0 && (
                         <div className="flex flex-wrap items-center gap-2 xl:gap-2.5">
                           {visibleInterests.map((interest) => (
                             <span
                               key={interest.id}
                               title={interest.description || undefined}
-                              className="inline-flex items-center gap-2 rounded-full border border-[#38BDF8]/25 bg-[#08152B]/75 px-3.5 py-1.5 text-xs font-medium text-[#E2E8F0] transition-colors duration-200 hover:border-[#38BDF8]/55 hover:text-white whitespace-nowrap"
+                              className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-primary)] transition-colors duration-200 hover:border-[var(--border-strong)] whitespace-nowrap"
                             >
                               <AboutDynamicIcon
                                 name={interest.iconName}
-                                className="w-3.5 h-3.5 text-[#38BDF8] shrink-0"
+                                className="w-3.5 h-3.5 text-[var(--text-primary)] shrink-0"
                               />
                               <span>{interest.title}</span>
                             </span>
@@ -588,28 +584,28 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                         </div>
                       )}
 
-                      {/* 4. BOTTOM HIGHLIGHTS PANEL: Dynamic Multi-Column Inner Grid */}
+                      {/* 4. BOTTOM HIGHLIGHTS PANEL */}
                       {visual.showHighlights && visibleHighlights.length > 0 && (
                         <div
-                          className={`mt-0.5 rounded-xl border border-[#38BDF8]/18 bg-[#040917]/82 grid ${highlightGridColsClass} divide-y sm:divide-y-0 sm:divide-x divide-white/10 overflow-hidden`}
+                          className={`mt-0.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/70 grid ${highlightGridColsClass} divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-subtle)] overflow-hidden`}
                         >
                           {visibleHighlights.map((highlight) => (
                             <div
                               key={highlight.id}
                               title={highlight.description || undefined}
-                              className="px-2.5 xl:px-3.5 py-3 xl:py-3.5 flex flex-col items-center justify-center text-center gap-1.5 transition-colors duration-200 hover:bg-[#38BDF8]/[0.05]"
+                              className="px-2.5 xl:px-3.5 py-3 xl:py-3.5 flex flex-col items-center justify-center text-center gap-1.5 transition-colors duration-200 hover:bg-[var(--bg-elevated)]"
                             >
-                              <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/10 border border-[#38BDF8]/25 flex items-center justify-center text-[#38BDF8]">
+                              <div className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-primary)]">
                                 <AboutDynamicIcon
                                   name={highlight.iconName}
                                   className="w-4 h-4"
                                 />
                               </div>
-                              <span className="text-[11px] xl:text-xs font-display font-semibold text-[#E2E8F0] leading-snug text-balance">
+                              <span className="text-[11px] xl:text-xs font-display font-semibold text-[var(--text-primary)] leading-snug text-balance">
                                 {highlight.title}
                               </span>
                               {highlight.supportingText && (
-                                <span className="text-[10px] font-mono text-[#94A3B8] leading-tight">
+                                <span className="text-[10px] font-mono text-[var(--text-secondary)] leading-tight">
                                   {highlight.supportingText}
                                 </span>
                               )}

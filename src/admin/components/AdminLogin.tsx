@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { ThemeToggle } from '../../context/ThemeContext';
 import { Lock, Mail, KeyRound, Eye, EyeOff, ShieldCheck, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 
 interface AdminLoginProps {
@@ -45,41 +46,44 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
   const activeError = localError || authError;
 
   return (
-    <div className="min-h-screen w-full bg-[#080B11] text-[#E2E8F0] flex flex-col justify-between items-center p-4 sm:p-6 font-sans">
-      {/* Top bar with back to public site */}
+    <div className="min-h-screen w-full bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col justify-between items-center p-4 sm:p-6 font-sans transition-colors duration-300">
+      {/* Top bar with back to public site and theme toggle */}
       <header className="w-full max-w-5xl flex items-center justify-between py-4">
         <button
           onClick={handleGoHome}
-          className="inline-flex items-center gap-2 text-xs font-mono text-[#94A3B8] hover:text-[#38BDF8] transition-colors cursor-pointer px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/10 bg-[#0E131F]/50"
+          className="inline-flex items-center gap-2 text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[var(--bg-surface)]"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>RETURN TO WEBSITE</span>
         </button>
 
-        <div className="flex items-center gap-2 text-[11px] font-mono text-[#64748B]">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>CMS GATEWAY SECURE</span>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-[var(--text-muted)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)] animate-pulse" />
+            <span>CMS GATEWAY SECURE</span>
+          </div>
+          <ThemeToggle size="sm" />
         </div>
       </header>
 
       {/* Main Login Card */}
       <main className="w-full max-w-md my-auto py-8">
-        <div className="rounded-2xl border border-white/10 bg-[#0E131F]/90 p-6 sm:p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-6">
-          
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 sm:p-8 backdrop-blur-xl shadow-[var(--shadow-card)] space-y-6">
+
           {/* Header */}
           <div className="space-y-2 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#141B2D] border border-white/10 text-[#38BDF8] mb-1">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] mb-1">
               <Lock className="w-5 h-5" />
             </div>
-            
+
             <div>
-              <span className="text-[10px] font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
+              <span className="text-[10px] font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
                 ADMINISTRATION CONSOLE
               </span>
-              <h1 className="text-2xl font-bold tracking-tight text-white mt-0.5">
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] mt-0.5">
                 AFRID AHMED
               </h1>
-              <p className="text-xs text-[#94A3B8] mt-1 font-light">
+              <p className="text-xs text-[var(--text-secondary)] mt-1 font-light">
                 Sign in with verified administrator credentials to access the portfolio content management system.
               </p>
             </div>
@@ -87,8 +91,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
 
           {/* Error Banner */}
           {activeError && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-3 text-xs text-rose-300">
-              <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+            <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-3.5 flex items-start gap-3 text-xs text-[var(--text-primary)]">
+              <AlertCircle className="w-4 h-4 text-[var(--text-primary)] mt-0.5 shrink-0" />
               <div className="leading-relaxed">
                 {activeError}
               </div>
@@ -99,11 +103,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email Field */}
             <div className="space-y-1.5">
-              <label htmlFor="admin-email" className="block text-xs font-mono text-[#CBD5E1]">
+              <label htmlFor="admin-email" className="block text-xs font-mono text-[var(--text-secondary)]">
                 ADMINISTRATOR EMAIL
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#64748B]">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -118,18 +122,18 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
                   placeholder="admin@afrid.dev"
                   autoComplete="email"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-sm focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8] transition-all disabled:opacity-50"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm focus:outline-none focus:border-[var(--text-primary)] focus:ring-1 focus:ring-[var(--text-primary)] transition-all disabled:opacity-50"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div className="space-y-1.5">
-              <label htmlFor="admin-password" className="block text-xs font-mono text-[#CBD5E1]">
+              <label htmlFor="admin-password" className="block text-xs font-mono text-[var(--text-secondary)]">
                 PASSWORD
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#64748B]">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
                   <KeyRound className="w-4 h-4" />
                 </div>
                 <input
@@ -144,12 +148,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
                   placeholder="••••••••••••"
                   autoComplete="current-password"
                   required
-                  className="w-full pl-10 pr-11 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-sm focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8] transition-all disabled:opacity-50"
+                  className="w-full pl-10 pr-11 py-2.5 rounded-xl bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm focus:outline-none focus:border-[var(--text-primary)] focus:ring-1 focus:ring-[var(--text-primary)] transition-all disabled:opacity-50"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#64748B] hover:text-[#94A3B8] transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -161,7 +165,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-[#38BDF8] hover:bg-[#7DD3FC] text-[#080B11] font-semibold text-sm font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.2)] disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full py-3 px-4 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-semibold text-sm font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-60 disabled:cursor-not-allowed mt-2"
             >
               {isLoading ? (
                 <>
@@ -178,8 +182,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
           </form>
 
           {/* Security Note */}
-          <div className="pt-3 border-t border-white/5 text-center">
-            <p className="text-[11px] text-[#64748B] font-mono leading-relaxed">
+          <div className="pt-3 border-t border-[var(--border-subtle)] text-center">
+            <p className="text-[11px] text-[var(--text-muted)] font-mono leading-relaxed">
               Protected by Supabase Auth & Row Level Security.<br />
               Unauthorized access attempts are blocked.
             </p>
@@ -188,7 +192,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNavigateHome }) => {
       </main>
 
       {/* Footer info */}
-      <footer className="w-full max-w-5xl py-4 text-center text-xs font-mono text-[#475569]">
+      <footer className="w-full max-w-5xl py-4 text-center text-xs font-mono text-[var(--text-muted)]">
         <span>AFRID AHMED PORTFOLIO CMS v1.0 • SECURE ADMIN FOUNDATION</span>
       </footer>
     </div>

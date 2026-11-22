@@ -105,50 +105,50 @@ export const AdminSectionPlaceholder: React.FC<AdminSectionPlaceholderProps> = (
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
         <div>
-          <div className="text-xs font-mono text-[#38BDF8] tracking-widest uppercase">
+          <div className="text-xs font-mono text-[var(--text-secondary)] tracking-widest uppercase">
             {meta.category}
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-1 flex items-center gap-3">
-            <IconComponent className="w-6 h-6 text-[#38BDF8]" />
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight mt-1 flex items-center gap-3">
+            <IconComponent className="w-6 h-6 text-[var(--text-primary)]" />
             <span>{meta.title}</span>
           </h1>
-          <p className="text-xs text-[#94A3B8] mt-1.5 font-light">
+          <p className="text-xs text-[var(--text-secondary)] mt-1.5 font-light">
             {meta.description}
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0E131F] border border-white/10 text-xs font-mono text-[#94A3B8] self-start sm:self-auto">
-          <Database className="w-3.5 h-3.5 text-[#38BDF8]" />
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-secondary)] self-start sm:self-auto">
+          <Database className="w-3.5 h-3.5 text-[var(--text-primary)]" />
           <span>TABLE: {meta.tableName}</span>
         </div>
       </div>
 
       {/* Readiness Notice Card */}
-      <div className="rounded-2xl border border-white/10 bg-[#0E131F]/80 p-6 backdrop-blur-md space-y-4">
+      <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 backdrop-blur-md space-y-4">
         <div className="flex items-start gap-3">
-          <div className="w-2 h-2 rounded-full bg-amber-400 mt-2 shrink-0 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-[var(--text-primary)] mt-2 shrink-0 animate-pulse" />
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-white font-mono">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] font-mono">
               CMS SHELL ACTIVE — CRUD EDITOR INTEGRATION PHASE PREPARED
             </h3>
-            <p className="text-xs text-[#94A3B8] leading-relaxed">
-              The database schema and Row Level Security permissions for <code className="text-[#38BDF8] font-mono">{meta.tableName}</code> are established in Supabase. Interactive forms and live content synchronization will be wired in the upcoming editing phase.
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              The database schema and Row Level Security permissions for <code className="text-[var(--text-primary)] font-mono">{meta.tableName}</code> are established in Supabase. Interactive forms and live content synchronization will be wired in the upcoming editing phase.
             </p>
           </div>
         </div>
 
         {/* Database Fields Preview */}
-        <div className="pt-4 border-t border-white/5 space-y-2.5">
-          <div className="text-[11px] font-mono text-[#64748B] uppercase tracking-wider">
+        <div className="pt-4 border-t border-[var(--border-subtle)] space-y-2.5">
+          <div className="text-[11px] font-mono text-[var(--text-muted)] uppercase tracking-wider">
             SCHEMA FIELDS READY FOR EDITING
           </div>
           <div className="flex flex-wrap gap-2">
             {meta.fields.map((field) => (
               <span
                 key={field}
-                className="px-2.5 py-1 rounded-md bg-[#080B11] border border-white/10 text-xs font-mono text-[#CBD5E1]"
+                className="px-2.5 py-1 rounded-md bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-secondary)]"
               >
                 {field}
               </span>

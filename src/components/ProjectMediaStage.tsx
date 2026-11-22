@@ -4,14 +4,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ChevronLeft, 
   ChevronRight, 
-  Maximize2, 
-  Play, 
   X, 
   Image as ImageIcon, 
   Video as VideoIcon, 
   ArrowUpRight,
   Loader2,
-  Sparkles,
   Layers
 } from 'lucide-react';
 import { ProjectItem, ProjectMedia } from '../types';
@@ -37,10 +34,8 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
   const [isMediaLoaded, setIsMediaLoaded] = useState<boolean>(false);
   const [mediaLoadError, setMediaLoadError] = useState<boolean>(false);
 
-  // Touch swipe support for mobile
   const touchStartXRef = useRef<number | null>(null);
 
-  // Load project media whenever active project changes
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
@@ -53,7 +48,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
         const items = await fetchPublishedProjectMedia(project.id);
         if (isMounted) {
           setMediaItems(items);
-          // Find primary/featured item if exists
           const primaryIdx = items.findIndex((m) => m.isFeatured);
           if (primaryIdx > 0) {
             setActiveMediaIndex(primaryIdx);
@@ -77,7 +71,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
   const currentMedia: ProjectMedia | undefined = mediaItems[activeMediaIndex];
   const totalMedia = mediaItems.length;
 
-  // Reset media loaded state and handle image preloading / cached image detection
   useEffect(() => {
     setIsMediaLoaded(false);
     setMediaLoadError(false);
@@ -88,7 +81,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
 
     let isCancelled = false;
 
-    // Use native Image object to verify load / cached status reliably
     const img = new Image();
     img.src = currentMedia.mediaUrl;
 
@@ -119,7 +111,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
     };
   }, [activeMediaIndex, currentMedia?.id, currentMedia?.mediaUrl, currentMedia?.mediaType]);
 
-  // Navigate to previous media
   const handlePrevMedia = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (totalMedia <= 1) return;
@@ -127,7 +118,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
     setActiveMediaIndex((prev) => (prev > 0 ? prev - 1 : totalMedia - 1));
   }, [totalMedia]);
 
-  // Navigate to next media
   const handleNextMedia = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (totalMedia <= 1) return;
@@ -135,7 +125,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
     setActiveMediaIndex((prev) => (prev < totalMedia - 1 ? prev + 1 : 0));
   }, [totalMedia]);
 
-  // Keyboard navigation and body scroll lock for lightbox
   useEffect(() => {
     if (!isLightboxOpen) return;
 
@@ -159,7 +148,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
     };
   }, [isLightboxOpen, handlePrevMedia, handleNextMedia]);
 
-  // Mobile Touch handlers for swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartXRef.current = e.touches[0].clientX;
   };
@@ -181,49 +169,45 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
 
   return (
     <div className={isDesktopCompact ? 'w-full h-full' : 'w-full'}>
-      {/* ===================================================================== */}
-      {/* 1. FIXED-FOOTPRINT MEDIA STAGE CONTAINER                              */}
-      {/* Stable cinematic proportions: fluid two-col on desktop-compact, 16:9 mobile */}
-      {/* ===================================================================== */}
       <div 
         id={`project-media-stage-${project.id}`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         className={
           isDesktopCompact
-            ? 'group relative w-full work-desktop-gallery rounded-xl border border-white/10 bg-[#030612]/90 overflow-hidden shadow-[inset_0_0_24px_rgba(3,5,11,0.7)] transition-all duration-300 hover:border-[#38BDF8]/30'
-            : 'group relative w-full h-[260px] sm:h-[320px] md:h-[360px] lg:h-[380px] rounded-2xl border border-white/10 bg-[#050816]/95 backdrop-blur-xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:border-[#38BDF8]/30'
+            ? 'group relative w-full work-desktop-gallery rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] overflow-hidden transition-all duration-300 hover:border-[var(--border-strong)]'
+            : 'group relative w-full h-[260px] sm:h-[320px] md:h-[360px] lg:h-[380px] rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] backdrop-blur-xl overflow-hidden shadow-[var(--shadow-card)] transition-all duration-300 hover:border-[var(--border-strong)]'
         }
       >
         {/* Ambient Subtle Glow Layer */}
-        <div className="absolute inset-0 bg-radial from-[#38BDF8]/5 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-radial from-[#111111]/[0.03] dark:from-[#F5F5F5]/[0.04] via-transparent to-transparent pointer-events-none" />
 
         {/* Loading State Skeleton */}
         {isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#07101F]/80 z-20">
-            <Loader2 className="w-6 h-6 text-[#38BDF8] animate-spin mb-2" />
-            <span className="font-mono text-xs text-[#94A3B8] tracking-widest uppercase">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--bg-surface)]/85 z-20">
+            <Loader2 className="w-6 h-6 text-[var(--text-primary)] animate-spin mb-2" />
+            <span className="font-mono text-xs text-[var(--text-secondary)] tracking-widest uppercase">
               CALIBRATING MEDIA STAGE...
             </span>
           </div>
         )}
 
-        {/* Empty State: No media published yet for this project */}
+        {/* Empty State */}
         {!isLoading && totalMedia === 0 && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
             <div className="relative mb-3.5">
-              <div className="w-14 h-14 rounded-2xl bg-[#0B1528] border border-white/10 flex items-center justify-center text-[#38BDF8]/60 shadow-inner">
+              <div className="w-14 h-14 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-secondary)] shadow-inner">
                 <Layers className="w-6 h-6" />
               </div>
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#38BDF8] animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--text-primary)] animate-pulse" />
             </div>
-            <h4 className="font-mono text-xs uppercase tracking-widest text-[#38BDF8] mb-1 font-semibold">
+            <h4 className="font-mono text-xs uppercase tracking-widest text-[var(--text-secondary)] mb-1 font-semibold">
               PROJECT MEDIA
             </h4>
-            <p className="text-white font-medium text-sm sm:text-base mb-1">
+            <p className="text-[var(--text-primary)] font-medium text-sm sm:text-base mb-1">
               No media added yet
             </p>
-            <p className="text-xs font-mono text-[#94A3B8] max-w-sm">
+            <p className="text-xs font-mono text-[var(--text-secondary)] max-w-sm">
               Visual records and media assets will be published from the command center.
             </p>
           </div>
@@ -232,15 +216,15 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
         {/* Active Media Presenter */}
         {!isLoading && totalMedia > 0 && currentMedia && (
           <>
-            {/* Ambient Blurred Backdrop for Cinematic Fill */}
+            {/* Ambient Blurred Backdrop */}
             {currentMedia.mediaType === 'image' && (
               <div 
-                className="absolute inset-0 bg-cover bg-center opacity-20 blur-2xl scale-110 pointer-events-none transition-all duration-700"
+                className="absolute inset-0 bg-cover bg-center opacity-15 blur-2xl scale-110 pointer-events-none transition-all duration-700"
                 style={{ backgroundImage: `url(${currentMedia.mediaUrl})` }}
               />
             )}
 
-            {/* Media Content with directional smooth GPU transition */}
+            {/* Media Content */}
             <div 
               onClick={() => setIsLightboxOpen(true)}
               className={
@@ -281,18 +265,17 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                       : 'w-full h-full flex items-center justify-center p-3 sm:p-5'
                   }
                 >
-                  {/* Image Display */}
                   {currentMedia.mediaType === 'image' ? (
                     <div className="relative w-full h-full flex items-center justify-center">
                       {!isMediaLoaded && !mediaLoadError && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <Loader2 className="w-5 h-5 text-[#38BDF8] animate-spin" />
+                          <Loader2 className="w-5 h-5 text-[var(--text-primary)] animate-spin" />
                         </div>
                       )}
                       {mediaLoadError ? (
                         <div className="flex flex-col items-center justify-center p-4 text-center">
-                          <ImageIcon className="w-8 h-8 text-[#94A3B8]/40 mb-2" />
-                          <span className="font-mono text-xs text-[#94A3B8]">Unable to load image asset</span>
+                          <ImageIcon className="w-8 h-8 text-[var(--text-muted)] mb-2" />
+                          <span className="font-mono text-xs text-[var(--text-secondary)]">Unable to load image asset</span>
                         </div>
                       ) : (
                         <img
@@ -314,7 +297,6 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                       )}
                     </div>
                   ) : (
-                    /* Video Display (Autoplay muted loop on stage) */
                     <div className="relative w-full h-full flex items-center justify-center">
                       <video
                         src={currentMedia.mediaUrl}
@@ -329,7 +311,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                         }}
                         className="max-w-full max-h-full object-contain rounded-xl shadow-lg"
                       />
-                      <div className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white/80 pointer-events-none">
+                      <div className="absolute top-3 right-3 p-1.5 rounded-lg bg-[var(--bg-surface-blur)] backdrop-blur-md border border-[var(--border-subtle)] text-[var(--text-primary)] pointer-events-none">
                         <VideoIcon className="w-3.5 h-3.5" />
                       </div>
                     </div>
@@ -337,9 +319,9 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                 </motion.div>
               </AnimatePresence>
 
-              {/* Top Bar Overlay: Media Type / Caption */}
+              {/* Top Bar Overlay */}
               <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex items-center gap-2 pointer-events-none">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#07101F]/80 backdrop-blur-md border border-white/10 text-[10px] font-mono font-medium text-[#38BDF8] tracking-wider uppercase">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-surface-blur)] backdrop-blur-md border border-[var(--border-subtle)] text-[10px] font-mono font-medium text-[var(--text-primary)] tracking-wider uppercase">
                   {currentMedia.mediaType === 'video' ? (
                     <>
                       <VideoIcon className="w-3 h-3" />
@@ -353,24 +335,23 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                   )}
                 </span>
                 {currentMedia.caption && (
-                  <span className="hidden sm:inline-block max-w-[320px] truncate px-2.5 py-1 rounded-lg bg-[#07101F]/80 backdrop-blur-md border border-white/10 text-[11px] font-mono text-[#CBD5E1]">
+                  <span className="hidden sm:inline-block max-w-[320px] truncate px-2.5 py-1 rounded-lg bg-[var(--bg-surface-blur)] backdrop-blur-md border border-[var(--border-subtle)] text-[11px] font-mono text-[var(--text-secondary)]">
                     {currentMedia.caption}
                   </span>
                 )}
               </div>
 
-              {/* Bottom Bar: Counter (01 / 03) & VIEW ↗ Button */}
+              {/* Bottom Bar */}
               <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-20 flex items-center justify-between pointer-events-none">
-                {/* 01 / 03 Counter */}
-                <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-[#07101F]/85 backdrop-blur-md border border-white/10 pointer-events-auto">
-                  <span className="font-mono text-xs font-semibold text-white tracking-widest">
+                {/* Counter */}
+                <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-[var(--bg-surface-blur)] backdrop-blur-md border border-[var(--border-subtle)] pointer-events-auto">
+                  <span className="font-mono text-xs font-semibold text-[var(--text-primary)] tracking-widest">
                     {String(activeMediaIndex + 1).padStart(2, '0')}{' '}
-                    <span className="text-[#94A3B8] font-normal">/ {String(totalMedia).padStart(2, '0')}</span>
+                    <span className="text-[var(--text-secondary)] font-normal">/ {String(totalMedia).padStart(2, '0')}</span>
                   </span>
 
-                  {/* Thumbnail / Indicator Dots if > 1 */}
                   {totalMedia > 1 && (
-                    <div className="flex items-center gap-1 pl-2 border-l border-white/10">
+                    <div className="flex items-center gap-1 pl-2 border-l border-[var(--border-subtle)]">
                       {mediaItems.map((_, idx) => (
                         <button
                           key={idx}
@@ -382,8 +363,8 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                           }}
                           className={`h-1.5 rounded-full transition-all cursor-pointer ${
                             idx === activeMediaIndex 
-                              ? 'w-4 bg-[#38BDF8]' 
-                              : 'w-1.5 bg-white/20 hover:bg-white/40'
+                              ? 'w-4 bg-[var(--text-primary)]' 
+                              : 'w-1.5 bg-[var(--text-muted)]/50 hover:bg-[var(--text-secondary)]'
                           }`}
                           aria-label={`Jump to media ${idx + 1}`}
                         />
@@ -392,29 +373,29 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                   )}
                 </div>
 
-                {/* VIEW ↗ Action Button */}
+                {/* VIEW Action Button */}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsLightboxOpen(true);
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#07101F]/85 hover:bg-[#0B1528] active:scale-95 backdrop-blur-md border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono font-medium text-white transition-all cursor-pointer pointer-events-auto shadow-md"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] active:scale-95 backdrop-blur-md border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono font-medium text-[var(--text-primary)] transition-all cursor-pointer pointer-events-auto shadow-md"
                   aria-label="View media in fullscreen lightbox"
                 >
                   <span>VIEW</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-[#38BDF8]" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                 </button>
               </div>
 
-              {/* Prev / Next Navigation Arrows (Visible on touch, hover on desktop) */}
+              {/* Prev / Next Navigation Arrows */}
               {totalMedia > 1 && (
                 <>
                   <button
                     type="button"
                     onClick={handlePrevMedia}
                     aria-label="Previous project media"
-                    className={`absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
+                    className={`absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
                       isDesktopCompact
                         ? 'opacity-75 group-hover:opacity-100'
                         : 'opacity-85 sm:opacity-0 sm:group-hover:opacity-100'
@@ -427,7 +408,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                     type="button"
                     onClick={handleNextMedia}
                     aria-label="Next project media"
-                    className={`absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[#07101F]/85 hover:bg-[#0B1528] text-white/80 hover:text-white border border-white/10 hover:border-[#38BDF8]/40 transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
+                    className={`absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 min-w-[40px] min-h-[40px] p-2 rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all focus:opacity-100 cursor-pointer backdrop-blur-md shadow-lg active:scale-90 flex items-center justify-center ${
                       isDesktopCompact
                         ? 'opacity-75 group-hover:opacity-100'
                         : 'opacity-85 sm:opacity-0 sm:group-hover:opacity-100'
@@ -443,7 +424,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
       </div>
 
       {/* ===================================================================== */}
-      {/* 2. FULLSCREEN LIGHTBOX / MEDIA VIEWER (Portaled to document.body)     */}
+      {/* 2. FULLSCREEN LIGHTBOX / MEDIA VIEWER                                 */}
       {/* ===================================================================== */}
       {typeof document !== 'undefined' &&
         createPortal(
@@ -455,21 +436,21 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
                 onClick={() => setIsLightboxOpen(false)}
-                className="fixed inset-0 z-[70] h-[100dvh] w-screen overflow-hidden flex flex-col bg-black/95 backdrop-blur-2xl px-3 py-3 sm:px-6 sm:py-4"
+                className="fixed inset-0 z-[70] h-[100dvh] w-screen overflow-hidden flex flex-col bg-[var(--bg-canvas)]/96 backdrop-blur-2xl px-3 py-3 sm:px-6 sm:py-4"
                 role="dialog"
                 aria-modal="true"
                 aria-label={`${project.title} expanded media viewer`}
               >
-                {/* Top Bar: Counter + Close Button (shrink-0 preserves exact remaining height) */}
+                {/* Top Bar */}
                 <div
                   onClick={(e) => e.stopPropagation()}
                   className="shrink-0 w-full flex items-center justify-between gap-3 py-1 z-20"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="font-mono text-xs sm:text-sm font-semibold text-[#CBD5E1] tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10 tabular-nums shrink-0">
+                    <span className="font-mono text-xs sm:text-sm font-semibold text-[var(--text-primary)] tracking-widest bg-[var(--bg-surface)] px-3 py-1 rounded-full border border-[var(--border-subtle)] tabular-nums shrink-0">
                       {activeMediaIndex + 1}/{totalMedia}
                     </span>
-                    <span className="hidden sm:inline-block text-xs font-mono text-[#94A3B8] truncate">
+                    <span className="hidden sm:inline-block text-xs font-mono text-[var(--text-secondary)] truncate">
                       {project.title}
                     </span>
                   </div>
@@ -477,14 +458,14 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsLightboxOpen(false)}
-                    className="min-w-[42px] min-h-[42px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer active:scale-95 transition-all shrink-0"
+                    className="min-w-[42px] min-h-[42px] rounded-full bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] flex items-center justify-center cursor-pointer active:scale-95 transition-all shrink-0"
                     aria-label="Close fullscreen lightbox"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* Main Media Display: Dynamically fills exact remaining viewport height */}
+                {/* Main Media Display */}
                 <div className="relative flex-1 min-h-0 min-w-0 w-full my-2 sm:my-3">
                   <div className="absolute inset-y-0 inset-x-12 sm:inset-x-16 flex items-center justify-center">
                     {currentMedia.mediaType === 'image' ? (
@@ -505,14 +486,13 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                     )}
                   </div>
 
-                  {/* Lightbox Left/Right Navigation Arrows */}
                   {totalMedia > 1 && (
                     <>
                       <button
                         type="button"
                         onClick={handlePrevMedia}
                         aria-label="Previous item"
-                        className="absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-20 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
+                        className="absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-20 min-w-[42px] min-h-[42px] rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
@@ -521,7 +501,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                         type="button"
                         onClick={handleNextMedia}
                         aria-label="Next item"
-                        className="absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-20 min-w-[42px] min-h-[42px] rounded-full bg-black/70 hover:bg-black/90 text-white border border-white/20 hover:border-[#38BDF8] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
+                        className="absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-20 min-w-[42px] min-h-[42px] rounded-full bg-[var(--bg-surface-blur)] hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] flex items-center justify-center cursor-pointer backdrop-blur-md active:scale-95 transition-all"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
@@ -529,7 +509,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                   )}
                 </div>
 
-                {/* Bottom Chrome: Thumbnails & Caption (shrink-0 so main image never collides) */}
+                {/* Bottom Chrome */}
                 {(totalMedia > 1 || currentMedia.caption) && (
                   <div
                     onClick={(e) => e.stopPropagation()}
@@ -547,8 +527,8 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                             }}
                             className={`relative w-11 h-11 sm:w-14 sm:h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                               idx === activeMediaIndex
-                                ? 'border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.5)] scale-105'
-                                : 'border-white/10 opacity-50 hover:opacity-80'
+                                ? 'border-[var(--text-primary)] shadow-md scale-105'
+                                : 'border-[var(--border-subtle)] opacity-50 hover:opacity-80'
                             }`}
                           >
                             {item.mediaType === 'image' ? (
@@ -558,7 +538,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full bg-[#07101F] flex items-center justify-center text-[#38BDF8]">
+                              <div className="w-full h-full bg-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-primary)]">
                                 <VideoIcon className="w-4 h-4" />
                               </div>
                             )}
@@ -569,7 +549,7 @@ export const ProjectMediaStage: React.FC<ProjectMediaStageProps> = ({
 
                     {currentMedia.caption && (
                       <div className="w-full text-center px-4">
-                        <p className="text-xs font-mono text-[#CBD5E1] truncate max-w-2xl mx-auto">
+                        <p className="text-xs font-mono text-[var(--text-secondary)] truncate max-w-2xl mx-auto">
                           {currentMedia.caption}
                         </p>
                       </div>

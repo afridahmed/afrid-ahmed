@@ -18,36 +18,33 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   contactSupportingText = "Have an idea, automation workflow, AI project, or software build in mind?\nLet's build something useful.",
   primaryCtaLabel = "LET'S TALK"
 }) => {
-  // Map configured social links and primary email into contact channels
   const getIconConfig = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'email':
-        return { icon: Mail, iconColor: 'text-[#38BDF8]', external: false };
+        return { icon: Mail, iconColor: 'text-[var(--text-primary)]', external: false };
       case 'linkedin':
-        return { icon: Linkedin, iconColor: 'text-[#38BDF8]', external: true };
+        return { icon: Linkedin, iconColor: 'text-[var(--text-primary)]', external: true };
       case 'github':
-        return { icon: Github, iconColor: 'text-[#38BDF8]', external: true };
+        return { icon: Github, iconColor: 'text-[var(--text-primary)]', external: true };
       case 'youtube':
-        return { icon: Youtube, iconColor: 'text-red-400', external: true };
+        return { icon: Youtube, iconColor: 'text-[var(--text-primary)]', external: true };
       case 'instagram':
-        return { icon: Instagram, iconColor: 'text-pink-400', external: true };
+        return { icon: Instagram, iconColor: 'text-[var(--text-primary)]', external: true };
       case 'twitter':
       case 'x':
-        return { icon: ArrowUpRight, iconColor: 'text-white', external: true };
+        return { icon: ArrowUpRight, iconColor: 'text-[var(--text-primary)]', external: true };
       case 'globe':
       case 'web':
       case 'portfolio':
-        return { icon: Globe, iconColor: 'text-[#38BDF8]', external: true };
+        return { icon: Globe, iconColor: 'text-[var(--text-primary)]', external: true };
       default:
-        return { icon: ArrowUpRight, iconColor: 'text-[#38BDF8]', external: true };
+        return { icon: ArrowUpRight, iconColor: 'text-[var(--text-primary)]', external: true };
     }
   };
 
-  // Build channels from active social links that have URLs
   const activeLinks = (socialLinks && socialLinks.length > 0 ? socialLinks : SOCIAL_LINKS)
     .filter(l => l && l.url && l.url.trim().length > 0);
 
-  // Guarantee email channel is present
   const hasEmail = activeLinks.some(l => l.platform.toLowerCase() === 'email');
   const linksToRender: SocialLink[] = hasEmail
     ? activeLinks
@@ -77,44 +74,40 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   return (
     <section id="contact" className="relative w-full py-12 sm:py-16 md:py-20 px-4 sm:px-8 md:px-12 z-10 scroll-mt-20 sm:scroll-mt-24">
       <div className="max-w-6xl mx-auto">
-        
+
         {/* Main Balanced Two-Column Container */}
-        <div className="rounded-2xl border border-white/10 bg-[#050816]/75 backdrop-blur-xl p-5 sm:p-8 md:p-10 lg:p-12 relative overflow-hidden shadow-[0_0_40px_rgba(56,189,248,0.03)]">
-          {/* Subtle cosmic ambient glow */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#38BDF8]/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-blur)] backdrop-blur-xl p-5 sm:p-8 md:p-10 lg:p-12 relative overflow-hidden shadow-[var(--shadow-card)] transition-colors duration-300">
+          {/* Subtle monochrome ambient glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#111111]/[0.03] dark:bg-[#F5F5F5]/[0.04] rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
           {/* ========================================================================= */}
-          {/* 1. MOBILE CONTACT COMPOSITION (< md): SCREEN 5 RECREATION                 */}
+          {/* 1. MOBILE CONTACT COMPOSITION (< md)                                      */}
           {/* ========================================================================= */}
           <div className="flex flex-col space-y-6 md:hidden">
-            {/* Top Label */}
-            <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
+            <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
               <span>04 / CONTACT</span>
             </div>
 
-            {/* Heading: Let's connect. (Screen 5) */}
             <div>
-              <h2 className="text-3xl min-[360px]:text-4xl font-display font-extrabold text-white tracking-tight leading-tight">
+              <h2 className="text-3xl min-[360px]:text-4xl font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
                 Let's connect.
               </h2>
-              <p className="text-xs sm:text-sm text-[#CBD5E1] font-light leading-relaxed mt-2">
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed mt-2">
                 I'm always open to new opportunities, collaborations and interesting conversations.
               </p>
             </div>
 
-            {/* Primary Action Button (Wide Cyan Pill) */}
             <div>
               <a
                 id="mobile-contact-talk-btn"
                 href={`mailto:${siteInfo.email}?subject=Project%20Collaboration%20with%20Afrid`}
-                className="w-full min-h-[48px] px-6 py-3 rounded-full bg-[#38BDF8] hover:bg-[#60A5FA] text-[#03050B] font-display font-bold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(56,189,248,0.3)] active:scale-95 transition-all"
+                className="w-full min-h-[48px] px-6 py-3 rounded-full bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-display font-bold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
               >
                 <span>LET'S TALK</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>
 
-            {/* Channels List Cards */}
             <div className="space-y-2.5 pt-2">
               {contactChannels.map((channel) => {
                 const Icon = channel.icon;
@@ -125,28 +118,27 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     href={channel.href}
                     target={channel.external ? '_blank' : undefined}
                     rel={channel.external ? 'noopener noreferrer' : undefined}
-                    className="p-3.5 rounded-xl border border-white/10 bg-[#07101F]/80 hover:border-[#38BDF8]/40 flex items-center justify-between transition-all active:scale-[0.99]"
+                    className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] flex items-center justify-between transition-all active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#0B1528] flex items-center justify-center border border-white/5">
+                      <div className="w-8 h-8 rounded-lg bg-[var(--bg-surface)] flex items-center justify-center border border-[var(--border-subtle)]">
                         <Icon className={`w-4 h-4 ${channel.iconColor}`} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-display font-bold text-xs text-white">
+                        <span className="font-display font-bold text-xs text-[var(--text-primary)]">
                           {channel.label}
                         </span>
-                        <span className="text-[11px] font-mono text-[#94A3B8] truncate max-w-[200px]">
+                        <span className="text-[11px] font-mono text-[var(--text-muted)] truncate max-w-[200px]">
                           {channel.value}
                         </span>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-[#94A3B8]" />
+                    <ArrowUpRight className="w-4 h-4 text-[var(--text-muted)]" />
                   </a>
                 );
               })}
             </div>
 
-            {/* Social Icons Row (Screen 5) */}
             <div className="pt-2 flex items-center justify-center gap-3">
               {socialLinks.map((link) => {
                 const plat = link.platform.toLowerCase();
@@ -156,7 +148,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full border border-white/10 bg-[#07101F] text-[#CBD5E1] hover:text-[#38BDF8] hover:border-[#38BDF8]/40 flex items-center justify-center active:scale-95 transition-all"
+                    className="w-10 h-10 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] flex items-center justify-center active:scale-95 transition-all"
                     aria-label={link.platform}
                   >
                     {plat === 'github' && <Github className="w-4 h-4" />}
@@ -169,47 +161,41 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               })}
             </div>
 
-            {/* Screen 5 Bottom Note */}
-            <div className="pt-4 border-t border-white/5 flex flex-col items-center text-center gap-1">
-              <span className="text-xs font-mono text-[#CBD5E1]">
-                Made with <span className="text-[#38BDF8]">🩵</span> by Afrid
+            <div className="pt-4 border-t border-[var(--border-subtle)] flex flex-col items-center text-center gap-1">
+              <span className="text-xs font-mono text-[var(--text-secondary)]">
+                Made with <span className="text-[var(--text-primary)]">♥</span> by Afrid
               </span>
-              <span className="text-[10px] font-mono text-[#64748B]">
+              <span className="text-[10px] font-mono text-[var(--text-muted)]">
                 © {new Date().getFullYear()} Afrid Ahmed
               </span>
             </div>
           </div>
 
           {/* ========================================================================= */}
-          {/* 2. DESKTOP CONTACT COMPOSITION (md+) — 100% PRESERVED                     */}
+          {/* 2. DESKTOP CONTACT COMPOSITION (md+)                                      */}
           {/* ========================================================================= */}
           <div className="hidden md:grid md:grid-cols-12 gap-8 md:gap-10 lg:gap-16 items-start relative z-10">
-            
-            {/* LEFT COLUMN: Main Heading, Short Copy & Primary Action */}
+
             <div className="md:col-span-7 flex flex-col justify-between space-y-5 sm:space-y-6">
-              
-              {/* Top Meta Badge */}
-              <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#38BDF8] uppercase">
-                <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
+
+              <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[var(--text-secondary)] uppercase">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                 <span>COLLABORATION & INQUIRIES</span>
               </div>
 
-              {/* Exact Primary Heading */}
-              <h2 className="text-2xl min-[360px]:text-3xl sm:text-4xl lg:text-[45px] font-display font-black text-white tracking-tight leading-tight sm:leading-none break-words sm:whitespace-nowrap">
+              <h2 className="text-2xl min-[360px]:text-3xl sm:text-4xl lg:text-[45px] font-display font-black text-[var(--text-primary)] tracking-tight leading-tight sm:leading-none break-words sm:whitespace-nowrap">
                 {contactHeadline}
               </h2>
 
-              {/* Short Supporting Text */}
-              <div className="text-xs min-[360px]:text-sm md:text-base text-[#CBD5E1] font-light leading-relaxed max-w-lg whitespace-pre-line">
+              <div className="text-xs min-[360px]:text-sm md:text-base text-[var(--text-secondary)] font-light leading-relaxed max-w-lg whitespace-pre-line">
                 {contactSupportingText}
               </div>
 
-              {/* Primary Action Button */}
               <div className="pt-2">
                 <a
                   id="contact-primary-talk-btn"
                   href={`mailto:${siteInfo.email}?subject=Project%20Collaboration%20with%20Afrid`}
-                  className="group min-h-[46px] px-6 py-2.5 rounded-full bg-[#38BDF8] hover:bg-[#60A5FA] text-[#03050B] font-mono text-xs sm:text-sm font-bold tracking-wider uppercase inline-flex items-center gap-2.5 transition-all shadow-[0_0_20px_rgba(56,189,248,0.25)] active:scale-95 cursor-pointer"
+                  className="group min-h-[46px] px-6 py-2.5 rounded-full bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-mono text-xs sm:text-sm font-bold tracking-wider uppercase inline-flex items-center gap-2.5 transition-all shadow-md active:scale-95 cursor-pointer"
                 >
                   <span>{primaryCtaLabel}</span>
                   <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -218,22 +204,19 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
             </div>
 
-            {/* RIGHT COLUMN: Stacked Direct Reach & Platforms List */}
             <div className="md:col-span-5 space-y-2 pt-2 md:pt-0">
-              
-              {/* Header */}
-              <div className="border-b border-white/10 pb-3 flex items-center justify-between">
-                <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#94A3B8] font-medium">
+
+              <div className="border-b border-[var(--border-subtle)] pb-3 flex items-center justify-between">
+                <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--text-muted)] font-medium">
                   DIRECT REACH & PLATFORMS
                 </span>
-                <div className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--text-primary)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)] animate-pulse" />
                   <span>AVAILABLE</span>
                 </div>
               </div>
 
-              {/* Refined Vertical Editorial List */}
-              <div className="divide-y divide-white/5 font-mono">
+              <div className="divide-y divide-[var(--border-subtle)] font-mono">
                 {contactChannels.map((channel) => {
                   const Icon = channel.icon;
                   return (
@@ -247,12 +230,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     >
                       <div className="flex items-center gap-3">
                         <Icon className={`w-4 h-4 ${channel.iconColor} transition-transform duration-200 group-hover:scale-110`} />
-                        <span className="font-bold text-[#CBD5E1] group-hover:text-white tracking-wider transition-colors">
+                        <span className="font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] tracking-wider transition-colors">
                           {channel.label}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-[11px] sm:text-xs text-[#94A3B8] group-hover:text-[#38BDF8] transition-colors">
+                      <div className="flex items-center gap-2 text-[11px] sm:text-xs text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors">
                         <span className="hidden sm:inline font-light truncate max-w-[150px]">
                           {channel.value}
                         </span>

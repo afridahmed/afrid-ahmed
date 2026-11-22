@@ -198,9 +198,9 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = React.memo(({
         }}
         aria-label="Interactive AI Robot: Click or tap to trigger a reaction"
       >
-        {/* Soft cosmic glow behind robot */}
+        {/* Soft monochrome glow behind robot */}
         <div
-          className="absolute inset-3 rounded-full bg-gradient-to-tr from-[#38BDF8]/15 to-[#60A5FA]/10 blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700"
+          className="absolute inset-3 rounded-full bg-[#111111]/[0.06] dark:bg-[#F5F5F5]/[0.08] blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700"
           aria-hidden="true"
         />
 
@@ -211,7 +211,7 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = React.memo(({
             dotLottieRefCallback={setDotLottie}
             autoplay={!reducedMotion}
             loop={currentAction === 'idle' && !reducedMotion}
-            className="w-full h-full object-contain pointer-events-auto filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.45)]"
+            className="w-full h-full object-contain pointer-events-auto filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.45)]"
             style={{ background: 'transparent' }}
           />
         </div>

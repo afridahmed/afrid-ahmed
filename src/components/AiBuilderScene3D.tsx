@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface AiBuilderScene3DProps {
   isHovered: boolean;
@@ -8,6 +9,8 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const [reducedMotion, setReducedMotion] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -22,6 +25,12 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const inkRgb = isDark ? '245, 245, 245' : '17, 17, 17';
+    const secondaryInkRgb = isDark ? '160, 160, 160' : '115, 115, 115';
+    const surfaceFillRgb = isDark ? '18, 18, 18' : '255, 255, 255';
+    const coreCenterHex = isDark ? '#F5F5F5' : '#111111';
+    const coreMidHex = isDark ? '#A0A0A0' : '#737373';
 
     let animationFrameId: number;
     let width = (canvas.width = canvas.parentElement?.clientWidth || 380);
@@ -52,14 +61,13 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
     parent?.addEventListener('mousemove', handleMouseMove);
     parent?.addEventListener('mouseleave', handleMouseLeave);
 
-    // Abstract 3D Architecture Modules assembling and locking into place
     interface Module3D {
       id: number;
       angle: number;
       radius: number;
       yPos: number;
       targetRadius: number;
-      progress: number; // 0 to 1 assembling
+      progress: number;
       speed: number;
       type: 'ring' | 'block' | 'strut' | 'node';
       size: number;
@@ -75,14 +83,13 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
         radius: 70 + Math.random() * 45,
         targetRadius: 45 + (i % 3) * 15,
         yPos: (Math.random() - 0.5) * 60,
-        progress: Math.random(), // staggered initial assembly
+        progress: Math.random(),
         speed: 0.005 + Math.random() * 0.008,
         type: i % 4 === 0 ? 'block' : i % 3 === 0 ? 'ring' : i % 2 === 0 ? 'strut' : 'node',
         size: 3 + Math.random() * 4
       });
     }
 
-    // Energy / Data streams flowing between core and modules
     const dataStreams: Array<{
       angle: number;
       distance: number;
@@ -117,8 +124,8 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
 
       // 1. Ambient Background Core Glow
       const ambientGrad = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, 150);
-      ambientGrad.addColorStop(0, isHovered ? 'rgba(56, 189, 248, 0.22)' : 'rgba(56, 189, 248, 0.12)');
-      ambientGrad.addColorStop(0.5, 'rgba(15, 23, 42, 0.5)');
+      ambientGrad.addColorStop(0, `rgba(${inkRgb}, ${isHovered ? 0.14 : 0.08})`);
+      ambientGrad.addColorStop(0.5, `rgba(${surfaceFillRgb}, 0.45)`);
       ambientGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = ambientGrad;
       ctx.fillRect(0, 0, width, height);
@@ -133,22 +140,22 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
       ctx.save();
       ctx.translate(centerX + mouseRef.current.x * 12, centerY + mouseRef.current.y * 12);
 
-      // Ring 1 (X-axis tilt illusion)
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+      // Ring 1
+      ctx.strokeStyle = `rgba(${inkRgb}, 0.22)`;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.ellipse(0, 0, 85, 30, ringAngles[0], 0, Math.PI * 2);
       ctx.stroke();
 
-      // Ring 2 (Y-axis tilt illusion)
-      ctx.strokeStyle = 'rgba(96, 165, 250, 0.2)';
+      // Ring 2
+      ctx.strokeStyle = `rgba(${secondaryInkRgb}, 0.25)`;
       ctx.lineWidth = 0.75;
       ctx.beginPath();
       ctx.ellipse(0, 0, 32, 75, ringAngles[1], 0, Math.PI * 2);
       ctx.stroke();
 
-      // Ring 3 (Outer precision frame)
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      // Ring 3
+      ctx.strokeStyle = `rgba(${inkRgb}, 0.32)`;
       ctx.lineWidth = 1.25;
       ctx.setLineDash([8, 12]);
       ctx.beginPath();
@@ -158,20 +165,19 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
 
       ctx.restore();
 
-      // 3. Central AI Core (Brain/Heart of Machine Construction)
+      // 3. Central AI Core
       const corePulse = Math.sin(globalTime * 3) * 3;
-      
-      // Outer crystalline shell layers
+
       for (let layer = 3; layer > 0; layer--) {
         const radius = 16 + layer * 8 + corePulse * (layer * 0.3);
         const rot = globalTime * (layer % 2 === 0 ? 0.5 : -0.5);
-        
+
         ctx.save();
         ctx.translate(centerX + mouseRef.current.x * 8, centerY + mouseRef.current.y * 8);
         ctx.rotate(rot);
-        ctx.strokeStyle = `rgba(56, 189, 248, ${0.15 + layer * 0.12})`;
+        ctx.strokeStyle = `rgba(${inkRgb}, ${0.14 + layer * 0.1})`;
         ctx.lineWidth = 1;
-        
+
         ctx.beginPath();
         const sides = 6;
         for (let s = 0; s < sides; s++) {
@@ -186,41 +192,39 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
         ctx.restore();
       }
 
-      // Central Luminescent Core Energy
       const coreGrad = ctx.createRadialGradient(
-        centerX + mouseRef.current.x * 5, 
-        centerY + mouseRef.current.y * 5, 
-        2, 
-        centerX, 
-        centerY, 
+        centerX + mouseRef.current.x * 5,
+        centerY + mouseRef.current.y * 5,
+        2,
+        centerX,
+        centerY,
         26
       );
-      coreGrad.addColorStop(0, '#ffffff');
-      coreGrad.addColorStop(0.35, '#38BDF8');
-      coreGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
-      
+      coreGrad.addColorStop(0, coreCenterHex);
+      coreGrad.addColorStop(0.35, coreMidHex);
+      coreGrad.addColorStop(1, `rgba(${inkRgb}, 0)`);
+
       ctx.fillStyle = coreGrad;
       ctx.beginPath();
       ctx.arc(
-        centerX + mouseRef.current.x * 5, 
-        centerY + mouseRef.current.y * 5, 
-        24 + corePulse, 
-        0, 
+        centerX + mouseRef.current.x * 5,
+        centerY + mouseRef.current.y * 5,
+        24 + corePulse,
+        0,
         Math.PI * 2
       );
       ctx.fill();
 
-      // 4. Continuous Assembly Modules (Real-time Construction System)
+      // 4. Continuous Assembly Modules
       modules.forEach((mod) => {
         if (!reducedMotion) {
           mod.progress += mod.speed * (isHovered ? 1.5 : 1.0);
           if (mod.progress > 1) {
-            mod.progress = 0; // reset to simulate continuous building cycles
-            mod.radius = 70 + Math.random() * 45; // new incoming component position
+            mod.progress = 0;
+            mod.radius = 70 + Math.random() * 45;
           }
         }
 
-        // Interpolate distance from outer space (radius) to core (targetRadius) as it assembles
         const currentRadius = mod.radius + (mod.targetRadius - mod.radius) * Math.min(1, mod.progress * 1.5);
         const currentAngle = mod.angle + globalTime * 0.3;
 
@@ -233,33 +237,29 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
         ctx.translate(px, py);
 
         if (mod.type === 'block') {
-          // Assembling modular housing block
-          ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.8})`;
-          ctx.fillStyle = `rgba(15, 23, 42, ${alpha * 0.85})`;
+          ctx.strokeStyle = `rgba(${inkRgb}, ${alpha * 0.65})`;
+          ctx.fillStyle = `rgba(${surfaceFillRgb}, ${alpha * 0.85})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.rect(-mod.size, -mod.size, mod.size * 2, mod.size * 2);
           ctx.fill();
           ctx.stroke();
 
-          // Inner lock node
-          ctx.fillStyle = '#38BDF8';
+          ctx.fillStyle = coreCenterHex;
           ctx.fillRect(-1, -1, 2, 2);
         } else if (mod.type === 'node') {
-          // Neural junction point locking in
-          ctx.fillStyle = `rgba(96, 165, 250, ${alpha})`;
+          ctx.fillStyle = `rgba(${secondaryInkRgb}, ${alpha})`;
           ctx.beginPath();
           ctx.arc(0, 0, mod.size * 0.8, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+          ctx.strokeStyle = `rgba(${inkRgb}, ${alpha * 0.8})`;
           ctx.lineWidth = 0.75;
           ctx.beginPath();
           ctx.arc(0, 0, mod.size + 2, 0, Math.PI * 2);
           ctx.stroke();
         } else {
-          // Precision structural strut / connector
-          ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.7})`;
+          ctx.strokeStyle = `rgba(${inkRgb}, ${alpha * 0.6})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.moveTo(-mod.size * 1.5, 0);
@@ -269,9 +269,8 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
 
         ctx.restore();
 
-        // Connect assembling modules to the central core with fine laser guides
         if (mod.progress > 0.3) {
-          ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.25})`;
+          ctx.strokeStyle = `rgba(${inkRgb}, ${alpha * 0.22})`;
           ctx.lineWidth = 0.5;
           ctx.setLineDash([2, 4]);
           ctx.beginPath();
@@ -282,7 +281,7 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
         }
       });
 
-      // 5. Data Flow Streams travelling through core to active modules
+      // 5. Data Flow Streams
       dataStreams.forEach((stream) => {
         if (!reducedMotion) {
           stream.distance += stream.speed * (isHovered ? 1.8 : 1.0);
@@ -292,7 +291,7 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
         const sx = centerX + Math.cos(stream.angle + globalTime * 0.2) * stream.distance + mouseRef.current.x * 10;
         const sy = centerY + Math.sin(stream.angle + globalTime * 0.2) * (stream.distance * 0.7) + mouseRef.current.y * 10;
 
-        ctx.fillStyle = `rgba(56, 189, 248, ${stream.brightness})`;
+        ctx.fillStyle = `rgba(${inkRgb}, ${stream.brightness * 0.75})`;
         ctx.beginPath();
         ctx.arc(sx, sy, stream.size, 0, Math.PI * 2);
         ctx.fill();
@@ -309,14 +308,18 @@ export const AiBuilderScene3D: React.FC<AiBuilderScene3DProps> = React.memo(({ i
       parent?.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isHovered, reducedMotion]);
+  }, [isHovered, reducedMotion, isDark]);
 
   return (
-    <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] flex items-center justify-center rounded-xl bg-[#03050B]/80 border border-white/10 overflow-hidden shadow-2xl group-hover:border-[#38BDF8]/30 transition-all duration-500">
-      {/* Background Grid & Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(#38BDF8_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none" />
-      
-      {/* Canvas for 3D Machine Construction Environment */}
+    <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] flex items-center justify-center rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] overflow-hidden shadow-[var(--shadow-card)] group-hover:border-[var(--border-strong)] transition-all duration-500">
+      <div
+        className="absolute inset-0 opacity-15 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(var(--text-muted) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+        }}
+      />
+
       <canvas ref={canvasRef} className="w-full h-full block cursor-crosshair" />
     </div>
   );

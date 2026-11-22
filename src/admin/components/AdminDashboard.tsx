@@ -69,22 +69,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
   return (
     <div className="space-y-8 max-w-6xl">
       {/* 1. Dashboard Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
         <div>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
+            <span className="text-[11px] font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
               ADMINISTRATION CONSOLE
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--accent-solid)] text-[var(--accent-contrast)] text-[10px] font-mono font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-contrast)] animate-pulse" />
               ADMIN ACCESS
             </span>
           </div>
           
-          <h1 className="text-3xl font-bold tracking-tight text-white mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-1">
             AFRID AHMED
           </h1>
-          <p className="text-sm font-mono text-[#94A3B8] mt-0.5">
+          <p className="text-sm font-mono text-[var(--text-secondary)] mt-0.5">
             Portfolio CMS • Unified Content Management
           </p>
         </div>
@@ -93,9 +93,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
           <button
             onClick={fetchCounts}
             disabled={stats.isLoading}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-primary)] transition-all cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#38BDF8] ${stats.isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[var(--text-primary)] ${stats.isLoading ? 'animate-spin' : ''}`} />
             <span>SYNC STATUS</span>
           </button>
         </div>
@@ -106,21 +106,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
         {/* Projects Card */}
         <div 
           onClick={() => onSelectSection('projects')}
-          className="rounded-2xl border border-white/10 bg-[#0E131F]/80 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 p-5 backdrop-blur-md transition-all cursor-pointer group shadow-sm"
+          className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] p-5 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-[#94A3B8] uppercase">PROJECTS</span>
-            <div className="p-2 rounded-lg bg-[#141B2D] text-[#38BDF8] group-hover:bg-[#38BDF8] group-hover:text-[#080B11] transition-colors">
+            <span className="text-xs font-mono text-[var(--text-secondary)] uppercase">PROJECTS</span>
+            <div className="p-2 rounded-lg bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:bg-[var(--accent-solid)] group-hover:text-[var(--accent-contrast)] transition-colors">
               <FolderKanban className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-white font-mono">
+            <span className="text-2xl font-bold text-[var(--text-primary)] font-mono">
               {stats.isLoading ? '—' : stats.projectsCount}
             </span>
-            <span className="text-[11px] font-mono text-emerald-400">Published Active</span>
+            <span className="text-[11px] font-mono text-[var(--text-secondary)]">Published Active</span>
           </div>
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-[#64748B] group-hover:text-[#38BDF8]">
+          <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)] group-hover:text-[var(--text-primary)]">
             <span className="font-mono text-[11px]">Manage Projects</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </div>
@@ -129,21 +129,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
         {/* Contact & Reach Card */}
         <div 
           onClick={() => onSelectSection('contact')}
-          className="rounded-2xl border border-white/10 bg-[#0E131F]/80 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 p-5 backdrop-blur-md transition-all cursor-pointer group shadow-sm"
+          className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] p-5 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-[#94A3B8] uppercase">CONTACT & REACH</span>
-            <div className="p-2 rounded-lg bg-[#141B2D] text-[#38BDF8] group-hover:bg-[#38BDF8] group-hover:text-[#080B11] transition-colors">
+            <span className="text-xs font-mono text-[var(--text-secondary)] uppercase">CONTACT & REACH</span>
+            <div className="p-2 rounded-lg bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:bg-[var(--accent-solid)] group-hover:text-[var(--accent-contrast)] transition-colors">
               <Mail className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-white font-mono">
+            <span className="text-2xl font-bold text-[var(--text-primary)] font-mono">
               ACTIVE
             </span>
-            <span className="text-[11px] font-mono text-emerald-400">Direct Inquiries</span>
+            <span className="text-[11px] font-mono text-[var(--text-secondary)]">Direct Inquiries</span>
           </div>
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-[#64748B] group-hover:text-[#38BDF8]">
+          <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)] group-hover:text-[var(--text-primary)]">
             <span className="font-mono text-[11px]">Manage Channels</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </div>
@@ -152,21 +152,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
         {/* Journey Milestones Card */}
         <div 
           onClick={() => onSelectSection('journey')}
-          className="rounded-2xl border border-white/10 bg-[#0E131F]/80 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 p-5 backdrop-blur-md transition-all cursor-pointer group shadow-sm"
+          className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] p-5 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-[#94A3B8] uppercase">JOURNEY MILESTONES</span>
-            <div className="p-2 rounded-lg bg-[#141B2D] text-[#38BDF8] group-hover:bg-[#38BDF8] group-hover:text-[#080B11] transition-colors">
+            <span className="text-xs font-mono text-[var(--text-secondary)] uppercase">JOURNEY MILESTONES</span>
+            <div className="p-2 rounded-lg bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:bg-[var(--accent-solid)] group-hover:text-[var(--accent-contrast)] transition-colors">
               <Compass className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-white font-mono">
+            <span className="text-2xl font-bold text-[var(--text-primary)] font-mono">
               {stats.isLoading ? '—' : stats.milestonesCount}
             </span>
-            <span className="text-[11px] font-mono text-emerald-400">2026 - 2030+</span>
+            <span className="text-[11px] font-mono text-[var(--text-secondary)]">2026 - 2030+</span>
           </div>
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-[#64748B] group-hover:text-[#38BDF8]">
+          <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)] group-hover:text-[var(--text-primary)]">
             <span className="font-mono text-[11px]">Manage Milestones</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </div>
@@ -175,21 +175,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
         {/* Published Content Status Card */}
         <div 
           onClick={() => onSelectSection('settings')}
-          className="rounded-2xl border border-white/10 bg-[#0E131F]/80 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 p-5 backdrop-blur-md transition-all cursor-pointer group shadow-sm"
+          className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)] p-5 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-[#94A3B8] uppercase">PUBLISHED CONTENT</span>
-            <div className="p-2 rounded-lg bg-[#141B2D] text-emerald-400 group-hover:bg-emerald-400 group-hover:text-[#080B11] transition-colors">
+            <span className="text-xs font-mono text-[var(--text-secondary)] uppercase">PUBLISHED CONTENT</span>
+            <div className="p-2 rounded-lg bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:bg-[var(--accent-solid)] group-hover:text-[var(--accent-contrast)] transition-colors">
               <FileCheck2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-white font-mono">
+            <span className="text-2xl font-bold text-[var(--text-primary)] font-mono">
               ONLINE
             </span>
-            <span className="text-[11px] font-mono text-emerald-400">100% Uptime</span>
+            <span className="text-[11px] font-mono text-[var(--text-secondary)]">100% Uptime</span>
           </div>
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-[#64748B] group-hover:text-[#38BDF8]">
+          <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)] group-hover:text-[var(--text-primary)]">
             <span className="font-mono text-[11px]">System Status</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </div>
@@ -199,10 +199,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
       {/* 3. CMS Modules Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-white font-mono uppercase tracking-wider">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] font-mono uppercase tracking-wider">
             CONTENT MANAGEMENT MODULES
           </h2>
-          <span className="text-xs font-mono text-[#64748B]">
+          <span className="text-xs font-mono text-[var(--text-muted)]">
             SELECT MODULE TO PREVIEW
           </span>
         </div>
@@ -212,132 +212,132 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
           {/* Hero */}
           <div
             onClick={() => onSelectSection('hero')}
-            className="p-5 rounded-2xl border border-white/10 bg-[#0E131F]/60 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 transition-all cursor-pointer group"
+            className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#141B2D] text-[#38BDF8] group-hover:scale-105 transition-transform">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] group-hover:scale-105 transition-transform">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] transition-colors">
                   Hero Section
                 </h3>
-                <p className="text-xs text-[#94A3B8]">Headlines, rotating phrases & CTAs</p>
+                <p className="text-xs text-[var(--text-secondary)]">Headlines, rotating phrases & CTAs</p>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
+            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
               <span>Table: hero_content</span>
-              <span className="text-emerald-400">Ready</span>
+              <span className="text-[var(--text-primary)] font-semibold">Ready</span>
             </div>
           </div>
 
           {/* About */}
           <div
             onClick={() => onSelectSection('about')}
-            className="p-5 rounded-2xl border border-white/10 bg-[#0E131F]/60 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 transition-all cursor-pointer group"
+            className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#141B2D] text-[#38BDF8] group-hover:scale-105 transition-transform">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] group-hover:scale-105 transition-transform">
                 <User className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] transition-colors">
                   About Section
                 </h3>
-                <p className="text-xs text-[#94A3B8]">Header, portrait, badge, signature, interests &amp; highlights</p>
+                <p className="text-xs text-[var(--text-secondary)]">Header, portrait, badge, signature, interests &amp; highlights</p>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
+            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
               <span>about_content · interests · highlights</span>
-              <span className="text-emerald-400">Ready</span>
+              <span className="text-[var(--text-primary)] font-semibold">Ready</span>
             </div>
           </div>
 
           {/* Projects */}
           <div
             onClick={() => onSelectSection('projects')}
-            className="p-5 rounded-2xl border border-white/10 bg-[#0E131F]/60 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 transition-all cursor-pointer group"
+            className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#141B2D] text-[#38BDF8] group-hover:scale-105 transition-transform">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] group-hover:scale-105 transition-transform">
                 <FolderKanban className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] transition-colors">
                   Work & Projects
                 </h3>
-                <p className="text-xs text-[#94A3B8]">Full catalog, order, flags & links</p>
+                <p className="text-xs text-[var(--text-secondary)]">Full catalog, order, flags & links</p>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
+            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
               <span>Table: projects</span>
-              <span className="text-emerald-400">Ready</span>
+              <span className="text-[var(--text-primary)] font-semibold">Ready</span>
             </div>
           </div>
 
           {/* Journey */}
           <div
             onClick={() => onSelectSection('journey')}
-            className="p-5 rounded-2xl border border-white/10 bg-[#0E131F]/60 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 transition-all cursor-pointer group"
+            className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#141B2D] text-[#38BDF8] group-hover:scale-105 transition-transform">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] group-hover:scale-105 transition-transform">
                 <Compass className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] transition-colors">
                   Journey Timeline
                 </h3>
-                <p className="text-xs text-[#94A3B8]">Trajectory milestones beyond 2030</p>
+                <p className="text-xs text-[var(--text-secondary)]">Trajectory milestones beyond 2030</p>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
+            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
               <span>Table: journey_milestones</span>
-              <span className="text-emerald-400">Ready</span>
+              <span className="text-[var(--text-primary)] font-semibold">Ready</span>
             </div>
           </div>
 
           {/* Contact */}
           <div
             onClick={() => onSelectSection('contact')}
-            className="p-5 rounded-2xl border border-white/10 bg-[#0E131F]/60 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 transition-all cursor-pointer group"
+            className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#141B2D] text-[#38BDF8] group-hover:scale-105 transition-transform">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] group-hover:scale-105 transition-transform">
                 <Mail className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] transition-colors">
                   Contact & Socials
                 </h3>
-                <p className="text-xs text-[#94A3B8]">Global contact email and profile URLs</p>
+                <p className="text-xs text-[var(--text-secondary)]">Global contact email and profile URLs</p>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
+            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
               <span>Table: site_settings</span>
-              <span className="text-emerald-400">Ready</span>
+              <span className="text-[var(--text-primary)] font-semibold">Ready</span>
             </div>
           </div>
 
           {/* Media Library */}
           <div
             onClick={() => onSelectSection('media')}
-            className="p-5 rounded-2xl border border-white/10 bg-[#0E131F]/60 hover:bg-[#0E131F] hover:border-[#38BDF8]/40 transition-all cursor-pointer group"
+            className="p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#141B2D] text-[#38BDF8] group-hover:scale-105 transition-transform">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] group-hover:scale-105 transition-transform">
                 <ImageIcon className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-[#38BDF8] transition-colors">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] transition-colors">
                   Media Library
                 </h3>
-                <p className="text-xs text-[#94A3B8]">Supabase Storage assets & uploads</p>
+                <p className="text-xs text-[var(--text-secondary)]">Supabase Storage assets & uploads</p>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[#64748B]">
+            <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
               <span>Bucket: portfolio-media</span>
-              <span className="text-emerald-400">{stats.isLoading ? '...' : `${stats.mediaCount ?? 0} Assets`}</span>
+              <span className="text-[var(--text-primary)] font-semibold">{stats.isLoading ? '...' : `${stats.mediaCount ?? 0} Assets`}</span>
             </div>
           </div>
 
@@ -345,33 +345,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSelectSection 
       </div>
 
       {/* 4. Authenticated Admin Session & System Info */}
-      <div className="rounded-2xl border border-white/10 bg-[#0E131F]/80 p-6 backdrop-blur-md space-y-4">
+      <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Server className="w-4 h-4 text-[#38BDF8]" />
-          <h3 className="text-xs font-mono font-semibold text-white uppercase tracking-wider">
+          <Server className="w-4 h-4 text-[var(--text-primary)]" />
+          <h3 className="text-xs font-mono font-semibold text-[var(--text-primary)] uppercase tracking-wider">
             ADMINISTRATIVE SESSION & INFRASTRUCTURE STATUS
           </h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 font-mono text-xs">
-          <div className="p-3.5 rounded-xl bg-[#080B11] border border-white/5 space-y-1">
-            <span className="text-[#64748B] text-[10px] block">AUTHENTICATED USER</span>
-            <span className="text-white truncate block font-medium">
+          <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1">
+            <span className="text-[var(--text-muted)] text-[10px] block">AUTHENTICATED USER</span>
+            <span className="text-[var(--text-primary)] truncate block font-medium">
               {user?.email || 'Administrator'}
             </span>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#080B11] border border-white/5 space-y-1">
-            <span className="text-[#64748B] text-[10px] block">AUTHORIZATION LEVEL</span>
-            <span className="text-emerald-400 flex items-center gap-1.5 font-medium">
+          <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1">
+            <span className="text-[var(--text-muted)] text-[10px] block">AUTHORIZATION LEVEL</span>
+            <span className="text-[var(--text-primary)] flex items-center gap-1.5 font-medium">
               <ShieldCheck className="w-3.5 h-3.5" />
               Verified via private.is_admin()
             </span>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#080B11] border border-white/5 space-y-1">
-            <span className="text-[#64748B] text-[10px] block">SUPABASE PERSISTENCE</span>
-            <span className="text-[#38BDF8] flex items-center gap-1.5 font-medium">
+          <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] space-y-1">
+            <span className="text-[var(--text-muted)] text-[10px] block">SUPABASE PERSISTENCE</span>
+            <span className="text-[var(--text-primary)] flex items-center gap-1.5 font-medium">
               <Database className="w-3.5 h-3.5" />
               Connected with RLS Active
             </span>

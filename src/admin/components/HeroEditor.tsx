@@ -134,8 +134,8 @@ export const HeroEditor: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 space-y-3 font-mono text-xs text-[#94A3B8]">
-        <Loader2 className="w-6 h-6 text-[#38BDF8] animate-spin" />
+      <div className="flex flex-col items-center justify-center p-12 space-y-3 font-mono text-xs text-[var(--text-secondary)]">
+        <Loader2 className="w-6 h-6 text-[var(--text-primary)] animate-spin" />
         <span>FETCHING HERO CONTENT FROM SUPABASE...</span>
       </div>
     );
@@ -144,16 +144,16 @@ export const HeroEditor: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
         <div>
-          <div className="text-xs font-mono text-[#38BDF8] tracking-widest uppercase">
+          <div className="text-xs font-mono text-[var(--text-secondary)] tracking-widest uppercase">
             CONTENT MANAGEMENT
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-1 flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-[#38BDF8]" />
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight mt-1 flex items-center gap-3">
+            <Sparkles className="w-6 h-6 text-[var(--text-primary)]" />
             <span>Hero Content Editor</span>
           </h1>
-          <p className="text-xs text-[#94A3B8] mt-1 font-light">
+          <p className="text-xs text-[var(--text-secondary)] mt-1 font-light">
             Edit the primary headline, rotating statements, hero description, image URL, and CTA links.
           </p>
         </div>
@@ -163,7 +163,7 @@ export const HeroEditor: React.FC = () => {
             type="button"
             onClick={handleReset}
             disabled={isSaving}
-            className="px-3.5 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#94A3B8] hover:text-white transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>RESET</span>
@@ -172,7 +172,7 @@ export const HeroEditor: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-5 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#7DD3FC] text-[#080B11] font-bold text-xs font-mono transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.25)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-bold text-xs font-mono transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <>
@@ -192,16 +192,12 @@ export const HeroEditor: React.FC = () => {
       {/* Notification Banner */}
       {statusMessage && (
         <div
-          className={`p-4 rounded-xl border text-xs flex items-center gap-3 ${
-            statusMessage.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
+          className="p-4 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] text-xs flex items-center gap-3"
         >
           {statusMessage.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[var(--text-primary)] shrink-0" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[var(--text-primary)] shrink-0" />
           )}
           <span>{statusMessage.text}</span>
         </div>
@@ -211,8 +207,8 @@ export const HeroEditor: React.FC = () => {
       <form onSubmit={handleSave} className="space-y-6">
         
         {/* Core Identity Card */}
-        <div className="rounded-2xl border border-white/10 bg-[#0E131F]/80 p-6 space-y-5">
-          <div className="flex items-center gap-2 pb-3 border-b border-white/5 text-xs font-mono text-[#38BDF8] uppercase tracking-wider">
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-[var(--border-subtle)] text-xs font-mono text-[var(--text-primary)] uppercase tracking-wider">
             <Type className="w-4 h-4" />
             <span>PRIMARY IDENTITY & HEADLINES</span>
           </div>
@@ -220,7 +216,7 @@ export const HeroEditor: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Name */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-mono text-[#CBD5E1]">
+              <label className="block text-xs font-mono text-[var(--text-secondary)]">
                 FULL NAME
               </label>
               <input
@@ -229,13 +225,13 @@ export const HeroEditor: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="AFRID AHMED"
                 required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
               />
             </div>
 
             {/* Identity Badge */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-mono text-[#CBD5E1]">
+              <label className="block text-xs font-mono text-[var(--text-secondary)]">
                 IDENTITY BADGE / DEGREE TRACK
               </label>
               <input
@@ -243,13 +239,13 @@ export const HeroEditor: React.FC = () => {
                 value={formData.identity}
                 onChange={(e) => setFormData({ ...formData, identity: e.target.value })}
                 placeholder="COMPUTER SCIENCE"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
               />
             </div>
 
             {/* Tagline */}
             <div className="sm:col-span-2 space-y-1.5">
-              <label className="block text-xs font-mono text-[#CBD5E1]">
+              <label className="block text-xs font-mono text-[var(--text-secondary)]">
                 HERO TAGLINE
               </label>
               <input
@@ -257,13 +253,13 @@ export const HeroEditor: React.FC = () => {
                 value={formData.tagline}
                 onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
                 placeholder="BUILDING WHAT'S NEXT."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
               />
             </div>
 
             {/* Description */}
             <div className="sm:col-span-2 space-y-1.5">
-              <label className="block text-xs font-mono text-[#CBD5E1]">
+              <label className="block text-xs font-mono text-[var(--text-secondary)]">
                 HERO SUMMARY DESCRIPTION
               </label>
               <textarea
@@ -271,20 +267,20 @@ export const HeroEditor: React.FC = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Computer Science undergraduate building with AI, software and code..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-xs leading-relaxed focus:outline-none focus:border-[#38BDF8]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs leading-relaxed focus:outline-none focus:border-[var(--border-strong)]"
               />
             </div>
           </div>
         </div>
 
         {/* Dynamic Rotating Phrases Card */}
-        <div className="rounded-2xl border border-white/10 bg-[#0E131F]/80 p-6 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-white/5">
-            <div className="flex items-center gap-2 text-xs font-mono text-[#38BDF8] uppercase tracking-wider">
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+            <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-primary)] uppercase tracking-wider">
               <Tag className="w-4 h-4" />
               <span>DYNAMIC ROTATING PHRASES</span>
             </div>
-            <span className="text-[11px] font-mono text-[#64748B]">
+            <span className="text-[11px] font-mono text-[var(--text-muted)]">
               {formData.rotating_phrases.length} ACTIVE STATEMENTS
             </span>
           </div>
@@ -293,16 +289,16 @@ export const HeroEditor: React.FC = () => {
             {formData.rotating_phrases.map((phrase, idx) => (
               <div 
                 key={idx}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-[#080B11] border border-white/10"
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
               >
-                <span className="w-6 text-center text-xs font-mono text-[#64748B] select-none">
+                <span className="w-6 text-center text-xs font-mono text-[var(--text-muted)] select-none">
                   #{idx + 1}
                 </span>
                 <input
                   type="text"
                   value={phrase}
                   onChange={(e) => handlePhraseChange(idx, e.target.value)}
-                  className="flex-1 px-3 py-1.5 rounded-lg bg-transparent text-white text-xs font-mono focus:outline-none focus:bg-[#141B2D]"
+                  className="flex-1 px-3 py-1.5 rounded-lg bg-transparent text-[var(--text-primary)] text-xs font-mono focus:outline-none focus:bg-[var(--bg-surface)]"
                 />
                 
                 {/* Reorder Buttons */}
@@ -311,7 +307,7 @@ export const HeroEditor: React.FC = () => {
                     type="button"
                     onClick={() => handleMovePhrase(idx, 'up')}
                     disabled={idx === 0}
-                    className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/5 disabled:opacity-20 cursor-pointer"
+                    className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] disabled:opacity-20 cursor-pointer"
                     title="Move up"
                   >
                     <ChevronUp className="w-3.5 h-3.5" />
@@ -320,7 +316,7 @@ export const HeroEditor: React.FC = () => {
                     type="button"
                     onClick={() => handleMovePhrase(idx, 'down')}
                     disabled={idx === formData.rotating_phrases.length - 1}
-                    className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/5 disabled:opacity-20 cursor-pointer"
+                    className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] disabled:opacity-20 cursor-pointer"
                     title="Move down"
                   >
                     <ChevronDown className="w-3.5 h-3.5" />
@@ -328,7 +324,7 @@ export const HeroEditor: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleRemovePhrase(idx)}
-                    className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 cursor-pointer"
+                    className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] cursor-pointer"
                     title="Delete statement"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -350,13 +346,13 @@ export const HeroEditor: React.FC = () => {
                   }
                 }}
                 placeholder="Add new phrase (e.g. 'I BUILD.')"
-                className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                className="flex-1 px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
               />
               <button
                 type="button"
                 onClick={handleAddPhrase}
                 disabled={!newPhrase.trim()}
-                className="px-4 py-2.5 rounded-xl bg-[#141B2D] hover:bg-[#1A233A] border border-white/10 text-xs font-mono text-[#38BDF8] flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-bold text-xs font-mono flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>ADD PHRASE</span>
@@ -366,16 +362,16 @@ export const HeroEditor: React.FC = () => {
         </div>
 
         {/* Hero Photo URL Card */}
-        <div className="rounded-2xl border border-white/10 bg-[#0E131F]/80 p-6 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-white/5">
-            <div className="flex items-center gap-2 text-xs font-mono text-[#38BDF8] uppercase tracking-wider">
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+            <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-primary)] uppercase tracking-wider">
               <ImageIcon className="w-4 h-4" />
               <span>HERO PROFILE PHOTO</span>
             </div>
             <button
               type="button"
               onClick={() => setIsMediaModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 border border-[#38BDF8]/30 text-xs font-mono text-[#38BDF8] font-bold transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-strong)] text-xs font-mono text-[var(--text-primary)] font-bold transition-all cursor-pointer"
             >
               <FolderOpen className="w-3.5 h-3.5" />
               <span>CHOOSE FROM MEDIA LIBRARY</span>
@@ -385,7 +381,7 @@ export const HeroEditor: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
             <div className="md:col-span-8 space-y-3">
               <div className="space-y-1.5">
-                <label className="block text-xs font-mono text-[#CBD5E1]">
+                <label className="block text-xs font-mono text-[var(--text-secondary)]">
                   IMAGE URL / STORAGE ASSET PATH
                 </label>
                 <div className="flex gap-2">
@@ -394,13 +390,13 @@ export const HeroEditor: React.FC = () => {
                     value={formData.hero_image_url}
                     onChange={(e) => setFormData({ ...formData, hero_image_url: e.target.value })}
                     placeholder="/images/afrid-hero.jpg or https://..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 text-white placeholder-[#475569] text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
                   />
                   {formData.hero_image_url && (
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, hero_image_url: '' })}
-                      className="p-2.5 rounded-xl bg-[#141B2D] hover:bg-rose-500/20 text-[#94A3B8] hover:text-rose-400 border border-white/10 cursor-pointer"
+                      className="p-2.5 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] cursor-pointer"
                       title="Clear Image"
                     >
                       <X className="w-4 h-4" />
@@ -413,27 +409,27 @@ export const HeroEditor: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsMediaModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-[11px] font-mono text-[#38BDF8] cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[11px] font-mono text-[var(--text-primary)] cursor-pointer"
                 >
                   Browse Supabase Storage
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, hero_image_url: '/images/afrid-hero.jpg' })}
-                  className="px-3 py-1.5 rounded-lg bg-[#080B11] hover:bg-[#141B2D] border border-white/10 text-[11px] font-mono text-[#94A3B8] hover:text-white cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[11px] font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   Use Static Asset Fallback
                 </button>
               </div>
 
-              <p className="text-[11px] text-[#64748B] font-mono">
+              <p className="text-[11px] text-[var(--text-muted)] font-mono">
                 Select an uploaded image from Supabase Storage or specify an external/static image path.
               </p>
             </div>
 
             {/* Thumbnail Preview */}
             <div className="md:col-span-4 flex flex-col items-center justify-center gap-2">
-              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-white/15 bg-[#080B11] shadow-lg">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-[var(--border-strong)] bg-[var(--bg-elevated)] shadow-lg">
                 {formData.hero_image_url ? (
                   <img
                     src={formData.hero_image_url}
@@ -444,12 +440,12 @@ export const HeroEditor: React.FC = () => {
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[#64748B]">
+                  <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
                     <ImageIcon className="w-8 h-8" />
                   </div>
                 )}
               </div>
-              <span className="text-[10px] font-mono text-[#94A3B8]">
+              <span className="text-[10px] font-mono text-[var(--text-secondary)]">
                 {formData.hero_image_url ? 'Active Preview' : 'No Image Set'}
               </span>
             </div>
@@ -457,63 +453,63 @@ export const HeroEditor: React.FC = () => {
         </div>
 
         {/* Call to Action Buttons Card */}
-        <div className="rounded-2xl border border-white/10 bg-[#0E131F]/80 p-6 space-y-5">
-          <div className="flex items-center gap-2 pb-3 border-b border-white/5 text-xs font-mono text-[#38BDF8] uppercase tracking-wider">
+        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-[var(--border-subtle)] text-xs font-mono text-[var(--text-primary)] uppercase tracking-wider">
             <Link className="w-4 h-4" />
             <span>HERO CALL TO ACTION BUTTONS</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Primary CTA */}
-            <div className="space-y-3 p-4 rounded-xl bg-[#080B11] border border-white/5">
-              <span className="text-[11px] font-mono text-emerald-400 font-semibold uppercase block">
+            <div className="space-y-3 p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+              <span className="text-[11px] font-mono text-[var(--text-primary)] font-semibold uppercase block">
                 PRIMARY ACTION BUTTON
               </span>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-mono text-[#94A3B8]">LABEL</label>
+                <label className="block text-[11px] font-mono text-[var(--text-secondary)]">LABEL</label>
                 <input
                   type="text"
                   value={formData.primary_cta_label}
                   onChange={(e) => setFormData({ ...formData, primary_cta_label: e.target.value })}
                   placeholder="EXPLORE WORK"
-                  className="w-full px-3 py-2 rounded-lg bg-[#0E131F] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-mono text-[#94A3B8]">TARGET ANCHOR / URL</label>
+                <label className="block text-[11px] font-mono text-[var(--text-secondary)]">TARGET ANCHOR / URL</label>
                 <input
                   type="text"
                   value={formData.primary_cta_url}
                   onChange={(e) => setFormData({ ...formData, primary_cta_url: e.target.value })}
                   placeholder="#projects"
-                  className="w-full px-3 py-2 rounded-lg bg-[#0E131F] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
                 />
               </div>
             </div>
 
             {/* Secondary CTA */}
-            <div className="space-y-3 p-4 rounded-xl bg-[#080B11] border border-white/5">
-              <span className="text-[11px] font-mono text-[#38BDF8] font-semibold uppercase block">
+            <div className="space-y-3 p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+              <span className="text-[11px] font-mono text-[var(--text-secondary)] font-semibold uppercase block">
                 SECONDARY ACTION BUTTON
               </span>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-mono text-[#94A3B8]">LABEL</label>
+                <label className="block text-[11px] font-mono text-[var(--text-secondary)]">LABEL</label>
                 <input
                   type="text"
                   value={formData.secondary_cta_label}
                   onChange={(e) => setFormData({ ...formData, secondary_cta_label: e.target.value })}
                   placeholder="LET'S WORK TOGETHER"
-                  className="w-full px-3 py-2 rounded-lg bg-[#0E131F] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-mono text-[#94A3B8]">TARGET ANCHOR / URL</label>
+                <label className="block text-[11px] font-mono text-[var(--text-secondary)]">TARGET ANCHOR / URL</label>
                 <input
                   type="text"
                   value={formData.secondary_cta_url}
                   onChange={(e) => setFormData({ ...formData, secondary_cta_url: e.target.value })}
                   placeholder="#contact"
-                  className="w-full px-3 py-2 rounded-lg bg-[#0E131F] border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-[#38BDF8]"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono focus:outline-none focus:border-[var(--border-strong)]"
                 />
               </div>
             </div>
@@ -521,19 +517,19 @@ export const HeroEditor: React.FC = () => {
         </div>
 
         {/* Bottom Save Action Bar */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
           <button
             type="button"
             onClick={handleReset}
             disabled={isSaving}
-            className="px-4 py-2.5 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#94A3B8] hover:text-white transition-all cursor-pointer disabled:opacity-50"
+            className="px-4 py-2.5 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer disabled:opacity-50"
           >
             RESET CHANGES
           </button>
           <button
             type="submit"
             disabled={isSaving}
-            className="px-6 py-2.5 rounded-xl bg-[#38BDF8] hover:bg-[#7DD3FC] text-[#080B11] font-bold text-xs font-mono transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.25)] disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-bold text-xs font-mono transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
           >
             {isSaving ? (
               <>
@@ -553,8 +549,8 @@ export const HeroEditor: React.FC = () => {
 
       {/* Media Library Selector Modal */}
       {isMediaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-          <div className="relative w-full max-w-5xl my-8 rounded-2xl border border-white/10 bg-[#080B11] p-6 shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="relative w-full max-w-5xl my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 shadow-2xl overflow-hidden">
             <MediaLibrary
               isModalPicker={true}
               selectedUrl={formData.hero_image_url}

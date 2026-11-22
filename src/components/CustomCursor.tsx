@@ -90,15 +90,15 @@ export const CustomCursor: React.FC = () => {
         className={`rounded-full flex items-center justify-center transition-all duration-300 ${
           isHovered
             ? cursorText
-              ? 'w-16 h-16 bg-[#38BDF8]/20 border border-[#38BDF8] backdrop-blur-sm'
-              : 'w-8 h-8 bg-[#38BDF8]/25 border border-[#38BDF8]'
-            : 'w-3.5 h-3.5 bg-[#38BDF8]/60 border border-[#38BDF8]/80'
+              ? 'w-16 h-16 bg-[var(--bg-surface)]/80 border border-[var(--text-primary)] backdrop-blur-sm'
+              : 'w-8 h-8 bg-[#111111]/15 dark:bg-[#F5F5F5]/20 border border-[var(--text-primary)]'
+            : 'w-3.5 h-3.5 bg-[#111111]/55 dark:bg-[#F5F5F5]/65 border border-[var(--text-primary)]'
         }`}
       >
         {cursorText && (
           <span
             ref={labelRef}
-            className="font-mono text-[9px] font-bold tracking-wider text-[#38BDF8] select-none"
+            className="font-mono text-[9px] font-bold tracking-wider text-[var(--text-primary)] select-none"
           >
             {cursorText}
           </span>

@@ -318,25 +318,25 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-4xl my-8 rounded-2xl border border-white/10 bg-[#0E131F] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-4xl my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#141B2D]/70 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20">
+            <div className="p-2 rounded-xl bg-[var(--bg-surface)] text-[var(--text-primary)] border border-[var(--border-subtle)]">
               <ImageIcon className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-white tracking-tight">
+                <h2 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">
                   Project Media Stage
                 </h2>
-                <span className="px-2 py-0.5 rounded-full bg-[#141B2D] border border-white/10 text-[10px] font-mono text-[#38BDF8]">
+                <span className="px-2 py-0.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[10px] font-mono text-[var(--text-primary)]">
                   {project.title}
                 </span>
               </div>
-              <p className="text-xs font-mono text-[#94A3B8]">
+              <p className="text-xs font-mono text-[var(--text-secondary)]">
                 Upload and organize photos, screenshots, and videos for the public Work section
               </p>
             </div>
@@ -345,15 +345,15 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsSqlModalOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-xs font-mono text-[#94A3B8] hover:text-white transition-all cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
               title="View Supabase SQL schema"
             >
-              <Code className="w-3.5 h-3.5 text-[#38BDF8]" />
+              <Code className="w-3.5 h-3.5 text-[var(--text-primary)]" />
               <span>SQL Schema</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -362,16 +362,12 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
 
         {/* Status Notification */}
         {statusMessage && (
-          <div className={`px-6 py-2.5 text-xs font-mono flex items-center justify-between border-b ${
-            statusMessage.type === 'success' 
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-              : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-          }`}>
+          <div className="px-6 py-2.5 text-xs font-mono flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)]">
             <div className="flex items-center gap-2">
               {statusMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
               <span>{statusMessage.text}</span>
             </div>
-            <button onClick={() => setStatusMessage(null)} className="p-0.5 hover:opacity-75">
+            <button onClick={() => setStatusMessage(null)} className="p-0.5 hover:opacity-75 cursor-pointer">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -380,19 +376,19 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-5">
           {/* Action Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border-subtle)]">
             <div>
-              <span className="text-xs font-mono text-white font-semibold block">
+              <span className="text-xs font-mono text-[var(--text-primary)] font-semibold block">
                 MEDIA ASSETS ({mediaItems.length})
               </span>
-              <span className="text-[11px] font-mono text-[#94A3B8]">
+              <span className="text-[11px] font-mono text-[var(--text-secondary)]">
                 {mediaItems.filter(m => m.isPublished).length} published · {mediaItems.filter(m => m.isFeatured).length > 0 ? 'Primary set' : 'No primary'}
               </span>
             </div>
 
             <button
               onClick={handleOpenAdd}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#60A5FA] text-[#080B11] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.2)] active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer shadow-sm active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>ADD MEDIA</span>
@@ -401,22 +397,22 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
 
           {/* Media Items List */}
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-[#94A3B8]">
-              <Loader2 className="w-8 h-8 text-[#38BDF8] animate-spin mb-2" />
+            <div className="flex flex-col items-center justify-center py-16 text-[var(--text-secondary)]">
+              <Loader2 className="w-8 h-8 text-[var(--text-primary)] animate-spin mb-2" />
               <span className="font-mono text-xs">Loading media assets...</span>
             </div>
           ) : mediaItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 px-4 text-center rounded-2xl border border-dashed border-white/10 bg-[#080B11]/50">
-              <ImageIcon className="w-10 h-10 text-[#38BDF8]/40 mb-3" />
-              <h4 className="text-white font-semibold text-sm mb-1">No media added yet</h4>
-              <p className="text-xs font-mono text-[#94A3B8] max-w-sm mb-4">
+            <div className="flex flex-col items-center justify-center py-14 px-4 text-center rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--bg-elevated)]">
+              <ImageIcon className="w-10 h-10 text-[var(--text-muted)] mb-3" />
+              <h4 className="text-[var(--text-primary)] font-semibold text-sm mb-1">No media added yet</h4>
+              <p className="text-xs font-mono text-[var(--text-secondary)] max-w-sm mb-4">
                 Add real photographs, screenshots, architecture diagrams, or video recordings for {project.title}.
               </p>
               <button
                 onClick={handleOpenAdd}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-primary)] transition-all cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-[#38BDF8]" />
+                <Plus className="w-4 h-4 text-[var(--text-primary)]" />
                 <span>Upload First Media</span>
               </button>
             </div>
@@ -431,10 +427,10 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                     key={item.id}
                     className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 sm:p-4 rounded-xl border transition-all ${
                       item.isFeatured
-                        ? 'border-[#38BDF8]/40 bg-[#12192B] shadow-[0_0_20px_rgba(56,189,248,0.06)]'
+                        ? 'border-[var(--border-strong)] bg-[var(--bg-elevated)] shadow-sm'
                         : item.isPublished
-                        ? 'border-white/10 bg-[#0B101D] hover:border-white/20'
-                        : 'border-white/5 bg-[#080B11]/80 opacity-70'
+                        ? 'border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)]'
+                        : 'border-[var(--border-subtle)] bg-[var(--bg-elevated)] opacity-70'
                     }`}
                   >
                     {/* Left: Reorder + Preview + Details */}
@@ -444,7 +440,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                         <button
                           onClick={() => handleMoveOrder(idx, 'up')}
                           disabled={isFirst}
-                          className="p-1 rounded bg-[#141B2D] hover:bg-[#1E293B] text-[#94A3B8] hover:text-white disabled:opacity-20 transition-all cursor-pointer"
+                          className="p-1 rounded bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-20 transition-all cursor-pointer"
                           title="Move up"
                         >
                           <ChevronUp className="w-3 h-3" />
@@ -452,7 +448,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                         <button
                           onClick={() => handleMoveOrder(idx, 'down')}
                           disabled={isLast}
-                          className="p-1 rounded bg-[#141B2D] hover:bg-[#1E293B] text-[#94A3B8] hover:text-white disabled:opacity-20 transition-all cursor-pointer"
+                          className="p-1 rounded bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-20 transition-all cursor-pointer"
                           title="Move down"
                         >
                           <ChevronDown className="w-3 h-3" />
@@ -460,7 +456,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                       </div>
 
                       {/* Thumbnail Preview */}
-                      <div className="relative w-16 h-12 rounded-lg overflow-hidden bg-[#070A12] border border-white/10 shrink-0 flex items-center justify-center">
+                      <div className="relative w-16 h-12 rounded-lg overflow-hidden bg-[var(--bg-canvas)] border border-[var(--border-subtle)] shrink-0 flex items-center justify-center">
                         {item.mediaType === 'image' ? (
                           <img
                             src={item.mediaUrl}
@@ -468,11 +464,11 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="flex items-center justify-center w-full h-full bg-[#080B11] text-[#38BDF8]">
+                          <div className="flex items-center justify-center w-full h-full bg-[var(--bg-elevated)] text-[var(--text-primary)]">
                             <VideoIcon className="w-5 h-5" />
                           </div>
                         )}
-                        <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/70 text-[8px] font-mono text-white uppercase">
+                        <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/75 text-[8px] font-mono text-white uppercase">
                           {item.mediaType === 'video' ? 'VID' : 'IMG'}
                         </span>
                       </div>
@@ -480,38 +476,38 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                       {/* Info & Badges */}
                       <div className="space-y-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-semibold text-white truncate max-w-[220px] sm:max-w-xs">
+                          <span className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[220px] sm:max-w-xs">
                             {item.caption || 'Untitled Media'}
                           </span>
 
                           {/* Primary / Featured badge */}
                           {item.isFeatured && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[9px] font-mono text-[#38BDF8] font-bold">
-                              <Star className="w-2.5 h-2.5 fill-[#38BDF8]" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-solid)] text-[var(--accent-contrast)] text-[9px] font-mono font-bold">
+                              <Star className="w-2.5 h-2.5 fill-current" />
                               PRIMARY
                             </span>
                           )}
 
                           {/* Published status */}
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-medium ${
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-medium border ${
                               item.isPublished
-                                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                                : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
+                                ? 'bg-[var(--bg-elevated)] border-[var(--border-strong)] text-[var(--text-primary)]'
+                                : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-secondary)]'
                             }`}
                           >
                             {item.isPublished ? 'PUBLISHED' : 'DRAFT'}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 text-[11px] font-mono text-[#94A3B8]">
+                        <div className="flex items-center gap-2 text-[11px] font-mono text-[var(--text-secondary)]">
                           <span>Order: #{item.displayOrder}</span>
                           <span>•</span>
                           <a
                             href={item.mediaUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 hover:text-[#38BDF8] truncate max-w-[180px]"
+                            className="inline-flex items-center gap-1 hover:text-[var(--text-primary)] truncate max-w-[180px]"
                           >
                             <span>view asset</span>
                             <ExternalLink className="w-2.5 h-2.5" />
@@ -521,12 +517,12 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                     </div>
 
                     {/* Right: Actions */}
-                    <div className="flex items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                    <div className="flex items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 border-[var(--border-subtle)] pt-2 sm:pt-0">
                       {/* Set as Primary Button */}
                       {!item.isFeatured && (
                         <button
                           onClick={() => handleSetPrimary(item)}
-                          className="px-2.5 py-1.5 rounded-lg bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-[#94A3B8] hover:text-[#38BDF8] text-[11px] font-mono transition-all cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-[11px] font-mono transition-all cursor-pointer"
                           title="Make primary media for project"
                         >
                           SET PRIMARY
@@ -538,8 +534,8 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                         onClick={() => handleTogglePublish(item)}
                         className={`p-2 rounded-lg border transition-all cursor-pointer ${
                           item.isPublished
-                            ? 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
-                            : 'bg-[#141B2D] hover:bg-[#1E293B] border-white/10 text-[#94A3B8]'
+                            ? 'bg-[var(--accent-solid)] text-[var(--accent-contrast)] border-[var(--accent-solid)] hover:opacity-90'
+                            : 'bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                         }`}
                         title={item.isPublished ? 'Unpublish' : 'Publish'}
                       >
@@ -549,16 +545,16 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                       {/* Edit Button */}
                       <button
                         onClick={() => handleOpenEdit(item)}
-                        className="p-2 rounded-lg bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-white transition-all cursor-pointer"
+                        className="p-2 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)] transition-all cursor-pointer"
                         title="Edit details"
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-[#38BDF8]" />
+                        <Edit3 className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                       </button>
 
                       {/* Delete Button */}
                       <button
                         onClick={() => setDeleteCandidate(item)}
-                        className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 transition-all cursor-pointer"
+                        className="p-2 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent-solid)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-contrast)] transition-all cursor-pointer"
                         title="Delete media"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -572,11 +568,11 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3 border-t border-white/10 bg-[#141B2D]/50 flex items-center justify-between text-xs font-mono text-[#94A3B8]">
+        <div className="px-6 py-3 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)] flex items-center justify-between text-xs font-mono text-[var(--text-secondary)]">
           <span>Project Slug: /{project.slug}</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-white text-xs font-mono transition-all cursor-pointer"
+            className="px-4 py-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-[var(--text-primary)] text-xs font-mono transition-all cursor-pointer"
           >
             Done
           </button>
@@ -587,17 +583,17 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
       {/* ADD / EDIT MEDIA ITEM SUB-MODAL                                        */}
       {/* ===================================================================== */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-          <div className="relative w-full max-w-lg my-8 rounded-2xl border border-white/10 bg-[#0E131F] shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="relative w-full max-w-lg my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden flex flex-col">
             
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#141B2D]/70">
-              <h3 className="text-base font-bold text-white">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+              <h3 className="text-base font-bold text-[var(--text-primary)]">
                 {editingItem ? 'Edit Project Media' : 'Add Project Media'}
               </h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1 rounded text-[#94A3B8] hover:text-white"
+                className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -607,8 +603,8 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
             <form onSubmit={handleSubmitForm} className="p-6 space-y-4">
               {/* Media Source Options */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono text-[#CBD5E1]">
-                  Media Source (File or Direct URL) <span className="text-[#38BDF8]">*</span>
+                <label className="text-xs font-mono text-[var(--text-secondary)]">
+                  Media Source (File or Direct URL) <span className="text-[var(--text-primary)]">*</span>
                 </label>
 
                 {/* Upload file button */}
@@ -624,13 +620,13 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-xs font-mono text-white transition-all cursor-pointer"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-primary)] transition-all cursor-pointer"
                     >
-                      <Upload className="w-3.5 h-3.5 text-[#38BDF8]" />
+                      <Upload className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                       <span>{uploadFile ? 'Change File' : 'Choose Local File'}</span>
                     </button>
                     {uploadFile && (
-                      <span className="text-xs font-mono text-[#38BDF8] truncate max-w-xs">
+                      <span className="text-xs font-mono text-[var(--text-primary)] truncate max-w-xs">
                         {uploadFile.name} ({(uploadFile.size / (1024 * 1024)).toFixed(2)} MB)
                       </span>
                     )}
@@ -642,7 +638,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                       value={mediaUrl}
                       onChange={(e) => setMediaUrl(e.target.value)}
                       placeholder="...or paste external media URL (https://...)"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-xs font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -651,11 +647,11 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
               {/* Media Type & Display Order */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-[#CBD5E1]">Media Type</label>
+                  <label className="text-xs font-mono text-[var(--text-secondary)]">Media Type</label>
                   <select
                     value={mediaType}
                     onChange={(e) => setMediaType(e.target.value as ProjectMediaType)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#080B11] border border-white/10 text-white text-xs font-mono focus:border-[#38BDF8] focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-mono focus:border-[var(--border-strong)] focus:outline-none"
                   >
                     <option value="image">Image (Photo / Screenshot)</option>
                     <option value="video">Video (MP4 / WebM)</option>
@@ -663,53 +659,53 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-[#CBD5E1]">Display Order</label>
+                  <label className="text-xs font-mono text-[var(--text-secondary)]">Display Order</label>
                   <input
                     type="number"
                     min="1"
                     value={displayOrder}
                     onChange={(e) => setDisplayOrder(parseInt(e.target.value, 10) || 1)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#080B11] border border-white/10 text-white text-xs font-mono focus:border-[#38BDF8] focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-mono focus:border-[var(--border-strong)] focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Caption */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono text-[#CBD5E1]">
-                  Caption <span className="text-[#94A3B8]">(shown in viewer)</span>
+                <label className="text-xs font-mono text-[var(--text-secondary)]">
+                  Caption <span className="text-[var(--text-muted)]">(shown in viewer)</span>
                 </label>
                 <input
                   type="text"
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   placeholder="e.g., Physical sensor prototype telemetry"
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-xs font-sans"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-sans"
                 />
               </div>
 
               {/* Alt Text */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono text-[#CBD5E1]">Alt Text</label>
+                <label className="text-xs font-mono text-[var(--text-secondary)]">Alt Text</label>
                 <input
                   type="text"
                   value={altText}
                   onChange={(e) => setAltText(e.target.value)}
                   placeholder="e.g., AquaSense hardware enclosure"
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-xs font-sans"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-sans"
                 />
               </div>
 
               {/* Flags: Primary & Published */}
-              <div className="pt-2 border-t border-white/5 space-y-2">
+              <div className="pt-2 border-t border-[var(--border-subtle)] space-y-2">
                 <label className="flex items-center gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={isFeatured}
                     onChange={(e) => setIsFeatured(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/20 bg-[#080B11] text-[#38BDF8] focus:ring-[#38BDF8]"
+                    className="w-4 h-4 rounded border-[var(--border-strong)] bg-[var(--bg-elevated)] accent-[var(--accent-solid)]"
                   />
-                  <span className="text-xs font-mono text-[#CBD5E1]">
+                  <span className="text-xs font-mono text-[var(--text-secondary)]">
                     Set as Primary Media (default view for project)
                   </span>
                 </label>
@@ -719,28 +715,28 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                     type="checkbox"
                     checked={isPublished}
                     onChange={(e) => setIsPublished(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/20 bg-[#080B11] text-[#38BDF8] focus:ring-[#38BDF8]"
+                    className="w-4 h-4 rounded border-[var(--border-strong)] bg-[var(--bg-elevated)] accent-[var(--accent-solid)]"
                   />
-                  <span className="text-xs font-mono text-[#CBD5E1]">
+                  <span className="text-xs font-mono text-[var(--text-secondary)]">
                     Published (visible publicly on portfolio)
                   </span>
                 </label>
               </div>
 
               {/* Form Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
                   disabled={isUploading}
-                  className="px-4 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#60A5FA] text-[#080B11] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isUploading ? (
                     <>
@@ -761,15 +757,15 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
       {/* DELETE CONFIRMATION MODAL                                              */}
       {/* ===================================================================== */}
       {deleteCandidate && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="w-full max-w-md p-6 rounded-2xl border border-white/10 bg-[#0E131F] shadow-2xl space-y-4">
-            <div className="flex items-center gap-3 text-rose-400">
-              <div className="p-2 rounded-lg bg-rose-500/10">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md">
+          <div className="w-full max-w-md p-6 rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-[var(--text-primary)]">
+              <div className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
                 <Trash2 className="w-5 h-5" />
               </div>
-              <h4 className="text-base font-bold text-white">Delete Media Item</h4>
+              <h4 className="text-base font-bold text-[var(--text-primary)]">Delete Media Item</h4>
             </div>
-            <p className="text-xs font-mono text-[#CBD5E1]">
+            <p className="text-xs font-mono text-[var(--text-secondary)]">
               Are you sure you want to delete &ldquo;{deleteCandidate.caption || 'this media item'}&rdquo;? If stored in portfolio-media, the asset will also be removed.
             </p>
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -777,7 +773,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                 type="button"
                 onClick={() => setDeleteCandidate(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-[#141B2D] text-xs font-mono text-[#CBD5E1]"
+                className="px-4 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
               >
                 Cancel
               </button>
@@ -785,7 +781,7 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-mono font-bold transition-all"
+                className="px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] text-xs font-mono font-bold transition-all cursor-pointer"
               >
                 {isDeleting ? 'Deleting...' : 'Confirm Delete'}
               </button>
@@ -798,41 +794,41 @@ export const ProjectMediaManager: React.FC<ProjectMediaManagerProps> = ({
       {/* SQL SCHEMA MODAL (For Supabase SQL Editor)                             */}
       {/* ===================================================================== */}
       {isSqlModalOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="relative w-full max-w-2xl p-6 rounded-2xl border border-white/10 bg-[#0E131F] shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
-              <div className="flex items-center gap-2 text-[#38BDF8]">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-md">
+          <div className="relative w-full max-w-2xl p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)] shrink-0">
+              <div className="flex items-center gap-2 text-[var(--text-primary)]">
                 <Code className="w-5 h-5" />
-                <h4 className="text-base font-bold text-white">Supabase Schema: public.project_media</h4>
+                <h4 className="text-base font-bold text-[var(--text-primary)]">Supabase Schema: public.project_media</h4>
               </div>
-              <button onClick={() => setIsSqlModalOpen(false)} className="text-[#94A3B8] hover:text-white">
+              <button onClick={() => setIsSqlModalOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs font-mono text-[#94A3B8] shrink-0">
-              Run this script once in your Supabase project SQL Editor to enable the persistent <code className="text-[#38BDF8]">public.project_media</code> table with RLS security policies.
+            <p className="text-xs font-mono text-[var(--text-secondary)] shrink-0">
+              Run this script once in your Supabase project SQL Editor to enable the persistent <code className="text-[var(--text-primary)] font-semibold">public.project_media</code> table with RLS security policies.
             </p>
 
-            <pre className="flex-1 overflow-y-auto p-4 rounded-xl bg-[#050812] border border-white/10 font-mono text-[11px] text-[#CBD5E1] leading-relaxed select-all">
+            <pre className="flex-1 overflow-y-auto p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] font-mono text-[11px] text-[var(--text-primary)] leading-relaxed select-all">
               {PROJECT_MEDIA_SQL_SCHEMA}
             </pre>
 
-            <div className="flex items-center justify-between pt-2 border-t border-white/10 shrink-0">
-              <span className="text-[11px] font-mono text-emerald-400">
+            <div className="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)] shrink-0">
+              <span className="text-[11px] font-mono text-[var(--text-primary)] font-semibold">
                 {copiedSql ? '✓ Copied to clipboard!' : ''}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopySql}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#60A5FA] text-[#080B11] text-xs font-mono font-bold transition-all cursor-pointer shadow-md"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] text-xs font-mono font-bold transition-all cursor-pointer shadow-sm"
                 >
                   {copiedSql ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   <span>{copiedSql ? 'COPIED!' : 'COPY SQL'}</span>
                 </button>
                 <button
                   onClick={() => setIsSqlModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#141B2D] text-xs font-mono text-[#CBD5E1]"
+                  className="px-4 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   Close
                 </button>

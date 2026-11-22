@@ -363,21 +363,21 @@ export const JourneyEditor: React.FC = () => {
   return (
     <div className="space-y-8 max-w-6xl">
       {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
         <div>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] font-mono tracking-widest text-[#38BDF8] uppercase font-semibold">
+            <span className="text-[11px] font-mono tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
               TRAJECTORY CMS
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#38BDF8]/10 border border-[#38BDF8]/30 text-[10px] font-mono text-[#38BDF8] font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[10px] font-mono text-[var(--text-primary)] font-semibold">
               <Compass className="w-3 h-3" />
               PUBLIC.JOURNEY_MILESTONES
             </span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-1">
             Journey & Trajectory Milestones
           </h1>
-          <p className="text-sm font-mono text-[#94A3B8] mt-0.5">
+          <p className="text-sm font-mono text-[var(--text-secondary)] mt-0.5">
             Manage your timeline milestones, active building focus, horizon anchors, and pillars.
           </p>
         </div>
@@ -386,26 +386,26 @@ export const JourneyEditor: React.FC = () => {
           <button
             onClick={handleSeedDefaults}
             disabled={isLoading || isSaving}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#CBD5E1] hover:text-[#38BDF8] transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer disabled:opacity-50"
             title="Seed canonical default milestones into database if empty"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <Sparkles className="w-3.5 h-3.5 text-[var(--text-primary)]" />
             <span>SEED DEFAULTS</span>
           </button>
 
           <button
             onClick={loadMilestones}
             disabled={isLoading}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0E131F] hover:bg-[#141B2D] border border-white/10 text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-primary)] transition-all cursor-pointer disabled:opacity-50"
             title="Refresh from Supabase"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#38BDF8] ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[var(--text-primary)] ${isLoading ? 'animate-spin' : ''}`} />
             <span>SYNC</span>
           </button>
 
           <button
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#60A5FA] text-[#080B11] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.25)]"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer shadow-sm"
           >
             <Plus className="w-4 h-4" />
             <span>ADD MILESTONE</span>
@@ -416,23 +416,19 @@ export const JourneyEditor: React.FC = () => {
       {/* 2. Status Alert Bar */}
       {statusMessage && (
         <div
-          className={`flex items-center justify-between p-4 rounded-xl border font-mono text-xs ${
-            statusMessage.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
+          className="flex items-center justify-between p-4 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] font-mono text-xs"
         >
           <div className="flex items-center gap-2.5">
             {statusMessage.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-[var(--text-primary)] shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-[var(--text-primary)] shrink-0" />
             )}
             <span>{statusMessage.text}</span>
           </div>
           <button
             onClick={() => setStatusMessage(null)}
-            className="p-1 hover:text-white transition-colors cursor-pointer"
+            className="p-1 hover:opacity-75 transition-opacity cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -441,20 +437,20 @@ export const JourneyEditor: React.FC = () => {
 
       {/* 3. Content Area */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-white/10 bg-[#0E131F]/50 backdrop-blur-md">
-          <Loader2 className="w-8 h-8 text-[#38BDF8] animate-spin mb-3" />
-          <p className="text-sm font-mono text-[#94A3B8]">Loading journey milestones from Supabase...</p>
+        <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+          <Loader2 className="w-8 h-8 text-[var(--text-primary)] animate-spin mb-3" />
+          <p className="text-sm font-mono text-[var(--text-secondary)]">Loading journey milestones from Supabase...</p>
         </div>
       ) : milestones.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl border border-dashed border-white/15 bg-[#0E131F]/30 text-center">
-          <Compass className="w-12 h-12 text-[#38BDF8]/40 mb-3" />
-          <h3 className="text-lg font-bold text-white mb-1">No Milestones Found in Database</h3>
-          <p className="text-xs font-mono text-[#94A3B8] max-w-md mb-6">
+        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--bg-surface)] text-center">
+          <Compass className="w-12 h-12 text-[var(--text-muted)] mb-3" />
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">No Milestones Found in Database</h3>
+          <p className="text-xs font-mono text-[var(--text-secondary)] max-w-md mb-6">
             Add a milestone or sync from the database to manage your trajectory journey.
           </p>
           <button
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#38BDF8] text-[#080B11] text-xs font-mono font-bold"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-contrast)] text-xs font-mono font-bold cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Create First Milestone</span>
@@ -463,10 +459,10 @@ export const JourneyEditor: React.FC = () => {
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-[#94A3B8] uppercase tracking-wider">
+            <span className="text-xs font-mono text-[var(--text-secondary)] uppercase tracking-wider">
               TOTAL MILESTONES ({milestones.length})
             </span>
-            <span className="text-[10px] font-mono text-[#38BDF8]">
+            <span className="text-[10px] font-mono text-[var(--text-secondary)]">
               ORDER CONTROLS LIVE TIMELINE SEQUENCE
             </span>
           </div>
@@ -479,12 +475,12 @@ export const JourneyEditor: React.FC = () => {
               return (
                 <div
                   key={m.id}
-                  className={`group rounded-2xl border p-4 sm:p-5 transition-all backdrop-blur-md ${
+                  className={`group rounded-2xl border p-4 sm:p-5 transition-all ${
                     m.is_current 
-                      ? 'border-[#38BDF8]/40 bg-[#0E131F] shadow-[0_0_30px_rgba(56,189,248,0.06)]' 
+                      ? 'border-[var(--border-strong)] bg-[var(--bg-elevated)] shadow-sm' 
                       : m.is_published 
-                      ? 'border-white/10 bg-[#0E131F]/80 hover:border-white/20' 
-                      : 'border-white/5 bg-[#080B11]/90 opacity-75'
+                      ? 'border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--border-strong)]' 
+                      : 'border-[var(--border-subtle)] bg-[var(--bg-elevated)] opacity-75'
                   }`}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -497,7 +493,7 @@ export const JourneyEditor: React.FC = () => {
                         <button
                           onClick={() => handleMoveOrder(idx, 'up')}
                           disabled={isFirst}
-                          className="p-1 rounded bg-[#141B2D] hover:bg-[#1E293B] text-[#94A3B8] hover:text-white disabled:opacity-20 transition-all cursor-pointer"
+                          className="p-1 rounded bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-20 transition-all cursor-pointer"
                           title="Move Up"
                         >
                           <ChevronUp className="w-3.5 h-3.5" />
@@ -505,7 +501,7 @@ export const JourneyEditor: React.FC = () => {
                         <button
                           onClick={() => handleMoveOrder(idx, 'down')}
                           disabled={isLast}
-                          className="p-1 rounded bg-[#141B2D] hover:bg-[#1E293B] text-[#94A3B8] hover:text-white disabled:opacity-20 transition-all cursor-pointer"
+                          className="p-1 rounded bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-20 transition-all cursor-pointer"
                           title="Move Down"
                         >
                           <ChevronDown className="w-3.5 h-3.5" />
@@ -515,54 +511,54 @@ export const JourneyEditor: React.FC = () => {
                       {/* Year Node Badge */}
                       <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-2xl border shrink-0 ${
                         m.is_current 
-                          ? 'bg-[#38BDF8]/10 border-[#38BDF8] text-[#38BDF8]' 
+                          ? 'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)]' 
                           : m.is_horizon 
-                          ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
-                          : 'bg-[#141B2D] border-white/10 text-white'
+                          ? 'bg-[var(--bg-elevated)] border-[var(--border-strong)] text-[var(--text-primary)]'
+                          : 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)]'
                       }`}>
                         <span className="font-mono text-sm font-extrabold tracking-tight">{m.year}</span>
-                        <span className="text-[9px] font-mono text-[#94A3B8] uppercase">#{m.display_order}</span>
+                        <span className={`text-[9px] font-mono uppercase ${m.is_current ? 'opacity-80' : 'text-[var(--text-muted)]'}`}>#{m.display_order}</span>
                       </div>
 
                       {/* Milestone Core Meta */}
                       <div className="space-y-1.5 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-mono text-[#38BDF8] font-semibold uppercase tracking-wider">
+                          <span className="text-xs font-mono text-[var(--text-secondary)] font-semibold uppercase tracking-wider">
                             {m.phase || 'Phase'}
                           </span>
 
                           {m.is_current && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[9px] font-mono text-[#38BDF8] font-bold">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-solid)] text-[var(--accent-contrast)] text-[9px] font-mono font-bold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-contrast)] animate-pulse" />
                               CURRENT FOCUS
                             </span>
                           )}
 
                           {m.is_horizon && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-[9px] font-mono text-indigo-300 font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-strong)] text-[9px] font-mono text-[var(--text-primary)] font-bold">
                               <Flag className="w-2.5 h-2.5" />
                               HORIZON ANCHOR
                             </span>
                           )}
 
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-medium ${
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-medium border ${
                               m.is_published
-                                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                                : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
+                                ? 'bg-[var(--bg-elevated)] border-[var(--border-strong)] text-[var(--text-primary)]'
+                                : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-secondary)]'
                             }`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full ${m.is_published ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${m.is_published ? 'bg-[var(--text-primary)]' : 'bg-[var(--text-muted)]'}`} />
                             {m.is_published ? 'PUBLISHED' : 'DRAFT'}
                           </span>
                         </div>
 
-                        <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                        <h3 className="text-sm sm:text-base font-bold text-[var(--text-primary)] tracking-tight">
                           {m.title}
                         </h3>
 
                         {m.description && (
-                          <p className="text-xs text-[#94A3B8] line-clamp-1 max-w-2xl font-light">
+                          <p className="text-xs text-[var(--text-secondary)] line-clamp-1 max-w-2xl font-light">
                             {m.description}
                           </p>
                         )}
@@ -572,9 +568,9 @@ export const JourneyEditor: React.FC = () => {
                             {m.pillars.map((pillar, pIdx) => (
                               <span
                                 key={pIdx}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#141B2D] border border-white/5 text-[10px] font-mono text-[#CBD5E1]"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[10px] font-mono text-[var(--text-secondary)]"
                               >
-                                <span className="w-1 h-1 rounded-full bg-[#38BDF8]" />
+                                <span className="w-1 h-1 rounded-full bg-[var(--text-primary)]" />
                                 {pillar}
                               </span>
                             ))}
@@ -585,19 +581,19 @@ export const JourneyEditor: React.FC = () => {
                     </div>
 
                     {/* Right Section: Action Controls */}
-                    <div className="flex items-center justify-end gap-2 shrink-0 border-t lg:border-t-0 border-white/5 pt-3 lg:pt-0">
+                    <div className="flex items-center justify-end gap-2 shrink-0 border-t lg:border-t-0 border-[var(--border-subtle)] pt-3 lg:pt-0">
                       
                       {/* Set / Unset Current */}
                       <button
                         onClick={() => handleToggleCurrent(m)}
                         className={`p-2 rounded-xl border transition-all cursor-pointer ${
                           m.is_current 
-                            ? 'bg-[#38BDF8]/15 border-[#38BDF8]/40 text-[#38BDF8]' 
-                            : 'bg-[#141B2D] hover:bg-[#1E293B] border-white/10 text-[#94A3B8] hover:text-[#38BDF8]'
+                            ? 'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)]' 
+                            : 'bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                         }`}
                         title={m.is_current ? 'Remove Current Focus' : 'Set as Current Focus Milestone'}
                       >
-                        <Target className={`w-4 h-4 ${m.is_current ? 'fill-[#38BDF8]/20' : ''}`} />
+                        <Target className="w-4 h-4" />
                       </button>
 
                       {/* Set / Unset Horizon */}
@@ -605,8 +601,8 @@ export const JourneyEditor: React.FC = () => {
                         onClick={() => handleToggleHorizon(m)}
                         className={`p-2 rounded-xl border transition-all cursor-pointer ${
                           m.is_horizon 
-                            ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300' 
-                            : 'bg-[#141B2D] hover:bg-[#1E293B] border-white/10 text-[#94A3B8] hover:text-indigo-400'
+                            ? 'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)]' 
+                            : 'bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                         }`}
                         title={m.is_horizon ? 'Remove Horizon Anchor' : 'Set as Horizon Anchor'}
                       >
@@ -618,8 +614,8 @@ export const JourneyEditor: React.FC = () => {
                         onClick={() => handleTogglePublish(m)}
                         className={`p-2 rounded-xl border transition-all cursor-pointer ${
                           m.is_published
-                            ? 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
-                            : 'bg-[#141B2D] hover:bg-[#1E293B] border-white/10 text-[#94A3B8] hover:text-white'
+                            ? 'bg-[var(--accent-solid)] border-[var(--accent-solid)] text-[var(--accent-contrast)] hover:opacity-90'
+                            : 'bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                         }`}
                         title={m.is_published ? 'Unpublish Milestone' : 'Publish Milestone'}
                       >
@@ -629,16 +625,16 @@ export const JourneyEditor: React.FC = () => {
                       {/* Edit Button */}
                       <button
                         onClick={() => handleOpenEdit(m)}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 hover:border-[#38BDF8]/40 text-xs font-mono text-white transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] text-xs font-mono text-[var(--text-primary)] transition-all cursor-pointer"
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-[#38BDF8]" />
+                        <Edit3 className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                         <span>EDIT</span>
                       </button>
 
                       {/* Delete Button */}
                       <button
                         onClick={() => setDeleteCandidate(m)}
-                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 transition-all cursor-pointer"
+                        className="p-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--accent-solid)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-contrast)] transition-all cursor-pointer"
                         title="Delete Milestone"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -652,11 +648,11 @@ export const JourneyEditor: React.FC = () => {
             })}
 
             {milestones.length === 0 && (
-              <div className="p-8 rounded-xl border border-white/5 bg-[#080B11] text-center space-y-4">
-                <Compass className="w-10 h-10 text-[#38BDF8] mx-auto opacity-50" />
+              <div className="p-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center space-y-4">
+                <Compass className="w-10 h-10 text-[var(--text-muted)] mx-auto" />
                 <div className="space-y-1">
-                  <p className="text-sm font-bold text-white">No Journey Milestones in Database</p>
-                  <p className="text-xs text-[#94A3B8] font-mono max-w-md mx-auto">
+                  <p className="text-sm font-bold text-[var(--text-primary)]">No Journey Milestones in Database</p>
+                  <p className="text-xs text-[var(--text-secondary)] font-mono max-w-md mx-auto">
                     The table public.journey_milestones is currently empty. Seed canonical 2026–2030 trajectory milestones to populate both Admin and the public website.
                   </p>
                 </div>
@@ -664,7 +660,7 @@ export const JourneyEditor: React.FC = () => {
                   type="button"
                   onClick={handleSeedDefaults}
                   disabled={isSaving}
-                  className="px-4 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#7DD3FC] text-[#080B11] font-bold text-xs font-mono transition-all inline-flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(56,189,248,0.25)]"
+                  className="px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] font-bold text-xs font-mono transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>SEED CANONICAL MILESTONES</span>
@@ -679,27 +675,27 @@ export const JourneyEditor: React.FC = () => {
       {/* 4. ADD / EDIT MILESTONE MODAL                                             */}
       {/* ========================================================================= */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-2xl my-8 rounded-2xl border border-white/10 bg-[#0E131F] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 dark:bg-black/85 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-2xl my-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#141B2D]/50 shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#38BDF8]/10 text-[#38BDF8]">
+                <div className="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)]">
                   <Compass className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">
                     {editingMilestone ? `Edit Milestone: ${editingMilestone.year}` : 'Add New Journey Milestone'}
                   </h2>
-                  <p className="text-[11px] font-mono text-[#94A3B8]">
+                  <p className="text-[11px] font-mono text-[var(--text-secondary)]">
                     Configure timeline year, phase label, description, and target pillars
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -712,11 +708,11 @@ export const JourneyEditor: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-mono text-[#CBD5E1] flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-[#38BDF8]" />
-                      Year <span className="text-[#38BDF8]">*</span>
+                    <label className="text-xs font-mono text-[var(--text-secondary)] flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[var(--text-primary)]" />
+                      Year <span className="text-[var(--text-primary)]">*</span>
                     </label>
-                    <span className="text-[10px] font-mono text-[#94A3B8]">
+                    <span className="text-[10px] font-mono text-[var(--text-muted)]">
                       4-digit year (e.g. 2026)
                     </span>
                   </div>
@@ -727,13 +723,13 @@ export const JourneyEditor: React.FC = () => {
                     onChange={(e) => setFormYear(e.target.value)}
                     placeholder="2026"
                     required
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-xs font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-[#CBD5E1] flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-[#38BDF8]" />
+                  <label className="text-xs font-mono text-[var(--text-secondary)] flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-[var(--text-primary)]" />
                     Phase Label
                   </label>
                   <input
@@ -741,15 +737,15 @@ export const JourneyEditor: React.FC = () => {
                     value={formPhase}
                     onChange={(e) => setFormPhase(e.target.value)}
                     placeholder="e.g., Foundation / Going Deeper"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-xs font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-mono"
                   />
                 </div>
               </div>
 
               {/* Title */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono text-[#CBD5E1]">
-                  Milestone Headline / Title <span className="text-[#38BDF8]">*</span>
+                <label className="text-xs font-mono text-[var(--text-secondary)]">
+                  Milestone Headline / Title <span className="text-[var(--text-primary)]">*</span>
                 </label>
                 <input
                   type="text"
@@ -757,13 +753,13 @@ export const JourneyEditor: React.FC = () => {
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="e.g., Core Fundamentals & Active Building"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm"
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono text-[#CBD5E1]">
+                <label className="text-xs font-mono text-[var(--text-secondary)]">
                   Milestone Description / Narrative
                 </label>
                 <textarea
@@ -771,18 +767,18 @@ export const JourneyEditor: React.FC = () => {
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   placeholder="Narrative overview of technical goals, research, and milestones for this year..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-xs font-light leading-relaxed resize-y"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs font-light leading-relaxed resize-y"
                 />
               </div>
 
               {/* Pillars Editor */}
-              <div className="space-y-2.5 pt-2 border-t border-white/10">
+              <div className="space-y-2.5 pt-2 border-t border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider font-semibold flex items-center gap-1.5">
+                  <label className="text-xs font-mono text-[var(--text-primary)] uppercase tracking-wider font-semibold flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5" />
                     KEY TARGET MILESTONES / PILLARS ({formPillars.length})
                   </label>
-                  <span className="text-[10px] font-mono text-[#94A3B8]">
+                  <span className="text-[10px] font-mono text-[var(--text-muted)]">
                     Editable list with ordering & removal
                   </span>
                 </div>
@@ -792,9 +788,9 @@ export const JourneyEditor: React.FC = () => {
                   {formPillars.map((pillar, pIdx) => (
                     <div 
                       key={pIdx}
-                      className="flex items-center gap-2 p-2 rounded-xl bg-[#080B11] border border-white/10"
+                      className="flex items-center gap-2 p-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
                     >
-                      <span className="text-[11px] font-mono text-[#38BDF8] w-5 text-center font-bold">
+                      <span className="text-[11px] font-mono text-[var(--text-primary)] w-5 text-center font-bold">
                         {pIdx + 1}
                       </span>
                       
@@ -802,7 +798,7 @@ export const JourneyEditor: React.FC = () => {
                         type="text"
                         value={pillar}
                         onChange={(e) => handlePillarChange(pIdx, e.target.value)}
-                        className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#141B2D] border border-white/5 focus:border-[#38BDF8] focus:outline-none text-white text-xs"
+                        className="flex-1 px-2.5 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] text-xs"
                       />
 
                       {/* Move Up */}
@@ -810,7 +806,7 @@ export const JourneyEditor: React.FC = () => {
                         type="button"
                         onClick={() => handleMovePillar(pIdx, 'up')}
                         disabled={pIdx === 0}
-                        className="p-1.5 rounded-lg bg-[#141B2D] hover:bg-[#1E293B] text-[#94A3B8] hover:text-white disabled:opacity-20 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-20 cursor-pointer"
                         title="Move Pillar Up"
                       >
                         <MoveUp className="w-3.5 h-3.5" />
@@ -821,7 +817,7 @@ export const JourneyEditor: React.FC = () => {
                         type="button"
                         onClick={() => handleMovePillar(pIdx, 'down')}
                         disabled={pIdx === formPillars.length - 1}
-                        className="p-1.5 rounded-lg bg-[#141B2D] hover:bg-[#1E293B] text-[#94A3B8] hover:text-white disabled:opacity-20 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-20 cursor-pointer"
                         title="Move Pillar Down"
                       >
                         <MoveDown className="w-3.5 h-3.5" />
@@ -831,7 +827,7 @@ export const JourneyEditor: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleDeletePillar(pIdx)}
-                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent-solid)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-contrast)] cursor-pointer"
                         title="Delete Pillar"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -853,73 +849,73 @@ export const JourneyEditor: React.FC = () => {
                       }
                     }}
                     placeholder="Add a new milestone pillar (e.g., AquaSense X Deployment)..."
-                    className="flex-1 px-3.5 py-2 rounded-xl bg-[#080B11] border border-dashed border-white/20 focus:border-[#38BDF8] focus:outline-none text-white text-xs"
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)] border border-dashed border-[var(--border-strong)] focus:border-[var(--accent-solid)] focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-xs"
                   />
                   <button
                     type="button"
                     onClick={handleAddPillar}
                     disabled={!newPillarInput.trim()}
-                    className="px-3.5 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] border border-white/10 text-xs font-mono text-[#CBD5E1] hover:text-white disabled:opacity-40 cursor-pointer flex items-center gap-1"
+                    className="px-3.5 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-xs font-mono font-bold text-[var(--accent-contrast)] disabled:opacity-40 cursor-pointer flex items-center gap-1"
                   >
-                    <Plus className="w-3.5 h-3.5 text-[#38BDF8]" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>ADD</span>
                   </button>
                 </div>
               </div>
 
               {/* Status Controls */}
-              <div className="space-y-3 pt-3 border-t border-white/10">
-                <span className="text-xs font-mono text-[#38BDF8] uppercase tracking-wider block font-semibold">
+              <div className="space-y-3 pt-3 border-t border-[var(--border-subtle)]">
+                <span className="text-xs font-mono text-[var(--text-primary)] uppercase tracking-wider block font-semibold">
                   STATUS & DISPLAY CONFIGURATION
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* Current Toggle */}
-                  <label className="flex items-center gap-3 p-3 rounded-xl bg-[#080B11] border border-white/10 cursor-pointer hover:border-white/20">
+                  <label className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--border-strong)]">
                     <input
                       type="checkbox"
                       checked={formIsCurrent}
                       onChange={(e) => setFormIsCurrent(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#38BDF8] accent-[#38BDF8]"
+                      className="w-4 h-4 rounded accent-[var(--accent-solid)]"
                     />
                     <div>
-                      <span className="text-xs font-mono text-white font-bold block">Current Focus</span>
-                      <span className="text-[10px] font-mono text-[#94A3B8]">Active build year</span>
+                      <span className="text-xs font-mono text-[var(--text-primary)] font-bold block">Current Focus</span>
+                      <span className="text-[10px] font-mono text-[var(--text-secondary)]">Active build year</span>
                     </div>
                   </label>
 
                   {/* Horizon Toggle */}
-                  <label className="flex items-center gap-3 p-3 rounded-xl bg-[#080B11] border border-white/10 cursor-pointer hover:border-white/20">
+                  <label className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--border-strong)]">
                     <input
                       type="checkbox"
                       checked={formIsHorizon}
                       onChange={(e) => setFormIsHorizon(e.target.checked)}
-                      className="w-4 h-4 rounded text-indigo-400 accent-indigo-500"
+                      className="w-4 h-4 rounded accent-[var(--accent-solid)]"
                     />
                     <div>
-                      <span className="text-xs font-mono text-white font-bold block">Horizon Anchor</span>
-                      <span className="text-[10px] font-mono text-[#94A3B8]">Long-term anchor</span>
+                      <span className="text-xs font-mono text-[var(--text-primary)] font-bold block">Horizon Anchor</span>
+                      <span className="text-[10px] font-mono text-[var(--text-secondary)]">Long-term anchor</span>
                     </div>
                   </label>
 
                   {/* Published Toggle */}
-                  <label className="flex items-center gap-3 p-3 rounded-xl bg-[#080B11] border border-white/10 cursor-pointer hover:border-white/20">
+                  <label className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--border-strong)]">
                     <input
                       type="checkbox"
                       checked={formIsPublished}
                       onChange={(e) => setFormIsPublished(e.target.checked)}
-                      className="w-4 h-4 rounded text-emerald-500 accent-emerald-500"
+                      className="w-4 h-4 rounded accent-[var(--accent-solid)]"
                     />
                     <div>
-                      <span className="text-xs font-mono text-white font-bold block">Published</span>
-                      <span className="text-[10px] font-mono text-[#94A3B8]">Visible on live site</span>
+                      <span className="text-xs font-mono text-[var(--text-primary)] font-bold block">Published</span>
+                      <span className="text-[10px] font-mono text-[var(--text-secondary)]">Visible on live site</span>
                     </div>
                   </label>
                 </div>
 
                 {/* Display Order */}
                 <div className="space-y-1 pt-1">
-                  <label className="text-xs font-mono text-[#CBD5E1]">
+                  <label className="text-xs font-mono text-[var(--text-secondary)]">
                     Display Order Sequence
                   </label>
                   <input
@@ -927,24 +923,24 @@ export const JourneyEditor: React.FC = () => {
                     min={1}
                     value={formDisplayOrder}
                     onChange={(e) => setFormDisplayOrder(parseInt(e.target.value) || 1)}
-                    className="w-32 px-3 py-2 rounded-xl bg-[#080B11] border border-white/10 focus:border-[#38BDF8] focus:outline-none text-white text-xs font-mono"
+                    className="w-32 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--border-strong)] focus:outline-none text-[var(--text-primary)] text-xs font-mono"
                   />
                 </div>
               </div>
 
               {/* Modal Footer */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] text-xs font-mono text-[#CBD5E1] transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#60A5FA] text-[#080B11] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isSaving ? (
                     <>
@@ -969,21 +965,21 @@ export const JourneyEditor: React.FC = () => {
       {/* 5. DELETE CONFIRMATION DIALOG                                             */}
       {/* ========================================================================= */}
       {deleteCandidate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-[#0E131F] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3 text-rose-400">
-              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 dark:bg-black/85 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-[var(--text-primary)]">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Confirm Milestone Deletion</h3>
-                <span className="text-xs font-mono text-rose-400">Destructive Database Action</span>
+                <h3 className="text-base font-bold text-[var(--text-primary)]">Confirm Milestone Deletion</h3>
+                <span className="text-xs font-mono text-[var(--text-secondary)]">Destructive Database Action</span>
               </div>
             </div>
 
-            <p className="text-xs text-[#CBD5E1] leading-relaxed">
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
               Are you sure you want to permanently delete milestone{' '}
-              <strong className="text-white font-bold">"{deleteCandidate.year} - {deleteCandidate.title}"</strong>?
+              <strong className="text-[var(--text-primary)] font-bold">"{deleteCandidate.year} - {deleteCandidate.title}"</strong>?
               This action cannot be undone and will remove it from the timeline.
             </p>
 
@@ -991,14 +987,14 @@ export const JourneyEditor: React.FC = () => {
               <button
                 onClick={() => setDeleteCandidate(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-[#141B2D] hover:bg-[#1E293B] text-xs font-mono text-[#CBD5E1] cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-mono font-bold tracking-wide transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:opacity-90 text-[var(--accent-contrast)] text-xs font-mono font-bold tracking-wide transition-all cursor-pointer disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>
