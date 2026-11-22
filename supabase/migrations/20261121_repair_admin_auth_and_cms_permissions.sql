@@ -1063,6 +1063,9 @@ REVOKE ALL ON FUNCTION public.cms_health_check() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.cms_health_check() FROM anon;
 GRANT EXECUTE ON FUNCTION public.cms_health_check() TO authenticated;
 
+-- Prompt PostgREST to reload its schema cache immediately so new RPCs are callable right away
+NOTIFY pgrst, 'reload schema';
+
 -- ============================================================================
 -- ROLLBACK / RECOVERY GUIDANCE (Reference Only — Do Not Auto-Execute)
 -- ============================================================================

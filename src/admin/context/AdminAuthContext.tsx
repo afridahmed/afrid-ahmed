@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
-import { verifyAdminSession } from '../../services/cmsAuthService';
+import { CmsErrorCategory, verifyAdminSession } from '../../services/cmsAuthService';
 
 interface AdminAuthContextType {
   user: User | null;
@@ -9,8 +9,10 @@ interface AdminAuthContextType {
   isAdmin: boolean;
   isLoading: boolean;
   authError: string | null;
+  authCategory: CmsErrorCategory | null;
   signIn: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
+  retryVerification: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -22,14 +24,19 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authCategory, setAuthCategory] = useState<CmsErrorCategory | null>(null);
 
-  const checkAdminStatus = useCallback(async (_userId: string): Promise<{ authorized: boolean; error?: string }> => {
-    const verification = await verifyAdminSession();
-    return {
-      authorized: verification.authorized,
-      error: verification.error,
-    };
-  }, []);
+  const checkAdminStatus = useCallback(
+    async (_userId: string): Promise<{ authorized: boolean; category?: CmsErrorCategory; error?: string }> => {
+      const verification = await verifyAdminSession();
+      return {
+        authorized: verification.authorized,
+        category: verification.category,
+        error: verification.error,
+      };
+    },
+    []
+  );
 
   const handleSession = useCallback(async (currentSession: Session | null) => {
     setIsLoading(true);
@@ -41,17 +48,26 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       const verification = await checkAdminStatus(currentUser.id);
       setIsAdmin(verification.authorized);
       if (!verification.authorized) {
+        setAuthCategory(verification.category || 'NOT_ADMIN');
         setAuthError(
           verification.error || 'Access Denied: This authenticated account is not authorized as an administrator.'
         );
       } else {
+        setAuthCategory(null);
         setAuthError(null);
       }
     } else {
       setIsAdmin(false);
+      setAuthCategory(null);
+      setAuthError(null);
     }
     setIsLoading(false);
   }, [checkAdminStatus]);
+
+  const retryVerification = useCallback(async () => {
+    const { data: { session: activeSession } } = await supabase.auth.getSession();
+    await handleSession(activeSession);
+  }, [handleSession]);
 
   useEffect(() => {
     // 1. Check active session on mount
@@ -77,6 +93,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     setAuthError(null);
+    setAuthCategory(null);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -87,6 +104,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         const errorMsg = error.message || 'Authentication failed. Please verify your credentials.';
         setAuthError(errorMsg);
+        setAuthCategory('AUTH_EXPIRED');
         setIsLoading(false);
         return { success: false, error: errorMsg };
       }
@@ -98,6 +116,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
             verification.error ||
             'Access Denied: This account is authenticated in Supabase but is not registered as an administrator.';
           setAuthError(unauthorizedMsg);
+          setAuthCategory(verification.category || 'NOT_ADMIN');
           setIsAdmin(false);
           // Sign out unauthorized user to maintain clean state
           await supabase.auth.signOut();
@@ -106,6 +125,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         setIsAdmin(true);
+        setAuthCategory(null);
         setUser(data.user);
         setSession(data.session);
         setIsLoading(false);
@@ -117,6 +137,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       const msg = err.message || 'An unexpected error occurred during sign in.';
       setAuthError(msg);
+      setAuthCategory('UNKNOWN');
       setIsLoading(false);
       return { success: false, error: msg };
     }
@@ -133,11 +154,15 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       setSession(null);
       setIsAdmin(false);
       setAuthError(null);
+      setAuthCategory(null);
       setIsLoading(false);
     }
   };
 
-  const clearError = () => setAuthError(null);
+  const clearError = () => {
+    setAuthError(null);
+    setAuthCategory(null);
+  };
 
   return (
     <AdminAuthContext.Provider
@@ -147,8 +172,10 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin,
         isLoading,
         authError,
+        authCategory,
         signIn,
         signOut,
+        retryVerification,
         clearError,
       }}
     >
