@@ -151,6 +151,10 @@ async function resolveProjectIdentifiers(projectIdOrSlug: string): Promise<{ id:
   return { id: projectIdOrSlug, slug: projectIdOrSlug };
 }
 
+function isValidUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 // =============================================================================
 // STORAGE HELPER
 // =============================================================================
@@ -251,19 +255,21 @@ export async function fetchPublishedProjectMedia(projectIdOrSlug: string): Promi
   try {
     const { id: uuid, slug } = await resolveProjectIdentifiers(projectIdOrSlug);
 
-    // Try Supabase project_media table first
-    const { data, error } = await supabase
-      .from('project_media')
-      .select('*')
-      .in('project_id', [uuid, slug])
-      .eq('is_published', true)
-      .order('is_featured', { ascending: false })
-      .order('display_order', { ascending: true });
+    // Query project_media only with a valid UUID.
+    if (isValidUuid(uuid)) {
+      const { data, error } = await supabase
+        .from('project_media')
+        .select('*')
+        .eq('project_id', uuid)
+        .eq('is_published', true)
+        .order('is_featured', { ascending: false })
+        .order('display_order', { ascending: true });
 
-    if (!error && data && data.length > 0) {
-      return (data as DbProjectMedia[])
-        .filter((item) => isPersistentMediaUrl(item.media_url))
-        .map(mapDbToProjectMedia);
+      if (!error && data && data.length > 0) {
+        return (data as DbProjectMedia[])
+          .filter((item) => isPersistentMediaUrl(item.media_url))
+          .map(mapDbToProjectMedia);
+      }
     }
 
     // Try public.media table in Supabase
@@ -426,26 +432,28 @@ export async function getAdminProjectMedia(projectIdOrSlug: string): Promise<{ d
 
     const { id: uuid, slug } = await resolveProjectIdentifiers(projectIdOrSlug);
 
-    const { data, error } = await supabase
-      .from('project_media')
-      .select('*')
-      .in('project_id', [uuid, slug])
-      .order('display_order', { ascending: true });
+    if (isValidUuid(uuid)) {
+      const { data, error } = await supabase
+        .from('project_media')
+        .select('*')
+        .eq('project_id', uuid)
+        .order('display_order', { ascending: true });
 
-    if (!error && data) {
-      const mapped = (data as DbProjectMedia[]).map(mapDbToProjectMedia);
-      mapped.sort((a, b) => {
-        if (a.isFeatured && !b.isFeatured) return -1;
-        if (!a.isFeatured && b.isFeatured) return 1;
-        return a.displayOrder - b.displayOrder;
-      });
-      return { data: mapped };
-    }
+      if (!error && data) {
+        const mapped = (data as DbProjectMedia[]).map(mapDbToProjectMedia);
+        mapped.sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          return a.displayOrder - b.displayOrder;
+        });
+        return { data: mapped };
+      }
 
-    if (error) {
-      const classified = classifySupabaseError(error, 'loading project media');
-      if (classified.category !== 'MISSING_SCHEMA') {
-        return { data: [], error: classified.message };
+      if (error) {
+        const classified = classifySupabaseError(error, 'loading project media');
+        if (classified.category !== 'MISSING_SCHEMA') {
+          return { data: [], error: classified.message };
+        }
       }
     }
 
